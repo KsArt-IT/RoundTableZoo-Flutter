@@ -1,0 +1,263 @@
+# Персоналізовані налаштування аналізатора та лінтера.
+# Базовий набір flutter_lints + додаткові посилення.
+include: package:flutter_lints/flutter.yaml
+
+formatter:
+  page_width: 100
+  trailing_commas: preserve
+
+analyzer:
+  exclude:
+    - "build/**"
+    - "android/**"
+    - "ios/**"
+    - "assets/**"
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.gen.dart"
+    - "**/*.gr.dart"
+    - "**/*.config.dart"
+    - "**/generated/**"
+    - "**/gen/**"
+    - "**/*.lock"
+    - "**/*.mapping.dart"
+    - "**/*.chopper.dart"
+    - "**/**.swagger.dart"
+    - "**/generated_icons.dart"
+    - "**/firebase_options.dart"
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
+  language:
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    dead_code: info # Не використовувати dead code
+    avoid_dynamic_calls: error # Не використовувати dynamic calls
+    avoid_returning_null_for_future: error # Не повертати null для future
+    avoid_slow_async_io: warning # Не використовувати slow async io
+    avoid_type_to_string: warning # Не використовувати type to string
+    cancel_subscriptions: error # Не використовувати cancel subscriptions
+    close_sinks: error # Не використовувати close sinks
+    always_declare_return_types: error # Завжди об'являти типи повернутих значень
+    avoid_setters_without_getters: error # Не використовувати setters без getters
+    avoid_void_async: error # Не використовувати void async
+    constant_identifier_names: error # Не використовувати константи в якості імен
+    unnecessary_new: warning # Не потрібні new
+    use_decorated_box: warning # Не використовувати decorated box
+    use_colored_box: warning # Не використовувати colored box
+  plugins:
+    - dart_code_linter # Використовувати dart_code_linter
+
+linter:
+  rules:
+    # Стиль і найменування
+    - always_put_required_named_parameters_first # Завжди ставити required параметри в початок
+    - sort_constructors_first # Завжди сортировать конструкторы в первую очередь
+    - always_use_package_imports # Завжди використовувати package imports
+    - curly_braces_in_flow_control_structures # Завжди використовувати фігурні скобки в flow control structures
+    - directives_ordering # Завжди використовувати directives ordering
+    - eol_at_end_of_file # Завжди використовувати eol at end of file
+    - prefer_single_quotes # Завжди використовувати single quotes
+    - slash_for_doc_comments # Завжди використовувати slash for doc comments
+
+    # Типобезпека
+    - avoid_catching_errors # Не використовувати catching errors
+    - await_only_futures # Всегда использовать await только для futures
+    - control_flow_in_finally # Завжди використовувати control flow в finally
+    - empty_catches # Завжди використовувати empty catches
+    - hash_and_equals # Завжди використовувати hash and equals
+    - only_throw_errors # Завжди використовувати only throw errors
+    - test_types_in_equals # Завжди використовувати test types in equals
+    - unrelated_type_equality_checks # Завжди використовувати unrelated type equality checks
+    - use_build_context_synchronously # Завжди використовувати build context synchronously
+    - use_rethrow_when_possible # Завжди використовувати rethrow when possible
+    - discarded_futures # Завжди використовувати discarded futures
+    - unawaited_futures # Завжди використовувати unawaited futures
+
+    # Імутабельність та const
+    - avoid_equals_and_hash_code_on_mutable_classes # Не використовувати equals і hash code на mutable classes
+    - prefer_const_constructors # Завжди використовувати const constructors
+    - prefer_const_constructors_in_immutables # Завжди використовувати const constructors в immutable classes
+    - prefer_const_literals_to_create_immutables # Завжди використовувати const literals to create immutables
+    - prefer_final_fields # Завжди використовувати final fields
+    - prefer_final_in_for_each # Завжди використовувати final в for each
+    - prefer_final_locals # Завжди використовувати final в locals
+    - parameter_assignments # Завжди використовувати parameter assignments
+
+    # Flutter оптимізації
+    - avoid_unnecessary_containers # Не використовувати unnecessary containers
+    - sized_box_for_whitespace # Не использовать sized box for whitespace
+    - sized_box_shrink_expand # Не использовать sized box shrink expand
+    - sort_child_properties_last # Не використовувати sort child properties last
+    - use_colored_box # Не використовувати colored box
+    - use_decorated_box # Не використовувати decorated box
+    - use_key_in_widget_constructors # Не використовувати key in widget constructors
+
+    # Сучасний Dart
+    - use_super_parameters # Завжди використовувати super parameters
+    - combinators_ordering # Завжди використовувати combinators ordering
+    - implicit_call_tearoffs # Завжди використовувати implicit call tearoffs
+    - matching_super_parameters # Завжди використовувати matching super parameters
+    - use_enums # Завжди використовувати enums
+
+    # Читання коду
+    - avoid_escaping_inner_quotes # Не використовувати escaping inner quotes
+    - avoid_field_initializers_in_const_classes # Не використовувати field initializers in const classes
+    - avoid_implementing_value_types # Не використовувати implementing value types
+    - avoid_positional_boolean_parameters # Не використовувати positional boolean parameters
+    - avoid_private_typedef_functions # Не використовувати private typedef functions
+    - avoid_redundant_argument_values # Не використовувати redundant argument values
+    - avoid_returning_this # Не використовувати returning this
+    - cascade_invocations # Не використовувати cascade invocations
+    - deprecated_consistency # Не використовувати deprecated consistency
+    - leading_newlines_in_multiline_strings # Не використовувати leading newlines in multiline strings
+    - no_literal_bool_comparisons # Не використовувати literal bool comparisons
+    - no_runtimeType_toString # Не використовувати runtimeType toString
+    - prefer_asserts_with_message # Не використовувати asserts with message
+    - prefer_constructors_over_static_methods # Не використовувати constructors over static methods
+    - comment_references # Не використовувати comment references
+    - avoid_init_to_null # Не використовувати init to null
+    - prefer_if_null_operators # Не використовувати if null operators
+    - prefer_interpolation_to_compose_strings # Не використовувати interpolation to compose strings
+    - prefer_is_empty # Не використовувати is empty
+    - prefer_is_not_empty # Не використовувати is not empty
+    - use_is_even_rather_than_modulo # Не використовувати is even rather than modulo
+    - use_setters_to_change_properties # Не використовувати setters to change properties
+    - use_string_buffers # Не використовувати string buffers
+    - use_to_and_as_if_applicable # Не використовувати to and as if applicable
+
+    # Видалення надмірності
+    - unnecessary_const # Не використовувати unnecessary const
+    - unnecessary_new # Не використовувати unnecessary new
+    - unnecessary_this # Не використовувати unnecessary this
+    - unnecessary_parenthesis # Не використовувати unnecessary parenthesis
+
+    # Продакшн / налагодження
+    - avoid_print # Не використовувати print
+
+bloc:
+  rules:
+    - avoid_flutter_imports # Не використовувати flutter imports
+    - avoid_public_bloc_methods # Не використовувати public bloc methods
+    - avoid_public_fields # Не використовувати public fields
+    - prefer_file_naming_conventions # Не використовувати file naming conventions
+
+dart_code_linter:
+  metrics:
+    cyclomatic-complexity: 20 # Цикломатична сложність
+    maximum-nesting-level: 5 # Максимальна кількість вкладених умов
+    source-lines-of-code: 50 # Максимальна кількість рядків в файлі
+    halstead-volume: 150 # Максимальний об'єм коду
+  metrics-exclude:
+    - "**/client_index.dart"
+    - "**/client_mapping.dart"
+    - "**/*.g.dart"
+    - "**/*.gr.dart"
+    - "**/*.mapping.dart"
+    - "**/*.chopper.dart"
+    - "**/*.freezed.dart"
+    - "**/**.swagger.dart"
+    - "**/**.gen.dart"
+    - "**/generated_icons.dart"
+    - "**/firebase_options.dart"
+    - "**/generated/**"
+    - "**/gen/**"
+  rules:
+    - prefer-conditional-expressions # Предпочитать conditional expressions
+    - avoid-global-state # Не використовувати global state
+    - avoid-nested-conditional-expressions:
+        severity: hint
+    - avoid-non-null-assertion # Не використовувати non null assertion
+    - avoid-throw-in-catch-block # Не використовувати throw в catch block
+    - avoid-unnecessary-type-assertions # Не використовувати unnecessary type assertions
+    - avoid-unnecessary-type-casts # Не використовувати unnecessary type casts
+    - avoid-unused-parameters: # Не використовувати unused parameters
+        severity: hint
+    - binary-expression-operand-order # Не використовувати binary expression operand order
+    - double-literal-format # Не використовувати double literal format
+    - member-ordering-extended: # Не використовувати member ordering extended
+        alphabetize: false # Не використовувати alphabetize
+        order:
+          - public-static-fields
+          - public-static-getters
+          - public-static-setters
+          - private-static-getters
+          - private-static-setters
+          - private-static-fields
+          - no-arg-constructors
+          - private-constructors
+          - public-fields
+          - public-getters
+          - public-setters
+          - overridden-getters
+          - overridden-setters
+          - private-fields
+          - named-constructors
+          - factory-constructors
+          - overridden-methods
+          - public-methods
+          - private-getters
+          - private-setters
+          - private-methods
+    - newline-before-return: # Попередження про відступи перед return
+        severity: hint 
+    - no-boolean-literal-compare:
+        severity: warning
+    - no-empty-block # Не використовувати empty block
+    - no-equal-then-else # Не використовувати equal then else
+    - no-object-declaration: # Не використовувати object declaration
+        severity: hint
+    - avoid-returning-widgets # Не використовувати returning widgets
+    - prefer-correct-identifier-length:
+        exceptions: ["i", "id", "S", "C", "h1", "rf", "lf"]
+        min-identifier-length: 3 # Мінімальна довжина ідентифікатора
+        max-identifier-length: 30 # Максимальна довжина ідентифікатора
+    - prefer-correct-type-name:
+        excluded: ["id", "S", "C", "h1", "rf", "lf"]
+        min-length: 3 # Мінімальна довжина типа
+        max-length: 40 # Максимальна довжина типа
+    - prefer-first # Предпочитай first замість [0]
+    - prefer-last # Предпочитай last замість [-1]
+    - prefer-trailing-comma: # Не використовувати trailing comma
+        severity: hint
+        break-on: 5
+    - always-remove-listener: # Не використовувати always remove listener
+        severity: warning
+    - avoid-returning-widgets: # Не використовувати returning widgets
+        ignored-annotations: [override]
+    - avoid-unnecessary-setstate:
+        severity: hint
+    - avoid-wrapping-in-padding:
+        severity: hint
+    - prefer-const-border-radius:
+        severity: warning
+    - format-comment # Форматувати коментарі
+    - avoid-border-all # Не використовувати border all
+    - prefer-async-await # Предпочитать async await
+    - avoid-collection-methods-with-unrelated-types # Не використовувати collection methods with unrelated types
+    - prefer-immediate-return: # Предпочитать immediate return
+        severity: warning
+    # Flutter оптимізації
+    - avoid_unnecessary_setstate # Не використовувати unnecessary setState
+    - avoid_wrapping_in_padding # Не використовувати wrapping in padding
+    - prefer_const_border_radius # Віддавати перевагу const border radius
+    - format_comment # Форматувати коментарі
+    - avoid_border_all # Не використовувати border all
+    - prefer_async-await # Віддавати перевагу async await
+    - prefer_immediate_return # Повертай значення, без лишних змінних і перевірок
+  rules-exclude:
+    - "**/client_index.dart"
+    - "**/client_mapping.dart"
+    - "**/*.g.dart"
+    - "**/*.gr.dart"
+    - "**/*.mapping.dart"
+    - "**/*.chopper.dart"
+    - "**/*.freezed.dart"
+    - "**/**.swagger.dart"
+    - "**/**.gen.dart"
+    - "**/generated_icons.dart"
+    - "**/firebase_options.dart"
+    - "**/generated/**"
+    - "**/gen/**"

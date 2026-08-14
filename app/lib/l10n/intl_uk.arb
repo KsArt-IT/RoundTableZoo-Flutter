@@ -1,0 +1,13 @@
+{
+  "@@locale": "uk",
+  "lang": "Українська",
+  "appTitle": "Зоопарк «Круглий стіл»",
+  "@appTitle": {
+    "description": "Round Table ZOO"
+  },
+  "copyright": "StudyWay.life",
+  "@copyright": {
+    "description": "Copyright text"
+  },
+  "end": "---"
+}

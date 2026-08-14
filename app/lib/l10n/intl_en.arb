@@ -1,0 +1,13 @@
+{
+  "@@locale": "en",
+  "lang": "English",
+  "appTitle": "Round Table ZOO",
+  "@appTitle": {
+    "description": "Round Table ZOO"
+  },
+  "copyright": "StudyWay.life",
+  "@copyright": {
+    "description": "Copyright text"
+  },
+  "end": "---"
+}

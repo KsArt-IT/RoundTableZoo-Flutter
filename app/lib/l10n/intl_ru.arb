@@ -1,0 +1,13 @@
+{
+  "@@locale": "ru",
+  "lang": "Русский",
+  "appTitle": "Зоопарк «Круглый стол»",
+  "@appTitle": {
+    "description": "Round Table ZOO"
+  },
+  "copyright": "StudyWay.life",
+  "@copyright": {
+    "description": "Copyright text"
+  },
+  "end": "---"
+}

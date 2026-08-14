@@ -1,0 +1,50 @@
+targets:
+  $default:
+    builders:
+      # Freezed configuration
+      freezed:
+        enabled: true
+        generate_for:
+          - lib/**/*.dart
+        options:
+          # Generate copyWith methods
+          copy_with: true
+          # Generate equality operators
+          equal: true
+          # Generate toString methods
+          to_string: true
+          # Generate map methods for JSON serialization
+          map: true
+
+      # JSON Serializable configuration
+      json_serializable:
+        enabled: true
+        generate_for:
+          - lib/**/*.dart
+        options:
+          # Use explicit toJson
+          explicit_to_json: true
+          # Include if null
+          include_if_null: false
+
+      # Drift configuration
+      drift_dev:
+        enabled: true
+        generate_for:
+          - lib/**/*.dart
+          - test/**/*.dart
+
+      flutter_gen_runner:
+        options:
+          output: lib/gen
+          assets:
+            outputs:
+              package_parameter_enabled: false
+              style: dot-delimiter
+          integrations:
+            flutter_svg: true
+
+global_options:
+  freezed:
+    runs_before:
+      - json_serializable
