@@ -9,5 +9,62 @@
   "@copyright": {
     "description": "Copyright text"
   },
+  "uniqueViolation": "Такий запис уже існує",
+  "@uniqueViolation": {
+    "description": "DatabaseFailure.uniqueViolation"
+  },
+  "entityNotFound": "Запис не знайдено",
+  "@entityNotFound": {
+    "description": "DatabaseFailure.entityNotFound"
+  },
+  "savingError": "Не вдалося зберегти дані",
+  "@savingError": {
+    "description": "DatabaseFailure.savingError"
+  },
+  "storageUnavailable": "Сховище недоступне",
+  "@storageUnavailable": {
+    "description": "DatabaseFailure.storageUnavailable"
+  },
+  "storageReadOnly": "Зміни не зберігаються в цьому режимі",
+  "@storageReadOnly": {
+    "description": "DatabaseFailure.storageReadOnly"
+  },
+  "moodScoreOutOfRange": "Оцінка настрою має бути від 1 до 5",
+  "@moodScoreOutOfRange": {
+    "description": "ValidationFailure.moodScoreOutOfRange"
+  },
+  "dayStartHourOutOfRange": "Година початку дня має бути від 0 до 23",
+  "@dayStartHourOutOfRange": {
+    "description": "ValidationFailure.dayStartHourOutOfRange"
+  },
+  "intensityOutOfRange": "Значення має бути від 0 до 1",
+  "@intensityOutOfRange": {
+    "description": "ValidationFailure.intensityOutOfRange"
+  },
+  "noCharactersEnabled": "Увімкніть принаймні одного персонажа",
+  "@noCharactersEnabled": {
+    "description": "ValidationFailure.noCharactersEnabled"
+  },
+  "dayTextTooLong": "Текст запису надто довгий",
+  "@dayTextTooLong": {
+    "description": "ValidationFailure.dayTextTooLong"
+  },
+  "reminderTimeInvalid": "Некоректний час нагадування",
+  "@reminderTimeInvalid": {
+    "description": "ValidationFailure.reminderTimeInvalid"
+  },
+  "notificationNotFound": "Сповіщення не знайдено",
+  "@notificationNotFound": {
+    "description": "NotificationFailure.notFound"
+  },
+  "notificationFailure": "Помилка сповіщення: {message}",
+  "@notificationFailure": {
+    "description": "NotificationFailure fallback message",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "end": "---"
 }

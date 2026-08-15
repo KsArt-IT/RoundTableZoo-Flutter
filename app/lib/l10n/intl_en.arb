@@ -9,5 +9,62 @@
   "@copyright": {
     "description": "Copyright text"
   },
+  "uniqueViolation": "This record already exists",
+  "@uniqueViolation": {
+    "description": "DatabaseFailure.uniqueViolation"
+  },
+  "entityNotFound": "Record not found",
+  "@entityNotFound": {
+    "description": "DatabaseFailure.entityNotFound"
+  },
+  "savingError": "Couldn't save the data",
+  "@savingError": {
+    "description": "DatabaseFailure.savingError"
+  },
+  "storageUnavailable": "Storage is unavailable",
+  "@storageUnavailable": {
+    "description": "DatabaseFailure.storageUnavailable"
+  },
+  "storageReadOnly": "Changes aren't saved in this mode",
+  "@storageReadOnly": {
+    "description": "DatabaseFailure.storageReadOnly"
+  },
+  "moodScoreOutOfRange": "Mood score must be between 1 and 5",
+  "@moodScoreOutOfRange": {
+    "description": "ValidationFailure.moodScoreOutOfRange"
+  },
+  "dayStartHourOutOfRange": "Day start hour must be between 0 and 23",
+  "@dayStartHourOutOfRange": {
+    "description": "ValidationFailure.dayStartHourOutOfRange"
+  },
+  "intensityOutOfRange": "Value must be between 0 and 1",
+  "@intensityOutOfRange": {
+    "description": "ValidationFailure.intensityOutOfRange"
+  },
+  "noCharactersEnabled": "Enable at least one character",
+  "@noCharactersEnabled": {
+    "description": "ValidationFailure.noCharactersEnabled"
+  },
+  "dayTextTooLong": "The entry text is too long",
+  "@dayTextTooLong": {
+    "description": "ValidationFailure.dayTextTooLong"
+  },
+  "reminderTimeInvalid": "Invalid reminder time",
+  "@reminderTimeInvalid": {
+    "description": "ValidationFailure.reminderTimeInvalid"
+  },
+  "notificationNotFound": "Notification not found",
+  "@notificationNotFound": {
+    "description": "NotificationFailure.notFound"
+  },
+  "notificationFailure": "Notification error: {message}",
+  "@notificationFailure": {
+    "description": "NotificationFailure fallback message",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "end": "---"
 }

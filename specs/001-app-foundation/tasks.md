@@ -33,12 +33,12 @@ Structure» в [plan.md](./plan.md).
 
 **Purpose**: привести проект в состояние, в котором конституция не нарушается конфигурацией
 
-- [ ] T001 Заменить Riverpod на Cubit-стек в `app/pubspec.yaml`: удалить `flutter_riverpod`, `riverpod_annotation`, `riverpod_generator`, `riverpod_lint`, добавить `flutter_bloc`; выполнить `flutter pub get`
-- [ ] T002 [P] Переключить шаблонный ARB на русский в `app/l10n.yaml` (`template-arb-file: intl_ru.arb`) и синхронизировать ключи в `app/lib/l10n/intl_ru.arb`, `intl_uk.arb`, `intl_en.arb`
-- [ ] T003 [P] Задать константы фазы в `app/lib/core/constants/app_constants.dart`: `minTapTargetDp = 48`, `duplicateFailureWindow = Duration(seconds: 3)`, `maxDayTextLength = 2000`, `dayRolloverTolerance = Duration(seconds: 60)`
-- [ ] T004 [P] Выключить диагностику в релизе в `app/lib/core/utils/app_logger.dart`: `Level.off` при `kReleaseMode`, `Level.debug` иначе (FR-016c)
-- [ ] T005 [P] Отключить системный автобэкап файлов БД: `android:allowBackup="false"` и `android:fullBackupContent` в `app/android/app/src/main/AndroidManifest.xml`; на iOS исключить файл БД из резервного копирования (флаг «не бэкапить» на каталоге хранилища) в `app/lib/core/bootstrap/app_bootstrap.dart` (FR-016d)
-- [ ] T006 Создать каркас каталогов `app/lib/app/`, `app/lib/domain/`, `app/lib/data/`, `app/lib/presentation/`, `app/test/support/` согласно разделу «Project Structure» плана
+- [X] T001 Заменить Riverpod на Cubit-стек в `app/pubspec.yaml`: удалить `flutter_riverpod`, `riverpod_annotation`, `riverpod_generator`, `riverpod_lint`, добавить `flutter_bloc`; выполнить `flutter pub get`
+- [X] T002 [P] Переключить шаблонный ARB на русский в `app/l10n.yaml` (`template-arb-file: intl_ru.arb`) и синхронизировать ключи в `app/lib/l10n/intl_ru.arb`, `intl_uk.arb`, `intl_en.arb`
+- [X] T003 [P] Задать константы фазы в `app/lib/core/constants/app_constants.dart`: `minTapTargetDp = 48`, `duplicateFailureWindow = Duration(seconds: 3)`, `maxDayTextLength = 2000`, `dayRolloverTolerance = Duration(seconds: 60)`
+- [X] T004 [P] Выключить диагностику в релизе в `app/lib/core/utils/app_logger.dart`: `Level.off` при `kReleaseMode`, `Level.debug` иначе (FR-016c)
+- [X] T005 [P] Отключить системный автобэкап файлов БД: `android:allowBackup="false"` и `android:fullBackupContent` в `app/android/app/src/main/AndroidManifest.xml`; на iOS исключить файл БД из резервного копирования (флаг «не бэкапить» на каталоге хранилища) в `app/lib/core/bootstrap/app_bootstrap.dart` (FR-016d)
+- [X] T006 Создать каркас каталогов `app/lib/app/`, `app/lib/domain/`, `app/lib/data/`, `app/lib/presentation/`, `app/test/support/` согласно разделу «Project Structure» плана
 
 **Checkpoint**: `flutter analyze` проходит, Riverpod в проекте отсутствует
 
@@ -52,33 +52,33 @@ Structure» в [plan.md](./plan.md).
 
 ### Время
 
-- [ ] T007 Определить контракт `AppClock` (`nowUtc`, `location`, `minuteTicks`, `updateLocation`) в `app/lib/core/app_clock/app_clock.dart` по [contracts/app-clock.md](./contracts/app-clock.md)
-- [ ] T008 Реализовать `SystemAppClock` в `app/lib/core/app_clock/system_app_clock.dart`: `DateTime.now().toUtc()`, выровненный минутный `Timer.periodic`, broadcast-стрим, `dispose()` с отменой таймера
-- [ ] T009 [P] Реализовать `FakeAppClock` в `app/test/support/fake_app_clock.dart`: ручные `set now`, `set location`, `emitTick(DateTime)`, без реальных таймеров
-- [ ] T010 Реализовать `DayResolver.resolve` и `DayResolver.boundsUtc` в `app/lib/domain/services/day_resolver.dart` через `tz.TZDateTime` (FR-009, FR-023b)
-- [ ] T011 [P] Написать юнит-тесты `DayResolver` в `app/test/core/day_resolver_test.dart`: `dayStartHour` 0 и 4, пояса `Europe/Kyiv` и `Pacific/Kiritimati`, DST в `America/Sao_Paulo`, пропущенный при переводе час, неизменность `occurredAt` при смене пояса (FR-023b, FR-024, FR-026)
+- [X] T007 Определить контракт `AppClock` (`nowUtc`, `location`, `minuteTicks`, `updateLocation`) в `app/lib/core/app_clock/app_clock.dart` по [contracts/app-clock.md](./contracts/app-clock.md)
+- [X] T008 Реализовать `SystemAppClock` в `app/lib/core/app_clock/system_app_clock.dart`: `DateTime.now().toUtc()`, выровненный минутный `Timer.periodic`, broadcast-стрим, `dispose()` с отменой таймера
+- [X] T009 [P] Реализовать `FakeAppClock` в `app/test/support/fake_app_clock.dart`: ручные `set now`, `set location`, `emitTick(DateTime)`, без реальных таймеров
+- [X] T010 Реализовать `DayResolver.resolve` и `DayResolver.boundsUtc` в `app/lib/domain/services/day_resolver.dart` через `tz.TZDateTime` (FR-009, FR-023b)
+- [X] T011 [P] Написать юнит-тесты `DayResolver` в `app/test/core/day_resolver_test.dart`: `dayStartHour` 0 и 4, пояса `Europe/Kyiv` и `Pacific/Kiritimati`, DST в `America/Sao_Paulo`, пропущенный при переводе час, неизменность `occurredAt` при смене пояса (FR-023b, FR-024, FR-026)
 
 ### Сущности и правила валидации
 
-- [ ] T012 [P] Создать value objects `MoodScore`, `DayStartHour`, `ReactionTone`, `ThemePreference`, `LocalePreference`, `ReminderTime` в `app/lib/domain/value_objects/` с фабриками, возвращающими `Result<T>` (правила — [data-model.md](./data-model.md))
-- [ ] T013 [P] Создать `DayKey` (сравнимый, сортируемый) в `app/lib/domain/entities/day_key.dart`
-- [ ] T014 [P] Создать Freezed-сущности `DayEntry`, `CharacterReaction`, `UserSettings` в `app/lib/domain/entities/` — без Drift и Flutter импортов
-- [ ] T015 [P] Написать юнит-тесты валидации value objects в `app/test/core/value_objects_test.dart` (границы 1–5, 0–23, 0.0–1.0, длина текста 2000, непустой список персонажей)
+- [X] T012 [P] Создать value objects `MoodScore`, `DayStartHour`, `ReactionTone`, `ThemePreference`, `LocalePreference`, `ReminderTime` в `app/lib/domain/value_objects/` с фабриками, возвращающими `Result<T>` (правила — [data-model.md](./data-model.md))
+- [X] T013 [P] Создать `DayKey` (сравнимый, сортируемый) в `app/lib/domain/entities/day_key.dart`
+- [X] T014 [P] Создать Freezed-сущности `DayEntry`, `CharacterReaction`, `UserSettings` в `app/lib/domain/entities/` — без Drift и Flutter импортов
+- [X] T015 [P] Написать юнит-тесты валидации value objects в `app/test/core/value_objects_test.dart` (границы 1–5, 0–23, 0.0–1.0, длина текста 2000, непустой список персонажей)
 
 ### Хранилище
 
-- [ ] T016 Описать таблицы `day_entries` и `character_reactions` в `app/lib/data/datasources/drift/tables/diary_tables.dart` с `check`-ограничениями, FK `onDelete: cascade` и индексами по [data-model.md](./data-model.md)
-- [ ] T017 [P] Описать таблицу `user_settings` (синглтон, `check(id = 1)`, `dayStartHour` 0–23) в `app/lib/data/datasources/drift/tables/app_tables.dart`
-- [ ] T018 Создать `AppDatabase` в `app/lib/data/datasources/drift/app_database.dart`: `schemaVersion = 1`, без `MigrationStrategy`, `PRAGMA foreign_keys = ON` в `beforeOpen`
-- [ ] T019 Выполнить `dart run build_runner build --delete-conflicting-outputs` в `app/` и зафиксировать сгенерированный код Drift/Freezed
-- [ ] T020 [P] Создать тестовую БД на памяти в `app/test/support/test_database.dart` (`NativeDatabase.memory()` + сид настроек по умолчанию)
+- [X] T016 Описать таблицы `day_entries` и `character_reactions` в `app/lib/data/datasources/drift/tables/diary_tables.dart` с `check`-ограничениями, FK `onDelete: cascade` и индексами по [data-model.md](./data-model.md)
+- [X] T017 [P] Описать таблицу `user_settings` (синглтон, `check(id = 1)`, `dayStartHour` 0–23) в `app/lib/data/datasources/drift/tables/app_tables.dart`
+- [X] T018 Создать `AppDatabase` в `app/lib/data/datasources/drift/app_database.dart`: `schemaVersion = 1`, без `MigrationStrategy`, `PRAGMA foreign_keys = ON` в `beforeOpen`
+- [X] T019 Выполнить `dart run build_runner build --delete-conflicting-outputs` в `app/` и зафиксировать сгенерированный код Drift/Freezed
+- [X] T020 [P] Создать тестовую БД на памяти в `app/test/support/test_database.dart` (`NativeDatabase.memory()` + сид настроек по умолчанию)
 
 ### Ошибки и DI
 
-- [ ] T021 Добавить коды `storageUnavailable`, `storageReadOnly` в `DatabaseFailure` и коды правил валидации в `ValidationFailure` в `app/lib/core/errors/app_failure.dart` с ветками `localizedMessage` (FR-019a, FR-020)
-- [ ] T022 [P] Добавить строки новых кодов ошибок в `app/lib/l10n/intl_ru.arb` и заготовки в `intl_uk.arb`, `intl_en.arb`
-- [ ] T023 Перевести логирование `SafeCallMixin` и `TimeZones` на `app_logger` в `app/lib/core/errors/safe_call_mixin.dart` и `app/lib/core/time_zone/time_zones.dart` — единственная точка отключения диагностики (FR-016c)
-- [ ] T024 [P] Создать моки репозиториев и `AppClock` на `mocktail` в `app/test/support/mocks.dart`
+- [X] T021 Добавить коды `storageUnavailable`, `storageReadOnly` в `DatabaseFailure` и коды правил валидации в `ValidationFailure` в `app/lib/core/errors/app_failure.dart` с ветками `localizedMessage` (FR-019a, FR-020)
+- [X] T022 [P] Добавить строки новых кодов ошибок в `app/lib/l10n/intl_ru.arb` и заготовки в `intl_uk.arb`, `intl_en.arb`
+- [X] T023 Перевести логирование `SafeCallMixin` и `TimeZones` на `app_logger` в `app/lib/core/errors/safe_call_mixin.dart` и `app/lib/core/time_zone/time_zones.dart` — единственная точка отключения диагностики (FR-016c)
+- [X] T024 [P] Создать моки репозиториев и `AppClock` на `mocktail` в `app/test/support/mocks.dart`
 
 **Checkpoint**: время, схема и сущности готовы — истории можно вести параллельно
 

@@ -9,5 +9,62 @@
   "@copyright": {
     "description": "Copyright text"
   },
+  "uniqueViolation": "Такая запись уже существует",
+  "@uniqueViolation": {
+    "description": "DatabaseFailure.uniqueViolation"
+  },
+  "entityNotFound": "Запись не найдена",
+  "@entityNotFound": {
+    "description": "DatabaseFailure.entityNotFound"
+  },
+  "savingError": "Не удалось сохранить данные",
+  "@savingError": {
+    "description": "DatabaseFailure.savingError"
+  },
+  "storageUnavailable": "Хранилище недоступно",
+  "@storageUnavailable": {
+    "description": "DatabaseFailure.storageUnavailable"
+  },
+  "storageReadOnly": "Изменения не сохраняются в этом режиме",
+  "@storageReadOnly": {
+    "description": "DatabaseFailure.storageReadOnly"
+  },
+  "moodScoreOutOfRange": "Оценка настроения должна быть от 1 до 5",
+  "@moodScoreOutOfRange": {
+    "description": "ValidationFailure.moodScoreOutOfRange"
+  },
+  "dayStartHourOutOfRange": "Час начала дня должен быть от 0 до 23",
+  "@dayStartHourOutOfRange": {
+    "description": "ValidationFailure.dayStartHourOutOfRange"
+  },
+  "intensityOutOfRange": "Значение должно быть от 0 до 1",
+  "@intensityOutOfRange": {
+    "description": "ValidationFailure.intensityOutOfRange"
+  },
+  "noCharactersEnabled": "Включите хотя бы одного персонажа",
+  "@noCharactersEnabled": {
+    "description": "ValidationFailure.noCharactersEnabled"
+  },
+  "dayTextTooLong": "Слишком длинный текст записи",
+  "@dayTextTooLong": {
+    "description": "ValidationFailure.dayTextTooLong"
+  },
+  "reminderTimeInvalid": "Некорректное время напоминания",
+  "@reminderTimeInvalid": {
+    "description": "ValidationFailure.reminderTimeInvalid"
+  },
+  "notificationNotFound": "Уведомление не найдено",
+  "@notificationNotFound": {
+    "description": "NotificationFailure.notFound"
+  },
+  "notificationFailure": "Ошибка уведомления: {message}",
+  "@notificationFailure": {
+    "description": "NotificationFailure fallback message",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "end": "---"
 }
