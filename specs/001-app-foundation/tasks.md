@@ -178,16 +178,16 @@ Structure» в [plan.md](./plan.md).
 
 ### Tests for User Story 4
 
-- [ ] T055 [P] [US4] `bloc_test` для `CurrentDayCubit` в `app/test/presentation/current_day_cubit_test.dart`: тик через границу при `dayStartHour` 0 и 4 меняет день, тик внутри дня не эмитит состояние, смена пояса пересчитывает день, `isClosed` после `await` (FR-023, FR-023a, SC-007)
-- [ ] T056 [P] [US4] Тест пересчёта дней при смене `dayStartHour` в `app/test/data/day_recalculation_test.dart`: сохранённые моменты не меняются, записи остаются доступны, дни пересчитаны (FR-026, FR-026b, SC-011)
+- [X] T055 [P] [US4] `bloc_test` для `CurrentDayCubit` в `app/test/presentation/current_day_cubit_test.dart`: тик через границу при `dayStartHour` 0 и 4 меняет день, тик внутри дня не эмитит состояние, смена пояса пересчитывает день, `isClosed` после `await` (FR-023, FR-023a, SC-007)
+- [X] T056 [P] [US4] Тест пересчёта дней при смене `dayStartHour` в `app/test/data/day_recalculation_test.dart`: сохранённые моменты не меняются, записи остаются доступны, дни пересчитаны (FR-026, FR-026b, SC-011)
 
 ### Implementation for User Story 4
 
-- [ ] T057 [US4] Реализовать `CurrentDayCubit` и состояния в `app/lib/presentation/app_settings/cubit/current_day_cubit.dart`: подписка на `minuteTicks`, эмиссия только при смене `DayKey`, значение берётся из момента тика
-- [ ] T058 [US4] Подключить `CurrentDayCubit` к изменению `dayStartHour` из настроек (пересчёт при обновлении) в `app/lib/presentation/app_settings/cubit/current_day_cubit.dart`
-- [ ] T059 [US4] Добавить обработку `AppLifecycleState.resumed` в `app/lib/app/app_root.dart`: перечитать системный пояс, при изменении вызвать `AppClock.updateLocation` и пересчитать день (FR-026a)
-- [ ] T060 [US4] Зарегистрировать `AppClock`, `DayResolver` и `CurrentDayCubit` в DI и в `MultiBlocProvider` в `app/lib/core/di/injection_module.dart` и `app/lib/app/app_root.dart`
-- [ ] T061 [US4] Проверить отсутствие прямых вызовов времени: `grep -rn "DateTime.now()" app/lib/` — единственное вхождение в `app/lib/core/app_clock/system_app_clock.dart` (принцип IV)
+- [X] T057 [US4] Реализовать `CurrentDayCubit` и состояния в `app/lib/presentation/app_settings/cubit/current_day_cubit.dart`: подписка на `minuteTicks`, эмиссия только при смене `DayKey`, значение берётся из момента тика
+- [X] T058 [US4] Подключить `CurrentDayCubit` к изменению `dayStartHour` из настроек (пересчёт при обновлении) в `app/lib/presentation/app_settings/cubit/current_day_cubit.dart`
+- [X] T059 [US4] Добавить обработку `AppLifecycleState.resumed` в `app/lib/app/app_root.dart`: перечитать системный пояс, при изменении вызвать `AppClock.updateLocation` и пересчитать день (FR-026a)
+- [X] T060 [US4] Зарегистрировать `AppClock`, `DayResolver` и `CurrentDayCubit` в DI и в `MultiBlocProvider` в `app/lib/core/di/injection_module.dart` и `app/lib/app/app_root.dart`
+- [X] T061 [US4] Проверить отсутствие прямых вызовов времени: `grep -rn "DateTime.now()" app/lib/` — единственное вхождение в `app/lib/core/app_clock/system_app_clock.dart` (принцип IV)
 
 **Checkpoint**: границы суток и смена пояса воспроизводимы автотестами
 

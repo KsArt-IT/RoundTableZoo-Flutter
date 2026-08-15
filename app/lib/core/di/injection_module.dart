@@ -1,7 +1,9 @@
 import 'package:injectable/injectable.dart';
 import 'package:roundtablezoo/core/app_clock/app_clock.dart';
 import 'package:roundtablezoo/core/app_clock/system_app_clock.dart';
+import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
 import 'package:roundtablezoo/domain/services/day_resolver.dart';
+import 'package:roundtablezoo/presentation/app_settings/cubit/current_day_cubit.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 /// Instantiation for classes that either come from third-party packages
@@ -22,4 +24,20 @@ abstract class InjectionModule {
 
   @lazySingleton
   DayResolver get dayResolver => DayResolver();
+
+  /// A `LazySingleton` factory, not a getter: the `SettingsRepository`
+  /// parameter is only resolved from `getIt` the first time this cubit is
+  /// actually built, by which point `StorageDiSwitch` has registered it
+  /// (nothing reaches a screen that reads this cubit before storage is
+  /// usable — the router redirects to `/storage-error` until then).
+  @lazySingleton
+  CurrentDayCubit currentDayCubit(
+    AppClock clock,
+    DayResolver dayResolver,
+    SettingsRepository settingsRepository,
+  ) => CurrentDayCubit(
+    clock: clock,
+    dayResolver: dayResolver,
+    settingsRepository: settingsRepository,
+  );
 }
