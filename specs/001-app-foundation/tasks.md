@@ -121,19 +121,19 @@ Structure» в [plan.md](./plan.md).
 
 ### Tests for User Story 2
 
-- [ ] T034 [P] [US2] Тесты схемы и мапперов в `app/test/data/app_database_test.dart`: создание БД, единственная строка настроек со значениями по умолчанию, каскадное удаление реакций, реакция с тоном вне перечня сохраняется с нейтральным тоном и неизменным текстом (FR-010b, FR-011, FR-013, SC-015)
-- [ ] T035 [P] [US2] Тесты `DiaryRepository` в `app/test/data/diary_repository_test.dart`: повторное сохранение за день обновляет запись, одновременные сохранения дают одну запись, две записи в одном дне после смены `dayStartHour` доступны обе, `entryForDay` отдаёт позднюю, при равных `occurredAt` — позже созданную, `updatedAt` не меняется при добавлении реакции (FR-007b, FR-009a…e, SC-008, SC-012)
-- [ ] T036 [P] [US2] Тесты `SettingsRepository` в `app/test/data/settings_repository_test.dart`: `installId` неизменен между вызовами, `updateThemeMode`/`updateDayStartHour` возвращают полное состояние, `watch()` эмитит после изменения (FR-014, SC-003)
+- [X] T034 [P] [US2] Тесты схемы и мапперов в `app/test/data/app_database_test.dart`: создание БД, единственная строка настроек со значениями по умолчанию, каскадное удаление реакций, реакция с тоном вне перечня сохраняется с нейтральным тоном и неизменным текстом (FR-010b, FR-011, FR-013, SC-015)
+- [X] T035 [P] [US2] Тесты `DiaryRepository` в `app/test/data/diary_repository_test.dart`: повторное сохранение за день обновляет запись, одновременные сохранения дают одну запись, две записи в одном дне после смены `dayStartHour` доступны обе, `entryForDay` отдаёт позднюю, при равных `occurredAt` — позже созданную, `updatedAt` не меняется при добавлении реакции (FR-007b, FR-009a…e, SC-008, SC-012)
+- [X] T036 [P] [US2] Тесты `SettingsRepository` в `app/test/data/settings_repository_test.dart`: `installId` неизменен между вызовами, `updateThemeMode`/`updateDayStartHour` возвращают полное состояние, `watch()` эмитит после изменения (FR-014, SC-003)
 
 ### Implementation for User Story 2
 
-- [ ] T037 [P] [US2] Реализовать DAO-обёртку над `day_entries`/`character_reactions` в `app/lib/data/datasources/diary_local_datasource.dart` (выборки диапазоном, сортировка `occurredAt DESC, id DESC`)
-- [ ] T038 [P] [US2] Реализовать DAO-обёртку над `user_settings` с созданием строки по умолчанию и генерацией `installId` (`Random.secure()`, 32 hex) в `app/lib/data/datasources/settings_local_datasource.dart` (FR-014, FR-015a)
-- [ ] T039 [P] [US2] Реализовать мапперы Model ↔ Entity в `app/lib/data/mappers/day_entry_mapper.dart`, `character_reaction_mapper.dart`, `user_settings_mapper.dart`; неизвестный тон → `neutral` с записью в диагностику только в debug (FR-010b)
-- [ ] T040 [US2] Объявить контракты `DiaryRepository` и `SettingsRepository` в `app/lib/domain/repositories/` по [contracts/repositories.md](./contracts/repositories.md)
-- [ ] T041 [US2] Реализовать `DiaryRepositoryImpl` в `app/lib/data/repositories/diary_repository_impl.dart`: `saveTodayEntry` в транзакции (вычислить `DayKey` → границы → обновить/вставить), `SafeCallMixin`, `Result<T>` (зависит от T037, T039, T040)
-- [ ] T042 [US2] Реализовать `SettingsRepositoryImpl` в `app/lib/data/repositories/settings_repository_impl.dart` с `watch()` поверх Drift-стрима (зависит от T038, T039, T040)
-- [ ] T043 [US2] Зарегистрировать БД, datasources и репозитории в DI в `app/lib/core/di/injection_module.dart` и выполнить `dart run build_runner build`
+- [X] T037 [P] [US2] Реализовать DAO-обёртку над `day_entries`/`character_reactions` в `app/lib/data/datasources/diary_local_datasource.dart` (выборки диапазоном, сортировка `occurredAt DESC, id DESC`)
+- [X] T038 [P] [US2] Реализовать DAO-обёртку над `user_settings` с созданием строки по умолчанию и генерацией `installId` (`Random.secure()`, 32 hex) в `app/lib/data/datasources/settings_local_datasource.dart` (FR-014, FR-015a)
+- [X] T039 [P] [US2] Реализовать мапперы Model ↔ Entity в `app/lib/data/mappers/day_entry_mapper.dart`, `character_reaction_mapper.dart`, `user_settings_mapper.dart`; неизвестный тон → `neutral` с записью в диагностику только в debug (FR-010b)
+- [X] T040 [US2] Объявить контракты `DiaryRepository` и `SettingsRepository` в `app/lib/domain/repositories/` по [contracts/repositories.md](./contracts/repositories.md)
+- [X] T041 [US2] Реализовать `DiaryRepositoryImpl` в `app/lib/data/repositories/diary_repository_impl.dart`: `saveTodayEntry` в транзакции (вычислить `DayKey` → границы → обновить/вставить), `SafeCallMixin`, `Result<T>` (зависит от T037, T039, T040)
+- [X] T042 [US2] Реализовать `SettingsRepositoryImpl` в `app/lib/data/repositories/settings_repository_impl.dart` с `watch()` поверх Drift-стрима (зависит от T038, T039, T040)
+- [X] T043 [US2] Зарегистрировать БД, datasources и репозитории в DI в `app/lib/core/di/injection_module.dart` и выполнить `dart run build_runner build`
 
 **Checkpoint**: данные всех трёх видов читаются и пишутся, правило одной записи на день соблюдается
 
