@@ -66,5 +66,21 @@
       }
     }
   },
+  "sectionTable": "Стіл",
+  "@sectionTable": {
+    "description": "Bottom navigation / placeholder title — Table section"
+  },
+  "sectionDiary": "Щоденник",
+  "@sectionDiary": {
+    "description": "Bottom navigation / placeholder title — Diary section"
+  },
+  "sectionSettings": "Налаштування",
+  "@sectionSettings": {
+    "description": "Bottom navigation / placeholder title — Settings section"
+  },
+  "sectionOnboarding": "Знайомство",
+  "@sectionOnboarding": {
+    "description": "Placeholder title — Onboarding screen"
+  },
   "end": "---"
 }

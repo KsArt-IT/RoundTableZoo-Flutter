@@ -66,5 +66,21 @@
       }
     }
   },
+  "sectionTable": "Table",
+  "@sectionTable": {
+    "description": "Bottom navigation / placeholder title — Table section"
+  },
+  "sectionDiary": "Diary",
+  "@sectionDiary": {
+    "description": "Bottom navigation / placeholder title — Diary section"
+  },
+  "sectionSettings": "Settings",
+  "@sectionSettings": {
+    "description": "Bottom navigation / placeholder title — Settings section"
+  },
+  "sectionOnboarding": "Welcome",
+  "@sectionOnboarding": {
+    "description": "Placeholder title — Onboarding screen"
+  },
   "end": "---"
 }

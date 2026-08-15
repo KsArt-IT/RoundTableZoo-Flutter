@@ -94,18 +94,18 @@ Structure» в [plan.md](./plan.md).
 
 ### Tests for User Story 1
 
-- [ ] T025 [P] [US1] Widget-тест навигации в `app/test/widget/shell_navigation_test.dart`: стартовый раздел «Стол», переключение всех трёх вкладок, сохранение состояния ветки, отсутствие перестроения оболочки (FR-002, FR-004)
-- [ ] T026 [P] [US1] Widget-тест доступности в `app/test/widget/shell_accessibility_test.dart`: `meetsGuideline(androidTapTargetGuideline)` и `labeledTapTargetGuideline` для пунктов навигации (FR-030, SC-010)
+- [X] T025 [P] [US1] Widget-тест навигации в `app/test/widget/shell_navigation_test.dart`: стартовый раздел «Стол», переключение всех трёх вкладок, сохранение состояния ветки, отсутствие перестроения оболочки (FR-002, FR-004)
+- [X] T026 [P] [US1] Widget-тест доступности в `app/test/widget/shell_accessibility_test.dart`: `meetsGuideline(androidTapTargetGuideline)` и `labeledTapTargetGuideline` для пунктов навигации (FR-030, SC-010)
 
 ### Implementation for User Story 1
 
-- [ ] T027 [P] [US1] Объявить константы маршрутов `/table`, `/diary`, `/settings`, `/onboarding`, `/storage-error` в `app/lib/app/router/app_routes.dart`
-- [ ] T028 [P] [US1] Создать страницы-заглушки с названием раздела из l10n в `app/lib/presentation/table/table_placeholder_page.dart`, `app/lib/presentation/diary/diary_placeholder_page.dart`, `app/lib/presentation/settings/settings_placeholder_page.dart`
-- [ ] T029 [P] [US1] Создать заглушку онбординга в `app/lib/presentation/onboarding/onboarding_placeholder_page.dart` (маршрут без redirect-гарда — FR-006)
-- [ ] T030 [US1] Собрать роутер на `StatefulShellRoute.indexedStack` с тремя ветками в `app/lib/app/router/app_router.dart` (зависит от T027, T028, T029)
-- [ ] T031 [US1] Создать `ShellPage` (`Scaffold` + `NavigationBar`, `Semantics` на каждом пункте) в `app/lib/app/shell/shell_page.dart`
-- [ ] T032 [US1] Создать `AppMaterialRouter` (`MaterialApp.router`, тема из `core/theme`, `supportedLocales: [ru, uk, en]`, `localeResolutionCallback` → ru) в `app/lib/app/app_material_router.dart` (FR-029, US5.3)
-- [ ] T033 [US1] Заменить демо-экран на реальную точку входа в `app/lib/main.dart` и `app/lib/app/app_root.dart`: инициализация `TimeZones`, DI, `runApp(AppRoot)` (FR-001)
+- [X] T027 [P] [US1] Объявить константы маршрутов `/table`, `/diary`, `/settings`, `/onboarding`, `/storage-error` в `app/lib/app/router/app_routes.dart`
+- [X] T028 [P] [US1] Создать страницы-заглушки с названием раздела из l10n в `app/lib/presentation/table/table_placeholder_page.dart`, `app/lib/presentation/diary/diary_placeholder_page.dart`, `app/lib/presentation/settings/settings_placeholder_page.dart`
+- [X] T029 [P] [US1] Создать заглушку онбординга в `app/lib/presentation/onboarding/onboarding_placeholder_page.dart` (маршрут без redirect-гарда — FR-006)
+- [X] T030 [US1] Собрать роутер на `StatefulShellRoute.indexedStack` с тремя ветками в `app/lib/app/router/app_router.dart` (зависит от T027, T028, T029)
+- [X] T031 [US1] Создать `ShellPage` (`Scaffold` + `NavigationBar`, `Semantics` на каждом пункте) в `app/lib/app/shell/shell_page.dart`
+- [X] T032 [US1] Создать `AppMaterialRouter` (`MaterialApp.router`, тема из `core/theme`, `supportedLocales: [ru, uk, en]`, `localeResolutionCallback` → ru) в `app/lib/app/app_material_router.dart` (FR-029, US5.3)
+- [X] T033 [US1] Заменить демо-экран на реальную точку входа в `app/lib/main.dart` и `app/lib/app/app_root.dart`: инициализация `TimeZones`, DI, `runApp(AppRoot)` (FR-001)
 
 **Checkpoint**: приложение запускается в оболочку и по ней можно ходить; хранилище ещё не задействовано
 

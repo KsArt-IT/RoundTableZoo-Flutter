@@ -66,5 +66,21 @@
       }
     }
   },
+  "sectionTable": "Стол",
+  "@sectionTable": {
+    "description": "Bottom navigation / placeholder title — Table section"
+  },
+  "sectionDiary": "Дневник",
+  "@sectionDiary": {
+    "description": "Bottom navigation / placeholder title — Diary section"
+  },
+  "sectionSettings": "Настройки",
+  "@sectionSettings": {
+    "description": "Bottom navigation / placeholder title — Settings section"
+  },
+  "sectionOnboarding": "Знакомство",
+  "@sectionOnboarding": {
+    "description": "Placeholder title — Onboarding screen"
+  },
   "end": "---"
 }
