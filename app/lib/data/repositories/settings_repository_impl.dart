@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:injectable/injectable.dart';
 import 'package:roundtablezoo/core/errors/result.dart';
 import 'package:roundtablezoo/core/errors/safe_call_mixin.dart';
 import 'package:roundtablezoo/data/datasources/drift/app_database.dart';
@@ -12,7 +11,8 @@ import 'package:roundtablezoo/domain/value_objects/locale_preference.dart';
 import 'package:roundtablezoo/domain/value_objects/theme_preference.dart';
 import 'package:roundtablezoo/domain/value_objects/validators.dart';
 
-@LazySingleton(as: SettingsRepository)
+/// Registered by `StorageDiSwitch`, not `@LazySingleton(as: ...)` — see
+/// `injection_module.dart`.
 class SettingsRepositoryImpl with SafeCallMixin implements SettingsRepository {
   SettingsRepositoryImpl({required this._dataSource});
 

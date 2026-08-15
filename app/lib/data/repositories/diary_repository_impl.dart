@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:injectable/injectable.dart';
 import 'package:roundtablezoo/core/app_clock/app_clock.dart';
 import 'package:roundtablezoo/core/errors/app_failure.dart';
 import 'package:roundtablezoo/core/errors/result.dart';
@@ -17,7 +16,8 @@ import 'package:roundtablezoo/domain/services/day_resolver.dart';
 import 'package:roundtablezoo/domain/value_objects/mood_score.dart';
 import 'package:roundtablezoo/domain/value_objects/validators.dart';
 
-@LazySingleton(as: DiaryRepository)
+/// Registered by `StorageDiSwitch`, not `@LazySingleton(as: ...)` — see
+/// `injection_module.dart`.
 class DiaryRepositoryImpl with SafeCallMixin implements DiaryRepository {
   DiaryRepositoryImpl({
     required this._db,

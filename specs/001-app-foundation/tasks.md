@@ -149,20 +149,20 @@ Structure» в [plan.md](./plan.md).
 
 ### Tests for User Story 3
 
-- [ ] T044 [P] [US3] Юнит-тесты `FailureToastGate` в `app/test/core/failure_toast_gate_test.dart`: десять одинаковых ошибок за секунду → один показ, другой вид → показ сразу, окно 3 с (FR-021f, FR-021g, SC-014)
-- [ ] T045 [P] [US3] `bloc_test` для `StorageRecoveryCubit` в `app/test/presentation/storage_recovery_cubit_test.dart`: сбой открытия → `idle(cause)`, сбой сброса → `error` с сохранением действий, успешный `retry` → `recovered`, `isClosed` после `await` (FR-021c1, FR-021e1)
-- [ ] T046 [P] [US3] Тест режима без сохранения в `app/test/data/read_only_repositories_test.dart`: чтение отдаёт пустые данные и умолчания, запись → `DatabaseFailure(storageReadOnly)`, `installId` не сохраняется (FR-021d, FR-021d2)
+- [X] T044 [P] [US3] Юнит-тесты `FailureToastGate` в `app/test/core/failure_toast_gate_test.dart`: десять одинаковых ошибок за секунду → один показ, другой вид → показ сразу, окно 3 с (FR-021f, FR-021g, SC-014)
+- [X] T045 [P] [US3] `bloc_test` для `StorageRecoveryCubit` в `app/test/presentation/storage_recovery_cubit_test.dart`: сбой открытия → `idle(cause)`, сбой сброса → `error` с сохранением действий, успешный `retry` → `recovered`, `isClosed` после `await` (FR-021c1, FR-021e1)
+- [X] T046 [P] [US3] Тест режима без сохранения в `app/test/data/read_only_repositories_test.dart`: чтение отдаёт пустые данные и умолчания, запись → `DatabaseFailure(storageReadOnly)`, `installId` не сохраняется (FR-021d, FR-021d2)
 
 ### Implementation for User Story 3
 
-- [ ] T047 [P] [US3] Реализовать `FailureToastGate` (ключ `(runtimeType, code)`, время из `AppClock`) в `app/lib/core/errors/failure_toast_gate.dart`
-- [ ] T048 [P] [US3] Объявить `StorageMode` (`persistent | readOnly | unavailable`) в `app/lib/core/bootstrap/storage_mode.dart`
-- [ ] T049 [US3] Реализовать `AppBootstrap.start()` в `app/lib/core/bootstrap/app_bootstrap.dart`: открытие БД, проба `SELECT 1` + строка настроек, `Result<AppSession>`, сброс данных с удалением файлов БД и `-wal`/`-shm` (FR-021a, FR-021c)
-- [ ] T050 [US3] Реализовать `ReadOnlySettingsRepository` и `UnavailableDiaryRepository` в `app/lib/data/repositories/read_only_repositories.dart` (зависит от T040)
-- [ ] T051 [US3] Реализовать `StorageRecoveryCubit` и его состояния в `app/lib/presentation/storage_recovery/cubit/` (Freezed sealed, действия `retry`/`resetData`/`continueWithoutSaving`)
-- [ ] T052 [US3] Создать `StorageRecoveryPage` в `app/lib/presentation/storage_recovery/storage_recovery_page.dart`: объяснение причины, три действия, диалог подтверждения с предупреждением о необратимости, системные тема и язык (FR-021b, FR-021b1, FR-021c2, FR-030)
-- [ ] T053 [US3] Создать баннер режима без сохранения в `app/lib/app/shell/widgets/read_only_banner.dart` и встроить в `ShellPage` (FR-021e)
-- [ ] T054 [US3] Реализовать `RootBlocListener` с показом тостов через `FailureToastGate` и `AppFailure.localizedMessage` в `app/lib/app/root_bloc_listener.dart`; подключить редирект на `/storage-error` и подмену репозиториев в DI по `StorageMode` (зависит от T047, T049, T050)
+- [X] T047 [P] [US3] Реализовать `FailureToastGate` (ключ `(runtimeType, code)`, время из `AppClock`) в `app/lib/core/errors/failure_toast_gate.dart`
+- [X] T048 [P] [US3] Объявить `StorageMode` (`persistent | readOnly | unavailable`) в `app/lib/core/bootstrap/storage_mode.dart`
+- [X] T049 [US3] Реализовать `AppBootstrap.start()` в `app/lib/core/bootstrap/app_bootstrap.dart`: открытие БД, проба `SELECT 1` + строка настроек, `Result<AppSession>`, сброс данных с удалением файлов БД и `-wal`/`-shm` (FR-021a, FR-021c)
+- [X] T050 [US3] Реализовать `ReadOnlySettingsRepository` и `UnavailableDiaryRepository` в `app/lib/data/repositories/read_only_repositories.dart` (зависит от T040)
+- [X] T051 [US3] Реализовать `StorageRecoveryCubit` и его состояния в `app/lib/presentation/storage_recovery/cubit/` (Freezed sealed, действия `retry`/`resetData`/`continueWithoutSaving`)
+- [X] T052 [US3] Создать `StorageRecoveryPage` в `app/lib/presentation/storage_recovery/storage_recovery_page.dart`: объяснение причины, три действия, диалог подтверждения с предупреждением о необратимости, системные тема и язык (FR-021b, FR-021b1, FR-021c2, FR-030)
+- [X] T053 [US3] Создать баннер режима без сохранения в `app/lib/app/shell/widgets/read_only_banner.dart` и встроить в `ShellPage` (FR-021e)
+- [X] T054 [US3] Реализовать `RootBlocListener` с показом тостов через `FailureToastGate` и `AppFailure.localizedMessage` в `app/lib/app/root_bloc_listener.dart`; подключить редирект на `/storage-error` и подмену репозиториев в DI по `StorageMode` (зависит от T047, T049, T050)
 
 **Checkpoint**: сбои видны пользователю, приложение не падает и ничего не удаляет молча
 

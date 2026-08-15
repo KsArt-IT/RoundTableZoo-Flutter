@@ -82,5 +82,45 @@
   "@sectionOnboarding": {
     "description": "Placeholder title — Onboarding screen"
   },
+  "storageRecoveryTitle": "Хранилище недоступно",
+  "@storageRecoveryTitle": {
+    "description": "StorageRecoveryPage title"
+  },
+  "storageRecoveryRetry": "Повторить",
+  "@storageRecoveryRetry": {
+    "description": "StorageRecoveryPage retry action"
+  },
+  "storageRecoveryResetData": "Сбросить данные",
+  "@storageRecoveryResetData": {
+    "description": "StorageRecoveryPage reset action"
+  },
+  "storageRecoveryContinueWithoutSaving": "Продолжить без сохранения",
+  "@storageRecoveryContinueWithoutSaving": {
+    "description": "StorageRecoveryPage read-only action"
+  },
+  "storageRecoveryResetConfirmTitle": "Сбросить все данные?",
+  "@storageRecoveryResetConfirmTitle": {
+    "description": "Reset confirmation dialog title"
+  },
+  "storageRecoveryResetConfirmBody": "Это действие необратимо. Все ранее сохранённые записи будут удалены безвозвратно.",
+  "@storageRecoveryResetConfirmBody": {
+    "description": "Reset confirmation dialog body — irreversibility warning (FR-021c2)"
+  },
+  "storageRecoveryResetConfirmConfirm": "Сбросить",
+  "@storageRecoveryResetConfirmConfirm": {
+    "description": "Reset confirmation dialog confirm button"
+  },
+  "storageRecoveryResetConfirmCancel": "Отмена",
+  "@storageRecoveryResetConfirmCancel": {
+    "description": "Reset confirmation dialog cancel button"
+  },
+  "readOnlyBannerText": "Данные недоступны, но не удалены. Изменения не сохраняются.",
+  "@readOnlyBannerText": {
+    "description": "Persistent read-only mode banner explanation (FR-021e)"
+  },
+  "readOnlyBannerRetry": "Повторить",
+  "@readOnlyBannerRetry": {
+    "description": "Persistent read-only mode banner retry action"
+  },
   "end": "---"
 }

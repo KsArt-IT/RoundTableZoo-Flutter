@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:roundtablezoo/app/app_root.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
 import 'package:roundtablezoo/presentation/diary/diary_placeholder_page.dart';
 import 'package:roundtablezoo/presentation/settings/settings_placeholder_page.dart';
 import 'package:roundtablezoo/presentation/table/table_placeholder_page.dart';
+
+import '../support/test_app_root.dart';
 
 // The test harness's platform locale doesn't drive `WidgetsApp`'s locale
 // resolution the way a real device's does, so these tests read whatever
@@ -20,7 +21,7 @@ Finder _bodyText(Type page, String text) =>
 
 void main() {
   testWidgets('starts on the Table section', (tester) async {
-    await tester.pumpWidget(const AppRoot());
+    await tester.pumpWidget(buildTestAppRoot());
     await tester.pumpAndSettle();
 
     final l10n = await _renderedLocalizations(tester);
@@ -30,7 +31,7 @@ void main() {
   });
 
   testWidgets('switches through all three tabs', (tester) async {
-    await tester.pumpWidget(const AppRoot());
+    await tester.pumpWidget(buildTestAppRoot());
     await tester.pumpAndSettle();
 
     final l10n = await _renderedLocalizations(tester);
@@ -51,7 +52,7 @@ void main() {
   testWidgets('branch state survives a tab switch — IndexedStack keeps branches mounted', (
     tester,
   ) async {
-    await tester.pumpWidget(const AppRoot());
+    await tester.pumpWidget(buildTestAppRoot());
     await tester.pumpAndSettle();
 
     final l10n = await _renderedLocalizations(tester);

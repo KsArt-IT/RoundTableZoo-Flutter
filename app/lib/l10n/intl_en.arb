@@ -82,5 +82,45 @@
   "@sectionOnboarding": {
     "description": "Placeholder title — Onboarding screen"
   },
+  "storageRecoveryTitle": "Storage is unavailable",
+  "@storageRecoveryTitle": {
+    "description": "StorageRecoveryPage title"
+  },
+  "storageRecoveryRetry": "Retry",
+  "@storageRecoveryRetry": {
+    "description": "StorageRecoveryPage retry action"
+  },
+  "storageRecoveryResetData": "Reset data",
+  "@storageRecoveryResetData": {
+    "description": "StorageRecoveryPage reset action"
+  },
+  "storageRecoveryContinueWithoutSaving": "Continue without saving",
+  "@storageRecoveryContinueWithoutSaving": {
+    "description": "StorageRecoveryPage read-only action"
+  },
+  "storageRecoveryResetConfirmTitle": "Reset all data?",
+  "@storageRecoveryResetConfirmTitle": {
+    "description": "Reset confirmation dialog title"
+  },
+  "storageRecoveryResetConfirmBody": "This action can't be undone. All previously saved entries will be permanently deleted.",
+  "@storageRecoveryResetConfirmBody": {
+    "description": "Reset confirmation dialog body — irreversibility warning (FR-021c2)"
+  },
+  "storageRecoveryResetConfirmConfirm": "Reset",
+  "@storageRecoveryResetConfirmConfirm": {
+    "description": "Reset confirmation dialog confirm button"
+  },
+  "storageRecoveryResetConfirmCancel": "Cancel",
+  "@storageRecoveryResetConfirmCancel": {
+    "description": "Reset confirmation dialog cancel button"
+  },
+  "readOnlyBannerText": "Your data is inaccessible but not lost. Changes won't be saved.",
+  "@readOnlyBannerText": {
+    "description": "Persistent read-only mode banner explanation (FR-021e)"
+  },
+  "readOnlyBannerRetry": "Retry",
+  "@readOnlyBannerRetry": {
+    "description": "Persistent read-only mode banner retry action"
+  },
   "end": "---"
 }

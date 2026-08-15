@@ -1,11 +1,10 @@
-import 'dart:math';
-
 import 'package:drift/drift.dart';
-import 'package:injectable/injectable.dart';
+import 'package:roundtablezoo/core/utils/install_id_generator.dart';
 import 'package:roundtablezoo/data/datasources/drift/app_database.dart';
 
 /// Thin query layer over the `user_settings` singleton row (`id = 1`).
-@lazySingleton
+/// Registered by `StorageDiSwitch`, not `@lazySingleton` — see
+/// `injection_module.dart`.
 class SettingsLocalDataSource {
   SettingsLocalDataSource(this._db);
 
@@ -20,7 +19,7 @@ class SettingsLocalDataSource {
     await _db
         .into(_db.userSettingsTable)
         .insert(
-          UserSettingsTableCompanion.insert(installId: _generateInstallId()),
+          UserSettingsTableCompanion.insert(installId: generateInstallId()),
           mode: InsertMode.insertOrIgnore,
         );
     return _singleRowQuery.getSingle();
@@ -38,9 +37,4 @@ class SettingsLocalDataSource {
   /// The `id = 1` singleton row — every read goes through this one place.
   SimpleSelectStatement<$UserSettingsTableTable, UserSettingsRow> get _singleRowQuery =>
       _db.select(_db.userSettingsTable)..where((row) => row.id.equals(1));
-
-  static String _generateInstallId() {
-    final random = Random.secure();
-    return List.generate(32, (_) => random.nextInt(16).toRadixString(16)).join();
-  }
 }

@@ -1,10 +1,9 @@
 import 'package:drift/drift.dart';
-import 'package:injectable/injectable.dart';
 import 'package:roundtablezoo/data/datasources/drift/app_database.dart';
 
 /// Thin query layer over `day_entries`/`character_reactions`. No domain
-/// types here — mapping happens in `data/mappers/`.
-@lazySingleton
+/// types here — mapping happens in `data/mappers/`. Registered by
+/// `StorageDiSwitch`, not `@lazySingleton` — see `injection_module.dart`.
 class DiaryLocalDataSource {
   DiaryLocalDataSource(this._db);
 

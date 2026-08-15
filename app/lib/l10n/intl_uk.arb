@@ -82,5 +82,45 @@
   "@sectionOnboarding": {
     "description": "Placeholder title — Onboarding screen"
   },
+  "storageRecoveryTitle": "Сховище недоступне",
+  "@storageRecoveryTitle": {
+    "description": "StorageRecoveryPage title"
+  },
+  "storageRecoveryRetry": "Повторити",
+  "@storageRecoveryRetry": {
+    "description": "StorageRecoveryPage retry action"
+  },
+  "storageRecoveryResetData": "Скинути дані",
+  "@storageRecoveryResetData": {
+    "description": "StorageRecoveryPage reset action"
+  },
+  "storageRecoveryContinueWithoutSaving": "Продовжити без збереження",
+  "@storageRecoveryContinueWithoutSaving": {
+    "description": "StorageRecoveryPage read-only action"
+  },
+  "storageRecoveryResetConfirmTitle": "Скинути всі дані?",
+  "@storageRecoveryResetConfirmTitle": {
+    "description": "Reset confirmation dialog title"
+  },
+  "storageRecoveryResetConfirmBody": "Цю дію неможливо скасувати. Усі раніше збережені записи буде видалено безповоротно.",
+  "@storageRecoveryResetConfirmBody": {
+    "description": "Reset confirmation dialog body — irreversibility warning (FR-021c2)"
+  },
+  "storageRecoveryResetConfirmConfirm": "Скинути",
+  "@storageRecoveryResetConfirmConfirm": {
+    "description": "Reset confirmation dialog confirm button"
+  },
+  "storageRecoveryResetConfirmCancel": "Скасувати",
+  "@storageRecoveryResetConfirmCancel": {
+    "description": "Reset confirmation dialog cancel button"
+  },
+  "readOnlyBannerText": "Дані недоступні, але не втрачені. Зміни не зберігаються.",
+  "@readOnlyBannerText": {
+    "description": "Persistent read-only mode banner explanation (FR-021e)"
+  },
+  "readOnlyBannerRetry": "Повторити",
+  "@readOnlyBannerRetry": {
+    "description": "Persistent read-only mode banner retry action"
+  },
   "end": "---"
 }

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:roundtablezoo/app/shell/widgets/read_only_banner.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
+import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_cubit.dart';
+import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_state.dart';
 
 /// The app shell: bottom navigation over the three branches of
 /// `StatefulShellRoute.indexedStack`. Branch state survives tab switches —
@@ -14,7 +18,17 @@ class ShellPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      body: navigationShell,
+      body: Column(
+        children: [
+          BlocBuilder<StorageRecoveryCubit, StorageRecoveryState>(
+            buildWhen: (previous, current) =>
+                previous is StorageRecoveryReadOnlyAccepted || current is StorageRecoveryReadOnlyAccepted,
+            builder: (context, state) =>
+                state is StorageRecoveryReadOnlyAccepted ? const ReadOnlyBanner() : const SizedBox.shrink(),
+          ),
+          Expanded(child: navigationShell),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: (index) => navigationShell.goBranch(
