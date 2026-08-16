@@ -291,3 +291,9 @@ Structure» в [plan.md](./plan.md).
 **Gate на каждой задаче** (конституция, рабочий процесс п. 5): `flutter analyze` без ошибок и
 `flutter test` полностью зелёный. Задача с падающими тестами не считается выполненной.
 `dart run build_runner build` — после любой правки `@freezed`, `@injectable` или Drift-таблиц.
+
+---
+
+## Phase 9: Convergence
+
+- [X] T075 [P] Написать widget-тест доступности для `StorageRecoveryPage` и `StartupErrorPage` в `app/test/widget/storage_recovery_accessibility_test.dart`: `meetsGuideline(androidTapTargetGuideline)` и `labeledTapTargetGuideline` для обоих экранов, по образцу `app/test/widget/shell_accessibility_test.dart` (SC-010, missing)
