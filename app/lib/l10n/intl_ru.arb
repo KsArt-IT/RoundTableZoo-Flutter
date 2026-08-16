@@ -122,5 +122,17 @@
   "@readOnlyBannerRetry": {
     "description": "Persistent read-only mode banner retry action"
   },
+  "startupErrorTitle": "Не удалось запустить приложение",
+  "@startupErrorTitle": {
+    "description": "StartupErrorPage title — non-storage startup failure (FR-018a)"
+  },
+  "startupErrorBody": "Попробуйте ещё раз. Если ошибка повторяется, перезапустите приложение.",
+  "@startupErrorBody": {
+    "description": "StartupErrorPage explanation"
+  },
+  "startupErrorRetry": "Повторить",
+  "@startupErrorRetry": {
+    "description": "StartupErrorPage retry action"
+  },
   "end": "---"
 }

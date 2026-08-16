@@ -14,5 +14,6 @@ void main() {
     await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
 
     handle.dispose();
+    await disposeTestAppRoot(tester);
   });
 }

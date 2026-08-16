@@ -28,6 +28,8 @@ void main() {
     expect(_bodyText(TablePlaceholderPage, l10n.sectionTable), findsOneWidget);
     expect(find.byType(DiaryPlaceholderPage), findsNothing);
     expect(find.byType(SettingsPlaceholderPage), findsNothing);
+
+    await disposeTestAppRoot(tester);
   });
 
   testWidgets('switches through all three tabs', (tester) async {
@@ -47,6 +49,8 @@ void main() {
     await tester.tap(find.widgetWithText(NavigationDestination, l10n.sectionTable));
     await tester.pumpAndSettle();
     expect(_bodyText(TablePlaceholderPage, l10n.sectionTable), findsOneWidget);
+
+    await disposeTestAppRoot(tester);
   });
 
   testWidgets('branch state survives a tab switch — IndexedStack keeps branches mounted', (
@@ -64,5 +68,7 @@ void main() {
     // route push/pop) backs the shell, so its widget stays in the tree.
     expect(find.byType(TablePlaceholderPage, skipOffstage: false), findsOneWidget);
     expect(find.byType(NavigationBar), findsOneWidget);
+
+    await disposeTestAppRoot(tester);
   });
 }

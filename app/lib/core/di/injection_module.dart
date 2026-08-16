@@ -3,6 +3,7 @@ import 'package:roundtablezoo/core/app_clock/app_clock.dart';
 import 'package:roundtablezoo/core/app_clock/system_app_clock.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
 import 'package:roundtablezoo/domain/services/day_resolver.dart';
+import 'package:roundtablezoo/presentation/app_settings/cubit/app_settings_cubit.dart';
 import 'package:roundtablezoo/presentation/app_settings/cubit/current_day_cubit.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -40,4 +41,9 @@ abstract class InjectionModule {
     dayResolver: dayResolver,
     settingsRepository: settingsRepository,
   );
+
+  /// Same lazy-resolution reasoning as [currentDayCubit] above.
+  @lazySingleton
+  AppSettingsCubit appSettingsCubit(SettingsRepository settingsRepository) =>
+      AppSettingsCubit(settingsRepository: settingsRepository);
 }

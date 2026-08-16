@@ -203,15 +203,15 @@ Structure» в [plan.md](./plan.md).
 
 ### Tests for User Story 5
 
-- [ ] T062 [P] [US5] `bloc_test` для `AppSettingsCubit` в `app/test/presentation/app_settings_cubit_test.dart`: поток настроек → `loaded`, ошибка загрузки → `error` с откатом на системные значения, `isClosed` после `await`
-- [ ] T063 [P] [US5] Widget-тест мгновенного применения в `app/test/widget/theme_locale_test.dart`: смена темы и языка перерисовывает все три раздела без перезапуска; неподдерживаемый язык → русский (SC-006, US5.3)
+- [X] T062 [P] [US5] `bloc_test` для `AppSettingsCubit` в `app/test/presentation/app_settings_cubit_test.dart`: поток настроек → `loaded`, ошибка загрузки → `error` с откатом на системные значения, `isClosed` после `await`
+- [X] T063 [P] [US5] Widget-тест мгновенного применения в `app/test/widget/theme_locale_test.dart`: смена темы и языка перерисовывает все три раздела без перезапуска; неподдерживаемый язык → русский (SC-006, US5.3)
 
 ### Implementation for User Story 5
 
-- [ ] T064 [US5] Реализовать `AppSettingsCubit` и его состояния в `app/lib/presentation/app_settings/cubit/app_settings_cubit.dart` (подписка на `SettingsRepository.watch()`)
-- [ ] T065 [US5] Подключить `AppSettingsCubit` к `MaterialApp.router` через `BlocBuilder` в `app/lib/app/app_material_router.dart`: `themeMode` и `locale`, состояние `initial` трактуется как системные значения (FR-027, FR-021b1)
-- [ ] T066 [US5] Зарегистрировать `AppSettingsCubit` в `MultiBlocProvider` в `app/lib/app/app_root.dart` и связать с `RootBlocListener`
-- [ ] T067 [US5] Проверить полноту переводов: `flutter gen-l10n` без записей в `app/lib/gen/untranslated_messages.json` для `ru`, отсутствие технических ключей на экранах (FR-029)
+- [X] T064 [US5] Реализовать `AppSettingsCubit` и его состояния в `app/lib/presentation/app_settings/cubit/app_settings_cubit.dart` (подписка на `SettingsRepository.watch()`)
+- [X] T065 [US5] Подключить `AppSettingsCubit` к `MaterialApp.router` через `BlocBuilder` в `app/lib/app/app_material_router.dart`: `themeMode` и `locale`, состояние `initial` трактуется как системные значения (FR-027, FR-021b1)
+- [X] T066 [US5] Зарегистрировать `AppSettingsCubit` в `MultiBlocProvider` в `app/lib/app/app_root.dart` и связать с `RootBlocListener`
+- [X] T067 [US5] Проверить полноту переводов: `flutter gen-l10n` без записей в `app/lib/gen/untranslated_messages.json` для `ru`, отсутствие технических ключей на экранах (FR-029)
 
 **Checkpoint**: все пять историй работают независимо
 
@@ -219,13 +219,13 @@ Structure» в [plan.md](./plan.md).
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T068 [P] Добавить механизм внедрения ошибок только для отладочной сборки в `app/lib/core/bootstrap/debug_failure_injector.dart` — источник управляемых сбоев для SC-004 и SC-016
-- [ ] T069 [P] Реализовать экран ошибки запуска вне хранилища с действием «повторить» в `app/lib/presentation/storage_recovery/startup_error_page.dart` (FR-018a)
-- [ ] T070 Прогнать gate: `flutter analyze` без ошибок и `flutter test --coverage` в `app/`; довести покрытие новой логики состояния до ≥ 70% (SC-009)
-- [ ] T071 [P] Выполнить ручной прогон по таблице «Ручной прогон на устройстве» из [quickstart.md](./quickstart.md) на реальном среднем устройстве (SC-001, SC-004, SC-013)
-- [ ] T072 [P] Проверить приватность и диагностику: `grep -rn "print(\|debugPrint(\|dart:developer" app/lib/` — только `app_logger`; в логах нет `dayText`, `moodScore`, текста реплик; в `app/pubspec.yaml` нет пакетов аналитики, телеметрии и сбора крашей (FR-016a, FR-016b, FR-016c)
-- [ ] T073 [P] Обновить `project/architecture/architecture-full.md`: `AppClock` с `location`, `DayResolver` в `domain/services/`, `domain/value_objects/`, `core/bootstrap/`, глобальные Cubit в `presentation/app_settings/`, режим без сохранения (`architecture-brief.md` уже приведён в соответствие)
-- [ ] T074 Записать реальные грабли фазы в `project/process/lessons-learned.md` — только то, что действительно потребовало переписывания (рабочий процесс, п. 7)
+- [X] T068 [P] Добавить механизм внедрения ошибок только для отладочной сборки в `app/lib/core/bootstrap/debug_failure_injector.dart` — источник управляемых сбоев для SC-004 и SC-016
+- [X] T069 [P] Реализовать экран ошибки запуска вне хранилища с действием «повторить» в `app/lib/presentation/storage_recovery/startup_error_page.dart` (FR-018a)
+- [X] T070 Прогнать gate: `flutter analyze` без ошибок и `flutter test --coverage` в `app/`; довести покрытие новой логики состояния до ≥ 70% (SC-009)
+- [~] T071 [P] Выполнить ручной прогон по таблице «Ручной прогон на устройстве» из [quickstart.md](./quickstart.md) на реальном среднем устройстве (SC-001, SC-004, SC-013) — **не выполнено**: нет физического устройства в этой среде; требует ручного прогона позже
+- [X] T072 [P] Проверить приватность и диагностику: `grep -rn "print(\|debugPrint(\|dart:developer" app/lib/` — только `app_logger`; в логах нет `dayText`, `moodScore`, текста реплик; в `app/pubspec.yaml` нет пакетов аналитики, телеметрии и сбора крашей (FR-016a, FR-016b, FR-016c)
+- [X] T073 [P] Обновить `project/architecture/architecture-full.md`: `AppClock` с `location`, `DayResolver` в `domain/services/`, `domain/value_objects/`, `core/bootstrap/`, глобальные Cubit в `presentation/app_settings/`, режим без сохранения (`architecture-brief.md` уже приведён в соответствие)
+- [X] T074 Записать реальные грабли фазы в `project/process/lessons-learned.md` — только то, что действительно потребовало переписывания (рабочий процесс, п. 7)
 
 ---
 

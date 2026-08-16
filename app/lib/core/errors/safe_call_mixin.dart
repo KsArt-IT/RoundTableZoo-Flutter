@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:roundtablezoo/core/bootstrap/debug_failure_injector.dart';
 import 'package:roundtablezoo/core/errors/result.dart';
 import 'package:roundtablezoo/core/utils/app_logger.dart';
 
@@ -9,6 +10,7 @@ mixin SafeCallMixin {
     Future<T> Function() invoke,
   ) async {
     try {
+      DebugFailureInjector.maybeThrow();
       return .success(await invoke());
     } on Object catch (error, stackTrace) {
       if (error is Error) {
@@ -30,6 +32,7 @@ mixin SafeCallMixin {
     T Function() invoke,
   ) {
     try {
+      DebugFailureInjector.maybeThrow();
       return Result.success(invoke());
     } on Object catch (error, stackTrace) {
       if (error is Error) {

@@ -7,12 +7,15 @@ import 'package:roundtablezoo/core/di/storage_di_switch.dart';
 import 'package:roundtablezoo/core/errors/app_failure.dart';
 import 'package:roundtablezoo/core/errors/failure_toast_gate.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
+import 'package:roundtablezoo/presentation/app_settings/cubit/app_settings_cubit.dart';
+import 'package:roundtablezoo/presentation/app_settings/cubit/app_settings_state.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_cubit.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_state.dart';
 import 'package:toastification/toastification.dart';
 
 /// The single place that reacts to global Cubit state: shows a deduplicated
-/// toast for `*State.error(failure)` (FR-021, FR-021f) and swaps the
+/// toast for `*State.error(failure)` (FR-021, FR-021f) — from
+/// `StorageRecoveryCubit` or `AppSettingsCubit` — and swaps the
 /// storage-backed DI graph when `StorageRecoveryCubit` reaches
 /// `recovered`/`readOnlyAccepted` (FR-021c1, FR-021e1). Must sit inside the
 /// routed tree (`MaterialApp.router`'s `builder`) so `GoRouterState.of` and
@@ -24,8 +27,13 @@ class RootBlocListener extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<StorageRecoveryCubit, StorageRecoveryState>(
-      listener: _handleStorageRecoveryState,
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<StorageRecoveryCubit, StorageRecoveryState>(
+          listener: _handleStorageRecoveryState,
+        ),
+        BlocListener<AppSettingsCubit, AppSettingsState>(listener: _handleAppSettingsState),
+      ],
       child: child,
     );
   }
@@ -41,6 +49,10 @@ class RootBlocListener extends StatelessWidget {
       case StorageRecoveryIdle() || StorageRecoveryWorking():
         break;
     }
+  }
+
+  void _handleAppSettingsState(BuildContext context, AppSettingsState state) {
+    if (state case AppSettingsError(:final failure)) _maybeShowToast(context, failure);
   }
 
   void _maybeShowToast(BuildContext context, AppFailure failure) {

@@ -9,6 +9,7 @@ import 'package:roundtablezoo/app/router/app_router.dart';
 import 'package:roundtablezoo/core/app_clock/app_clock.dart';
 import 'package:roundtablezoo/core/di/injection.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
+import 'package:roundtablezoo/presentation/app_settings/cubit/app_settings_cubit.dart';
 import 'package:roundtablezoo/presentation/app_settings/cubit/current_day_cubit.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_cubit.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -24,8 +25,8 @@ import 'package:timezone/timezone.dart' as tz;
 /// then), so its `SettingsRepository` dependency is always ready by the
 /// time it's needed.
 ///
-/// Further global `BlocProvider`s (theme/locale settings) join here in a
-/// later phase (US5).
+/// `AppSettingsCubit` is provided the same lazy way, feeding
+/// `AppMaterialRouter`'s `themeMode`/`locale` (US5).
 class AppRoot extends StatelessWidget {
   const AppRoot({required this.storageRecoveryCubit, super.key});
 
@@ -44,6 +45,7 @@ class AppRoot extends StatelessWidget {
         // this cubit, which would leave the cached getIt<CurrentDayCubit>()
         // singleton closed for the rest of the test run.
         BlocProvider(create: (_) => getIt<CurrentDayCubit>()),
+        BlocProvider(create: (_) => getIt<AppSettingsCubit>()),
       ],
       child: _RoutedApp(storageRecoveryCubit: storageRecoveryCubit),
     );
