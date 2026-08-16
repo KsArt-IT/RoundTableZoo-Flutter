@@ -134,5 +134,82 @@
   "@startupErrorRetry": {
     "description": "StartupErrorPage retry action"
   },
+  "settingsAppearance": "Appearance",
+  "@settingsAppearance": {
+    "description": "SettingsPage — theme section title"
+  },
+  "settingsThemeLight": "Light",
+  "@settingsThemeLight": {
+    "description": "SettingsPage — light theme option"
+  },
+  "settingsThemeDark": "Dark",
+  "@settingsThemeDark": {
+    "description": "SettingsPage — dark theme option"
+  },
+  "settingsThemeSystem": "System",
+  "@settingsThemeSystem": {
+    "description": "SettingsPage — system theme option"
+  },
+  "settingsLanguage": "Language",
+  "@settingsLanguage": {
+    "description": "SettingsPage — language section title"
+  },
+  "settingsLanguageSystem": "System",
+  "@settingsLanguageSystem": {
+    "description": "SettingsPage — system language option"
+  },
+  "settingsReminder": "Reminder",
+  "@settingsReminder": {
+    "description": "SettingsPage — reminder section title"
+  },
+  "settingsReminderEnabled": "Remind me to check in",
+  "@settingsReminderEnabled": {
+    "description": "SettingsPage — reminder toggle label"
+  },
+  "settingsReminderTime": "Reminder time",
+  "@settingsReminderTime": {
+    "description": "SettingsPage — reminder time picker label"
+  },
+  "settingsReminderPermissionDenied": "Notifications won't arrive until permission is granted in system settings. If a general app list opens instead, look for “{appName}”.",
+  "@settingsReminderPermissionDenied": {
+    "description": "SettingsPage — notification permission denied warning",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsOpenSystemSettings": "Open settings",
+  "@settingsOpenSystemSettings": {
+    "description": "SettingsPage — open system notification settings action"
+  },
+  "reminderPermissionRevokedToast": "Reminders won't arrive: notification permission is off",
+  "@reminderPermissionRevokedToast": {
+    "description": "One-shot startup toast — reminder enabled but permission missing (FR-021b)"
+  },
+  "settingsSound": "Voice sound",
+  "@settingsSound": {
+    "description": "SettingsPage — character voicing sound toggle"
+  },
+  "settingsSoundHint": "Doesn't affect notification sound",
+  "@settingsSoundHint": {
+    "description": "SettingsPage — sound toggle hint (FR-016c)"
+  },
+  "reminderNotificationTitle": "Animals at the table",
+  "@reminderNotificationTitle": {
+    "description": "Reminder notification title — neutral wording (FR-016a)"
+  },
+  "reminderNotificationBody": "They're waiting for you at the round table",
+  "@reminderNotificationBody": {
+    "description": "Reminder notification body — neutral wording (FR-016a)"
+  },
+  "notificationChannelName": "Reminders",
+  "@notificationChannelName": {
+    "description": "Android notification channel name — neutral wording (FR-016b)"
+  },
+  "notificationChannelDescription": "A daily reminder to open the app",
+  "@notificationChannelDescription": {
+    "description": "Android notification channel description — neutral wording (FR-016b)"
+  },
   "end": "---"
 }

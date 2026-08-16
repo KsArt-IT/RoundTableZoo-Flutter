@@ -13,4 +13,12 @@ abstract final class AppConstants {
 
   /// Allowed drift between a day-rollover tick and the boundary it targets.
   static const Duration dayRolloverTolerance = Duration(seconds: 60);
+
+  /// How many days ahead the sliding window of one-shot reminder
+  /// notifications is planned (FR-015a).
+  static const int reminderHorizonDays = 7;
+
+  /// Maximum allowed delivery delay past the scheduled reminder time —
+  /// `AndroidScheduleMode.inexactAllowWhileIdle` never fires early (FR-023).
+  static const Duration reminderDeliveryTolerance = Duration(minutes: 60);
 }

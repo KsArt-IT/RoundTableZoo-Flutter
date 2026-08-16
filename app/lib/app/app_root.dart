@@ -6,8 +6,11 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:go_router/go_router.dart';
 import 'package:roundtablezoo/app/app_material_router.dart';
 import 'package:roundtablezoo/app/router/app_router.dart';
+import 'package:roundtablezoo/app/router/app_routes.dart';
 import 'package:roundtablezoo/core/app_clock/app_clock.dart';
 import 'package:roundtablezoo/core/di/injection.dart';
+import 'package:roundtablezoo/core/notifications/notification_launch_queue.dart';
+import 'package:roundtablezoo/core/notifications/reminder_coordinator.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
 import 'package:roundtablezoo/presentation/app_settings/cubit/app_settings_cubit.dart';
 import 'package:roundtablezoo/presentation/app_settings/cubit/current_day_cubit.dart';
@@ -28,9 +31,13 @@ import 'package:timezone/timezone.dart' as tz;
 /// `AppSettingsCubit` is provided the same lazy way, feeding
 /// `AppMaterialRouter`'s `themeMode`/`locale` (US5).
 class AppRoot extends StatelessWidget {
-  const AppRoot({required this.storageRecoveryCubit, super.key});
+  const AppRoot({required this.storageRecoveryCubit, this.remindersMuted = false, super.key});
 
   final StorageRecoveryCubit storageRecoveryCubit;
+
+  /// FR-021b: reminder enabled but permission not granted, computed once at
+  /// startup (`main.dart`) before this widget is built.
+  final bool remindersMuted;
 
   @override
   Widget build(BuildContext context) {
@@ -47,15 +54,16 @@ class AppRoot extends StatelessWidget {
         BlocProvider(create: (_) => getIt<CurrentDayCubit>()),
         BlocProvider(create: (_) => getIt<AppSettingsCubit>()),
       ],
-      child: _RoutedApp(storageRecoveryCubit: storageRecoveryCubit),
+      child: _RoutedApp(storageRecoveryCubit: storageRecoveryCubit, remindersMuted: remindersMuted),
     );
   }
 }
 
 class _RoutedApp extends StatefulWidget {
-  const _RoutedApp({required this.storageRecoveryCubit});
+  const _RoutedApp({required this.storageRecoveryCubit, required this.remindersMuted});
 
   final StorageRecoveryCubit storageRecoveryCubit;
+  final bool remindersMuted;
 
   @override
   State<_RoutedApp> createState() => _RoutedAppState();
@@ -69,11 +77,17 @@ class _RoutedAppState extends State<_RoutedApp> with WidgetsBindingObserver {
     storageRecoveryCubit: widget.storageRecoveryCubit,
     refreshListenable: _refreshListenable,
   );
+  StreamSubscription<String>? _notificationTapSubscription;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Warm path only (FR-017): a tap while the app is alive. Cold start
+    // already lands on `/table` via `initialLocation` (research.md, R6).
+    _notificationTapSubscription = getIt<NotificationLaunchQueue>().taps.listen(
+      (_) => _router.go(AppRoutes.tablePath),
+    );
   }
 
   @override
@@ -92,22 +106,27 @@ class _RoutedAppState extends State<_RoutedApp> with WidgetsBindingObserver {
       clock.updateLocation(systemLocation);
     }
 
-    // Guards against building CurrentDayCubit (and its SettingsRepository
-    // dependency) before storage is usable — resuming while still stuck on
-    // /storage-error must not crash.
+    // Guards against building CurrentDayCubit/ReminderCoordinator (and
+    // their SettingsRepository dependency) before storage is usable —
+    // resuming while still stuck on /storage-error must not crash.
     if (getIt.isRegistered<SettingsRepository>()) {
       getIt<CurrentDayCubit>().refresh();
+      // Must run after `updateLocation` above — otherwise the reminder
+      // plan would be computed in the stale timezone (FR-025).
+      unawaited(getIt<ReminderCoordinator>().reconcile());
     }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    unawaited(_notificationTapSubscription?.cancel());
     _router.dispose();
     _refreshListenable.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) => AppMaterialRouter(router: _router);
+  Widget build(BuildContext context) =>
+      AppMaterialRouter(router: _router, remindersMuted: widget.remindersMuted);
 }

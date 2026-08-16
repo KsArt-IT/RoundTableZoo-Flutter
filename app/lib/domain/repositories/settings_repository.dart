@@ -2,6 +2,7 @@ import 'package:roundtablezoo/core/errors/result.dart';
 import 'package:roundtablezoo/domain/entities/user_settings.dart';
 import 'package:roundtablezoo/domain/value_objects/day_start_hour.dart';
 import 'package:roundtablezoo/domain/value_objects/locale_preference.dart';
+import 'package:roundtablezoo/domain/value_objects/reminder_time.dart';
 import 'package:roundtablezoo/domain/value_objects/theme_preference.dart';
 
 /// Singleton settings row. See contracts/repositories.md.
@@ -24,4 +25,8 @@ abstract interface class SettingsRepository {
   Future<Result<UserSettings>> updateEnabledCharacters(List<String> characterIds);
 
   Future<Result<UserSettings>> markOnboardingSeen();
+
+  Future<Result<UserSettings>> updateReminderEnabled({required bool value});
+
+  Future<Result<UserSettings>> updateReminderTime(ReminderTime value);
 }

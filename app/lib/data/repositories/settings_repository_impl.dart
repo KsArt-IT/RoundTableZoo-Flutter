@@ -8,6 +8,7 @@ import 'package:roundtablezoo/domain/entities/user_settings.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
 import 'package:roundtablezoo/domain/value_objects/day_start_hour.dart';
 import 'package:roundtablezoo/domain/value_objects/locale_preference.dart';
+import 'package:roundtablezoo/domain/value_objects/reminder_time.dart';
 import 'package:roundtablezoo/domain/value_objects/theme_preference.dart';
 import 'package:roundtablezoo/domain/value_objects/validators.dart';
 
@@ -71,6 +72,16 @@ class SettingsRepositoryImpl with SafeCallMixin implements SettingsRepository {
   @override
   Future<Result<UserSettings>> markOnboardingSeen() => _update(
     const UserSettingsTableCompanion(hasSeenOnboarding: Value(true)),
+  );
+
+  @override
+  Future<Result<UserSettings>> updateReminderEnabled({required bool value}) => _update(
+    UserSettingsTableCompanion(reminderEnabled: Value(value)),
+  );
+
+  @override
+  Future<Result<UserSettings>> updateReminderTime(ReminderTime value) => _update(
+    UserSettingsTableCompanion(reminderTime: Value(value.toStorageString())),
   );
 
   /// Ensures the row exists (first run), applies [companion], and returns

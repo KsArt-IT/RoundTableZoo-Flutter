@@ -39,6 +39,10 @@ class DiaryLocalDataSource {
   Future<int> deleteEntry(int id) =>
       (_db.delete(_db.dayEntries)..where((row) => row.id.equals(id))).go();
 
+  /// Emits on any change to `day_entries` — the value carries no data, only
+  /// the fact that something changed (`ReminderCoordinator`).
+  Stream<void> watchEntriesChanged() => _db.select(_db.dayEntries).watch().map((_) {});
+
   Future<CharacterReactionRow> insertReaction(CharacterReactionsCompanion companion) =>
       _db.into(_db.characterReactions).insertReturning(companion);
 

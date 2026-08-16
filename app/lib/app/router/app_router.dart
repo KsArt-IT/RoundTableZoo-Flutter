@@ -6,7 +6,7 @@ import 'package:roundtablezoo/app/router/app_routes.dart';
 import 'package:roundtablezoo/app/shell/shell_page.dart';
 import 'package:roundtablezoo/presentation/diary/diary_placeholder_page.dart';
 import 'package:roundtablezoo/presentation/onboarding/onboarding_placeholder_page.dart';
-import 'package:roundtablezoo/presentation/settings/settings_placeholder_page.dart';
+import 'package:roundtablezoo/presentation/settings/settings_page.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_cubit.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_state.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/storage_recovery_page.dart';
@@ -70,7 +70,7 @@ GoRouter buildAppRouter({
             GoRoute(
               path: AppRoutes.settingsPath,
               name: AppRoutes.settingsName,
-              builder: (context, state) => const SettingsPlaceholderPage(),
+              builder: (context, state) => const SettingsPage(),
             ),
           ],
         ),

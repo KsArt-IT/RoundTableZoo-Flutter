@@ -124,6 +124,9 @@ class DiaryRepositoryImpl with SafeCallMixin implements DiaryRepository {
     return rows.map((row) => row.toEntity()).toList();
   });
 
+  @override
+  Stream<void> watchEntriesChanged() => _dataSource.watchEntriesChanged();
+
   Future<List<DayEntry>> _entriesInDay(DayKey key) async {
     final settingsRow = await _settingsDataSource.loadOrCreate();
     final bounds = _boundsFor(key, settingsRow);

@@ -5,7 +5,7 @@ import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
 import 'package:roundtablezoo/domain/value_objects/locale_preference.dart';
 import 'package:roundtablezoo/domain/value_objects/theme_preference.dart';
 import 'package:roundtablezoo/presentation/diary/diary_placeholder_page.dart';
-import 'package:roundtablezoo/presentation/settings/settings_placeholder_page.dart';
+import 'package:roundtablezoo/presentation/settings/settings_page.dart';
 import 'package:roundtablezoo/presentation/table/table_placeholder_page.dart';
 
 import '../support/test_app_root.dart';
@@ -50,7 +50,7 @@ void main() {
 
     await tester.tap(find.widgetWithText(NavigationDestination, _ukSettings));
     await tester.pumpAndSettle();
-    expect(_bodyText(SettingsPlaceholderPage, _ukSettings), findsOneWidget);
+    expect(_bodyText(SettingsPage, _ukSettings), findsOneWidget);
 
     await disposeTestAppRoot(tester);
   });

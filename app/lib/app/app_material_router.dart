@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:roundtablezoo/app/reminders_muted_toast.dart';
 import 'package:roundtablezoo/app/root_bloc_listener.dart';
 import 'package:roundtablezoo/core/theme/app_theme.dart';
 import 'package:roundtablezoo/core/utils/locale_resolution.dart';
@@ -14,9 +15,13 @@ import 'package:toastification/toastification.dart';
 /// `error` states resolve to system theme and system/RU locale, same as a
 /// `loaded` state with `system` preferences (FR-027, FR-029, US5.3).
 class AppMaterialRouter extends StatelessWidget {
-  const AppMaterialRouter({required this.router, super.key});
+  const AppMaterialRouter({required this.router, this.remindersMuted = false, super.key});
 
   final GoRouter router;
+
+  /// FR-021b: reminder enabled but permission not granted, computed once at
+  /// startup (`main.dart`).
+  final bool remindersMuted;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +47,10 @@ class AppMaterialRouter extends StatelessWidget {
             localeResolutionCallback: resolveDeviceLocale,
             // Inside the routed tree so RootBlocListener can read
             // GoRouterState/AppLocalizations (app/root_bloc_listener.dart).
-            builder: (context, child) => RootBlocListener(child: child ?? const SizedBox.shrink()),
+            builder: (context, child) => RemindersMutedToast(
+              remindersMuted: remindersMuted,
+              child: RootBlocListener(child: child ?? const SizedBox.shrink()),
+            ),
             routerConfig: router,
           ),
         );

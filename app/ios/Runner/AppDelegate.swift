@@ -15,6 +15,11 @@ import UIKit
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
 
+    // Required so a reminder notification's banner still shows while the
+    // app is in the foreground (FR-016d) — without a registered delegate,
+    // UNUserNotificationCenter suppresses it silently.
+    UNUserNotificationCenter.current().delegate = self
+
     guard let messenger = engineBridge.pluginRegistry as? FlutterBinaryMessenger else {
       return
     }
@@ -44,5 +49,21 @@ import UIKit
     } catch {
       return false
     }
+  }
+
+  /// Foreground presentation for the reminder notification (FR-016d) —
+  /// banner and sound must show even while the app is open, matching
+  /// Android's default channel behavior (FR-025a). `FlutterAppDelegate`
+  /// already conforms to `UNUserNotificationCenterDelegate` and provides a
+  /// default implementation, so this is an `override`, not a fresh
+  /// conformance — a separate `extension AppDelegate:
+  /// UNUserNotificationCenterDelegate` fails to build ("redundant
+  /// conformance").
+  override func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification,
+    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+  ) {
+    completionHandler([.banner, .list, .sound])
   }
 }

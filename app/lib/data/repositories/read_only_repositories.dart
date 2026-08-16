@@ -63,6 +63,13 @@ class ReadOnlySettingsRepository implements SettingsRepository {
 
   @override
   Future<Result<UserSettings>> markOnboardingSeen() async => _storageReadOnly;
+
+  @override
+  Future<Result<UserSettings>> updateReminderEnabled({required bool value}) async =>
+      _storageReadOnly;
+
+  @override
+  Future<Result<UserSettings>> updateReminderTime(ReminderTime value) async => _storageReadOnly;
 }
 
 /// Stands in for [DiaryRepository] while `StorageMode.readOnly` — reads
@@ -95,4 +102,7 @@ class UnavailableDiaryRepository implements DiaryRepository {
   @override
   Future<Result<List<CharacterReaction>>> reactionsFor(int dayEntryId) async =>
       const Result.success([]);
+
+  @override
+  Stream<void> watchEntriesChanged() => const Stream.empty();
 }

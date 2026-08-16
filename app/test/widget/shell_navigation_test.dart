@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
 import 'package:roundtablezoo/presentation/diary/diary_placeholder_page.dart';
-import 'package:roundtablezoo/presentation/settings/settings_placeholder_page.dart';
+import 'package:roundtablezoo/presentation/settings/settings_page.dart';
 import 'package:roundtablezoo/presentation/table/table_placeholder_page.dart';
 
 import '../support/test_app_root.dart';
@@ -27,7 +27,7 @@ void main() {
     final l10n = await _renderedLocalizations(tester);
     expect(_bodyText(TablePlaceholderPage, l10n.sectionTable), findsOneWidget);
     expect(find.byType(DiaryPlaceholderPage), findsNothing);
-    expect(find.byType(SettingsPlaceholderPage), findsNothing);
+    expect(find.byType(SettingsPage), findsNothing);
 
     await disposeTestAppRoot(tester);
   });
@@ -44,7 +44,7 @@ void main() {
 
     await tester.tap(find.widgetWithText(NavigationDestination, l10n.sectionSettings));
     await tester.pumpAndSettle();
-    expect(_bodyText(SettingsPlaceholderPage, l10n.sectionSettings), findsOneWidget);
+    expect(_bodyText(SettingsPage, l10n.sectionSettings), findsOneWidget);
 
     await tester.tap(find.widgetWithText(NavigationDestination, l10n.sectionTable));
     await tester.pumpAndSettle();

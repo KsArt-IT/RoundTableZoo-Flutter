@@ -3,15 +3,23 @@ import 'dart:async';
 import 'package:drift/native.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:roundtablezoo/app/app_root.dart';
 import 'package:roundtablezoo/core/app_clock/app_clock.dart';
 import 'package:roundtablezoo/core/di/injection.dart';
 import 'package:roundtablezoo/core/di/storage_di_switch.dart';
+import 'package:roundtablezoo/core/errors/result.dart';
+import 'package:roundtablezoo/core/notifications/notification_permission_status.dart';
+import 'package:roundtablezoo/core/notifications/notification_scheduler.dart';
 import 'package:roundtablezoo/data/datasources/drift/app_database.dart';
+import 'package:roundtablezoo/domain/entities/day_key.dart';
+import 'package:roundtablezoo/domain/entities/reminder_occurrence.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
 import 'package:roundtablezoo/presentation/app_settings/cubit/app_settings_cubit.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_cubit.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_state.dart';
+
+import 'mocks.dart';
 
 /// An [AppRoot] whose `StorageRecoveryCubit` already starts `recovered` —
 /// widget tests that exercise the shell shouldn't have to know about the
@@ -28,8 +36,9 @@ import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recove
 /// by [AppClock] presence) — `AppMaterialRouter` reads `AppSettingsCubit`
 /// unconditionally via `BlocBuilder`, so it must already be resolvable by
 /// the time `AppRoot` builds.
-Widget buildTestAppRoot({StorageRecoveryState? initialState}) {
+Widget buildTestAppRoot({StorageRecoveryState? initialState, bool remindersMuted = false}) {
   if (!getIt.isRegistered<AppClock>()) configureDependencies();
+  _useFakeNotificationScheduler();
 
   final database = AppDatabase(NativeDatabase.memory());
   final resolvedInitialState = initialState ?? StorageRecoveryState.recovered(database: database);
@@ -52,6 +61,7 @@ Widget buildTestAppRoot({StorageRecoveryState? initialState}) {
       createDatabase: () => AppDatabase(NativeDatabase.memory()),
       initialState: resolvedInitialState,
     ),
+    remindersMuted: remindersMuted,
   );
 }
 
@@ -68,4 +78,33 @@ Widget buildTestAppRoot({StorageRecoveryState? initialState}) {
 Future<void> disposeTestAppRoot(WidgetTester tester) async {
   await tester.pumpWidget(const SizedBox());
   await tester.pump(const Duration());
+}
+
+/// `NotificationScheduler`'s real implementation talks to the
+/// `flutter_local_notifications` platform channel, which has no responder
+/// under `flutter test` — any widget test that reaches `/settings` would
+/// otherwise throw `MissingPluginException`. A fresh stubbed mock per call
+/// keeps widget tests hermetic and avoids one test's stubbing leaking into
+/// the next (mirrors the `AppSettingsCubit` freshening above).
+void _useFakeNotificationScheduler() {
+  registerFallbackValue(ReminderOccurrence(day: DayKey.fromDateTime(DateTime(2026)), scheduledAtUtc: DateTime(2026)));
+
+  if (getIt.isRegistered<NotificationScheduler>()) {
+    unawaited(Future.value(getIt.unregister<NotificationScheduler>()));
+  }
+  final scheduler = MockNotificationScheduler();
+  when(() => scheduler.initialize()).thenAnswer((_) async => const Result.success(null));
+  when(
+    () => scheduler.permissionStatus(),
+  ).thenAnswer((_) async => NotificationPermissionStatus.unknown);
+  when(
+    () => scheduler.requestPermission(),
+  ).thenAnswer((_) async => NotificationPermissionStatus.granted);
+  when(() => scheduler.openSystemSettings()).thenAnswer((_) async => const Result.success(null));
+  when(() => scheduler.pendingIds()).thenAnswer((_) async => const Result.success(<int>{}));
+  when(
+    () => scheduler.schedule(any(), title: any(named: 'title'), body: any(named: 'body')),
+  ).thenAnswer((_) async => const Result.success(null));
+  when(() => scheduler.cancel(any())).thenAnswer((_) async => const Result.success(null));
+  getIt.registerLazySingleton<NotificationScheduler>(() => scheduler);
 }

@@ -134,5 +134,82 @@
   "@startupErrorRetry": {
     "description": "StartupErrorPage retry action"
   },
+  "settingsAppearance": "Оформлення",
+  "@settingsAppearance": {
+    "description": "SettingsPage — theme section title"
+  },
+  "settingsThemeLight": "Світла",
+  "@settingsThemeLight": {
+    "description": "SettingsPage — light theme option"
+  },
+  "settingsThemeDark": "Темна",
+  "@settingsThemeDark": {
+    "description": "SettingsPage — dark theme option"
+  },
+  "settingsThemeSystem": "Системна",
+  "@settingsThemeSystem": {
+    "description": "SettingsPage — system theme option"
+  },
+  "settingsLanguage": "Мова",
+  "@settingsLanguage": {
+    "description": "SettingsPage — language section title"
+  },
+  "settingsLanguageSystem": "Системна",
+  "@settingsLanguageSystem": {
+    "description": "SettingsPage — system language option"
+  },
+  "settingsReminder": "Нагадування",
+  "@settingsReminder": {
+    "description": "SettingsPage — reminder section title"
+  },
+  "settingsReminderEnabled": "Нагадувати відзначити настрій",
+  "@settingsReminderEnabled": {
+    "description": "SettingsPage — reminder toggle label"
+  },
+  "settingsReminderTime": "Час нагадування",
+  "@settingsReminderTime": {
+    "description": "SettingsPage — reminder time picker label"
+  },
+  "settingsReminderPermissionDenied": "Сповіщення не надійдуть, поки дозвіл не надано в системних налаштуваннях. Якщо відкриється загальний список застосунків — знайдіть «{appName}».",
+  "@settingsReminderPermissionDenied": {
+    "description": "SettingsPage — notification permission denied warning",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsOpenSystemSettings": "Відкрити налаштування",
+  "@settingsOpenSystemSettings": {
+    "description": "SettingsPage — open system notification settings action"
+  },
+  "reminderPermissionRevokedToast": "Нагадування не надійдуть: дозвіл на сповіщення вимкнено",
+  "@reminderPermissionRevokedToast": {
+    "description": "One-shot startup toast — reminder enabled but permission missing (FR-021b)"
+  },
+  "settingsSound": "Звук реплік",
+  "@settingsSound": {
+    "description": "SettingsPage — character voicing sound toggle"
+  },
+  "settingsSoundHint": "Не впливає на звук сповіщень",
+  "@settingsSoundHint": {
+    "description": "SettingsPage — sound toggle hint (FR-016c)"
+  },
+  "reminderNotificationTitle": "Звірі за столом",
+  "@reminderNotificationTitle": {
+    "description": "Reminder notification title — neutral wording (FR-016a)"
+  },
+  "reminderNotificationBody": "Тебе чекають за круглим столом",
+  "@reminderNotificationBody": {
+    "description": "Reminder notification body — neutral wording (FR-016a)"
+  },
+  "notificationChannelName": "Нагадування",
+  "@notificationChannelName": {
+    "description": "Android notification channel name — neutral wording (FR-016b)"
+  },
+  "notificationChannelDescription": "Щоденне нагадування відкрити застосунок",
+  "@notificationChannelDescription": {
+    "description": "Android notification channel description — neutral wording (FR-016b)"
+  },
   "end": "---"
 }

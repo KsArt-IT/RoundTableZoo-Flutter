@@ -27,4 +27,9 @@ abstract interface class DiaryRepository {
   Future<Result<CharacterReaction>> addReaction(CharacterReaction reaction);
 
   Future<Result<List<CharacterReaction>>> reactionsFor(int dayEntryId);
+
+  /// Emits on any change to `day_entries`. Value carries no data — the sole
+  /// consumer, `ReminderCoordinator`, only needs the fact of a change
+  /// (FR-014a).
+  Stream<void> watchEntriesChanged();
 }
