@@ -55,6 +55,8 @@ dependencies:
   crypto: ^3.0.7
   # Animations
   lottie: 3.5.1
+  dio: ^5.11.0
+  share_plus: ^13.3.0
 
 dev_dependencies:
   flutter_test:
@@ -90,6 +92,7 @@ flutter:
   assets:
     - assets/icons/
     - assets/lottie/
+    - assets/characters/
 
 flutter_gen:
   line_length: 100

@@ -21,4 +21,16 @@ abstract final class AppConstants {
   /// Maximum allowed delivery delay past the scheduled reminder time —
   /// `AndroidScheduleMode.inexactAllowWhileIdle` never fires early (FR-023).
   static const Duration reminderDeliveryTolerance = Duration(minutes: 60);
+
+  /// Client-side timeout for an ai-proxy reaction request (FR-027a).
+  static const Duration aiRequestTimeout = Duration(seconds: 15);
+
+  /// Debounce before autosaving the day text draft (FR-008a).
+  static const Duration dayTextAutosaveDebounce = Duration(seconds: 1);
+
+  /// Upper bound of the speaking-bubble reveal effect (FR-017b).
+  static const Duration speakingBubbleMaxDuration = Duration(seconds: 4);
+
+  /// Maximum number of characters seated at the table at once (FR-010a).
+  static const int maxCharactersAtTable = 6;
 }

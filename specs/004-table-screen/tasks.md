@@ -34,14 +34,14 @@ description: "Task list for feature implementation: Экран «Стол»"
 
 **Purpose**: зависимости, ассеты и константы, без которых не начинается ни одна история
 
-- [ ] T001 Добавить зависимости `dio` и `share_plus` в `app/pubspec.yaml`, выполнить `flutter pub get`, зафиксировать версии в `app/pubspec.lock` (research.md R1, R3)
-- [ ] T002 Сверить API `share_plus` установленной версии с исходником в `~/.pub-cache/hosted/pub.dev/share_plus-<версия>/lib/share_plus.dart` и записать вывод (`Share.share` vs `SharePlus.instance.share`) в комментарий к `app/lib/core/sharing/share_service.dart` при его создании (research.md R3)
-- [ ] T003 Объявить каталог ассетов `assets/characters/` в секции `flutter.assets` файла `app/pubspec.yaml`
-- [ ] T004 [P] Создать ассет `app/assets/characters/characters.json` с четырьмя персонажами MVP (`cat`, `dog`, `crocodile`, `hippo`) по схеме `contracts/character-config.md` §1–2
-- [ ] T005 [P] Добавить в `app/lib/core/constants/app_constants.dart` константы `aiRequestTimeout` (15 с, FR-027a), `dayTextAutosaveDebounce` (1 с, FR-008a), `speakingBubbleMaxDuration` (4 с, FR-017b), `maxCharactersAtTable` (6, FR-010a)
-- [ ] T006 [P] Создать `app/lib/core/constants/mood_scale.dart` — маппинг `MoodScore.value` 1..5 → эмодзи, семантический цвет и ключ локализованной подписи (research.md R15, FR-001)
-- [ ] T007 Создать `app/lib/core/network/ai_proxy_config.dart`: чтение `PROXY_BASE_URL` через `String.fromEnvironment`, признак «сконфигурирован», и падение с внятной ошибкой при пустом значении в release-сборке (research.md R2, SC-012)
-- [ ] T008 Прогнать `flutter analyze` и `flutter test` — убедиться, что база зелёная до начала работ
+- [x] T001 Добавить зависимости `dio` и `share_plus` в `app/pubspec.yaml`, выполнить `flutter pub get`, зафиксировать версии в `app/pubspec.lock` (research.md R1, R3) — `dio 5.11.0`, `share_plus 13.3.0`
+- [x] T002 Сверить API `share_plus` установленной версии с исходником в `~/.pub-cache/hosted/pub.dev/share_plus-<версия>/lib/share_plus.dart` и записать вывод (`Share.share` vs `SharePlus.instance.share`) в комментарий к `app/lib/core/sharing/share_service.dart` при его создании (research.md R3) — проверено на `share_plus-13.3.0`: `Share.share` deprecated, API — `SharePlus.instance.share(ShareParams(...))`; комментарий добавляется при создании файла в US5
+- [x] T003 Объявить каталог ассетов `assets/characters/` в секции `flutter.assets` файла `app/pubspec.yaml`
+- [x] T004 [P] Создать ассет `app/assets/characters/characters.json` с четырьмя персонажами MVP (`cat`, `dog`, `crocodile`, `hippo`) по схеме `contracts/character-config.md` §1–2
+- [x] T005 [P] Добавить в `app/lib/core/constants/app_constants.dart` константы `aiRequestTimeout` (15 с, FR-027a), `dayTextAutosaveDebounce` (1 с, FR-008a), `speakingBubbleMaxDuration` (4 с, FR-017b), `maxCharactersAtTable` (6, FR-010a)
+- [x] T006 [P] Создать `app/lib/core/constants/mood_scale.dart` — маппинг `MoodScore.value` 1..5 → эмодзи, семантический цвет и ключ локализованной подписи (research.md R15, FR-001) — добавлены ключи `moodScaleVeryBad..moodScaleVeryGood` в три ARB
+- [x] T007 Создать `app/lib/core/network/ai_proxy_config.dart`: чтение `PROXY_BASE_URL` через `String.fromEnvironment`, признак «сконфигурирован», и падение с внятной ошибкой при пустом значении в release-сборке (research.md R2, SC-012)
+- [x] T008 Прогнать `flutter analyze` и `flutter test` — убедиться, что база зелёная до начала работ — 0 ошибок analyze, 163 теста зелёные
 
 **Checkpoint**: зависимости и конфигурация на месте, существующие тесты не сломаны
 

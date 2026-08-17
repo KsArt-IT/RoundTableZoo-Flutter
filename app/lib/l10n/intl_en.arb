@@ -227,5 +227,25 @@
   "@notificationChannelDescription": {
     "description": "Android notification channel description — neutral wording (FR-016b)"
   },
+  "moodScaleVeryBad": "Very bad",
+  "@moodScaleVeryBad": {
+    "description": "Table screen — mood scale label, value 1"
+  },
+  "moodScaleBad": "Bad",
+  "@moodScaleBad": {
+    "description": "Table screen — mood scale label, value 2"
+  },
+  "moodScaleNeutral": "Neutral",
+  "@moodScaleNeutral": {
+    "description": "Table screen — mood scale label, value 3"
+  },
+  "moodScaleGood": "Good",
+  "@moodScaleGood": {
+    "description": "Table screen — mood scale label, value 4"
+  },
+  "moodScaleVeryGood": "Very good",
+  "@moodScaleVeryGood": {
+    "description": "Table screen — mood scale label, value 5"
+  },
   "end": "---"
 }

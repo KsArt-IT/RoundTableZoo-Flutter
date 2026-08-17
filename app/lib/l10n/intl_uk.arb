@@ -227,5 +227,25 @@
   "@notificationChannelDescription": {
     "description": "Android notification channel description — neutral wording (FR-016b)"
   },
+  "moodScaleVeryBad": "Дуже погано",
+  "@moodScaleVeryBad": {
+    "description": "Table screen — mood scale label, value 1"
+  },
+  "moodScaleBad": "Погано",
+  "@moodScaleBad": {
+    "description": "Table screen — mood scale label, value 2"
+  },
+  "moodScaleNeutral": "Нормально",
+  "@moodScaleNeutral": {
+    "description": "Table screen — mood scale label, value 3"
+  },
+  "moodScaleGood": "Добре",
+  "@moodScaleGood": {
+    "description": "Table screen — mood scale label, value 4"
+  },
+  "moodScaleVeryGood": "Чудово",
+  "@moodScaleVeryGood": {
+    "description": "Table screen — mood scale label, value 5"
+  },
   "end": "---"
 }
