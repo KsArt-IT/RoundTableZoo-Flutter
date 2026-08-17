@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:roundtablezoo/app/router/app_routes.dart';
 import 'package:roundtablezoo/app/shell/shell_page.dart';
 import 'package:roundtablezoo/presentation/diary/diary_placeholder_page.dart';
-import 'package:roundtablezoo/presentation/onboarding/onboarding_placeholder_page.dart';
+import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_cubit.dart';
+import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_state.dart';
+import 'package:roundtablezoo/presentation/onboarding/onboarding_page.dart';
 import 'package:roundtablezoo/presentation/settings/settings_page.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_cubit.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_state.dart';
@@ -22,12 +24,14 @@ import 'package:roundtablezoo/presentation/table/table_placeholder_page.dart';
 /// yet, so every route redirects there instead of exposing a shell with
 /// nothing behind it (FR-021a, FR-021b).
 ///
-/// [refreshListenable] must be a [CubitRefreshListenable] wrapping the same
-/// [storageRecoveryCubit] — the caller owns and disposes it (this function
-/// doesn't, so a `GoRouter.dispose()` alone won't leak it, but forgetting
-/// to dispose the listenable itself will).
+/// [refreshListenable] must wrap both [storageRecoveryCubit] and
+/// [onboardingCubit] (`Listenable.merge` of two [CubitRefreshListenable]s,
+/// contracts §1) — the caller owns and disposes it (this function doesn't,
+/// so a `GoRouter.dispose()` alone won't leak it, but forgetting to dispose
+/// the listenables themselves will).
 GoRouter buildAppRouter({
   required StorageRecoveryCubit storageRecoveryCubit,
+  required OnboardingCubit onboardingCubit,
   required Listenable refreshListenable,
 }) => GoRouter(
   initialLocation: AppRoutes.tablePath,
@@ -41,6 +45,17 @@ GoRouter buildAppRouter({
 
     if (!storageUsable) return atStorageError ? null : AppRoutes.storageErrorPath;
     if (atStorageError) return AppRoutes.tablePath;
+
+    // Onboarding gate (FR-001, FR-002, FR-007, FR-007a) — runs only once
+    // storage is usable, so it never overrides the recovery screen above.
+    final onboardingRequired = switch (onboardingCubit.state) {
+      OnboardingRequired() || OnboardingSubmitting() => true,
+      OnboardingUnknown() || OnboardingCompleted() => false,
+    };
+    final atOnboarding = state.matchedLocation == AppRoutes.onboardingPath;
+
+    if (onboardingRequired) return atOnboarding ? null : AppRoutes.onboardingPath;
+    if (atOnboarding) return AppRoutes.tablePath;
     return null;
   },
   routes: [
@@ -79,7 +94,7 @@ GoRouter buildAppRouter({
     GoRoute(
       path: AppRoutes.onboardingPath,
       name: AppRoutes.onboardingName,
-      builder: (context, state) => const OnboardingPlaceholderPage(),
+      builder: (context, state) => const OnboardingPage(),
     ),
     GoRoute(
       path: AppRoutes.storageErrorPath,

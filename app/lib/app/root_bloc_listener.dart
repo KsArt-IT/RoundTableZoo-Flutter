@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +11,7 @@ import 'package:roundtablezoo/core/errors/failure_toast_gate.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
 import 'package:roundtablezoo/presentation/app_settings/cubit/app_settings_cubit.dart';
 import 'package:roundtablezoo/presentation/app_settings/cubit/app_settings_state.dart';
+import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_cubit.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_cubit.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_state.dart';
 import 'package:toastification/toastification.dart';
@@ -42,8 +45,10 @@ class RootBlocListener extends StatelessWidget {
     switch (state) {
       case StorageRecoveryRecovered(:final database):
         StorageDiSwitch.usePersistentStorage(database);
+        unawaited(context.read<OnboardingCubit>().resolve());
       case StorageRecoveryReadOnlyAccepted():
         StorageDiSwitch.useReadOnlyStorage();
+        unawaited(context.read<OnboardingCubit>().resolve());
       case StorageRecoveryError(:final failure):
         _maybeShowToast(context, failure);
       case StorageRecoveryIdle() || StorageRecoveryWorking():

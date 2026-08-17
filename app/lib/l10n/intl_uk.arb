@@ -78,9 +78,25 @@
   "@sectionSettings": {
     "description": "Bottom navigation / placeholder title — Settings section"
   },
-  "sectionOnboarding": "Знайомство",
-  "@sectionOnboarding": {
-    "description": "Placeholder title — Onboarding screen"
+  "onboardingTitle": "Ласкаво просимо до «Круглого столу»",
+  "@onboardingTitle": {
+    "description": "OnboardingPage title (FR-004)"
+  },
+  "onboardingHowTo": "Позначте свій настрій за столом — за бажанням торкніться персонажа, щоб почути його репліку.",
+  "@onboardingHowTo": {
+    "description": "OnboardingPage point (a) — how to use the table (FR-004a)"
+  },
+  "onboardingDisclaimer": "Репліки персонажів — розвага, а не медична порада чи професійна підтримка.",
+  "@onboardingDisclaimer": {
+    "description": "OnboardingPage point (b) — not medical advice disclaimer (FR-004b)"
+  },
+  "onboardingAiDisclosure": "Текст про ваш день надсилається сторонньому AI-сервісу для генерації реплік; настрій і записи щоденника лишаються на пристрої.",
+  "@onboardingAiDisclosure": {
+    "description": "OnboardingPage point (c) — AI disclosure (FR-004c/FR-004d, constitution V)"
+  },
+  "onboardingStart": "Почати",
+  "@onboardingStart": {
+    "description": "OnboardingPage single continue action"
   },
   "storageRecoveryTitle": "Сховище недоступне",
   "@storageRecoveryTitle": {

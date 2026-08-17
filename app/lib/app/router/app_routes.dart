@@ -12,8 +12,8 @@ abstract final class AppRoutes {
   static const String settingsPath = '/settings';
   static const String settingsName = 'settings';
 
-  /// Registered but with no redirect guard (FR-006) — reachable, never
-  /// forced.
+  /// Redirect target while onboarding isn't passed yet (FR-001, FR-002);
+  /// unreachable directly once passed (FR-007, FR-007a).
   static const String onboardingPath = '/onboarding';
   static const String onboardingName = 'onboarding';
 

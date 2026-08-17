@@ -78,9 +78,25 @@
   "@sectionSettings": {
     "description": "Bottom navigation / placeholder title — Settings section"
   },
-  "sectionOnboarding": "Знакомство",
-  "@sectionOnboarding": {
-    "description": "Placeholder title — Onboarding screen"
+  "onboardingTitle": "Добро пожаловать в «Круглый стол»",
+  "@onboardingTitle": {
+    "description": "OnboardingPage title (FR-004)"
+  },
+  "onboardingHowTo": "Отметьте своё настроение на столе — при желании тапните по персонажу, чтобы услышать его реплику.",
+  "@onboardingHowTo": {
+    "description": "OnboardingPage point (a) — how to use the table (FR-004a)"
+  },
+  "onboardingDisclaimer": "Реплики персонажей — развлечение, а не медицинский совет и не профессиональная поддержка.",
+  "@onboardingDisclaimer": {
+    "description": "OnboardingPage point (b) — not medical advice disclaimer (FR-004b)"
+  },
+  "onboardingAiDisclosure": "Текст о вашем дне отправляется стороннему AI-сервису для генерации реплик; настроение и записи дневника остаются на устройстве.",
+  "@onboardingAiDisclosure": {
+    "description": "OnboardingPage point (c) — AI disclosure (FR-004c/FR-004d, constitution V)"
+  },
+  "onboardingStart": "Начать",
+  "@onboardingStart": {
+    "description": "OnboardingPage single continue action"
   },
   "storageRecoveryTitle": "Хранилище недоступно",
   "@storageRecoveryTitle": {

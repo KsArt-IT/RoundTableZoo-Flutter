@@ -14,6 +14,8 @@ import 'package:roundtablezoo/core/time_zone/time_zones.dart';
 import 'package:roundtablezoo/core/utils/app_logger.dart';
 import 'package:roundtablezoo/data/datasources/drift/app_database.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
+import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_cubit.dart';
+import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_state.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_cubit.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_state.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/startup_error_page.dart';
@@ -61,6 +63,7 @@ Future<void> _start() async {
   );
 
   final StorageRecoveryState initialState;
+  final OnboardingState initialOnboardingState;
   var remindersMuted = false;
   if (session.mode == StorageMode.persistent) {
     StorageDiSwitch.usePersistentStorage(initialDatabase);
@@ -72,6 +75,12 @@ Future<void> _start() async {
         settings != null &&
         settings.reminderEnabled &&
         permission != NotificationPermissionStatus.granted;
+    // Reuses the settings snapshot already loaded above — no extra DB read
+    // (research.md, R2). Ensures the first frame never shows the shell
+    // before the onboarding redirect (FR-002).
+    initialOnboardingState = (settings?.hasSeenOnboarding ?? false)
+        ? const OnboardingState.completed()
+        : const OnboardingState.required();
 
     unawaited(getIt<ReminderCoordinator>().reconcile());
   } else {
@@ -80,6 +89,7 @@ Future<void> _start() async {
     // /storage-error until then, so nothing tries to resolve them.
     await initialDatabase.close();
     initialState = StorageRecoveryState.idle(cause: session.cause!);
+    initialOnboardingState = const OnboardingState.unknown();
   }
 
   runApp(
@@ -87,6 +97,10 @@ Future<void> _start() async {
       storageRecoveryCubit: StorageRecoveryCubit(
         createDatabase: AppDatabase.new,
         initialState: initialState,
+      ),
+      onboardingCubit: OnboardingCubit(
+        settingsRepositoryLocator: () => getIt<SettingsRepository>(),
+        initialState: initialOnboardingState,
       ),
       remindersMuted: remindersMuted,
     ),

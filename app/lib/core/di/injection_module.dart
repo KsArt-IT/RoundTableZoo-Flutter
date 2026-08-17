@@ -1,6 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:roundtablezoo/core/app_clock/app_clock.dart';
 import 'package:roundtablezoo/core/app_clock/system_app_clock.dart';
+import 'package:roundtablezoo/core/di/injection.dart';
 import 'package:roundtablezoo/core/notifications/notification_scheduler.dart';
 import 'package:roundtablezoo/core/notifications/reminder_coordinator.dart';
 import 'package:roundtablezoo/domain/repositories/diary_repository.dart';
@@ -9,6 +10,8 @@ import 'package:roundtablezoo/domain/services/day_resolver.dart';
 import 'package:roundtablezoo/domain/services/reminder_planner.dart';
 import 'package:roundtablezoo/presentation/app_settings/cubit/app_settings_cubit.dart';
 import 'package:roundtablezoo/presentation/app_settings/cubit/current_day_cubit.dart';
+import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_cubit.dart';
+import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_state.dart';
 import 'package:roundtablezoo/presentation/settings/cubit/settings_cubit.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -54,6 +57,18 @@ abstract class InjectionModule {
   @lazySingleton
   AppSettingsCubit appSettingsCubit(SettingsRepository settingsRepository) =>
       AppSettingsCubit(settingsRepository: settingsRepository);
+
+  /// Registered for test/uniformity purposes (research.md, R9) — the app
+  /// itself uses the instance `main.dart` builds with an already-resolved
+  /// initial state, not this one. A locator, not a resolved
+  /// `SettingsRepository` parameter: unlike the cubits above, this one can
+  /// be constructed *before* `StorageDiSwitch` has registered anything
+  /// (`StorageMode.unavailable`), so resolving eagerly here would crash.
+  @lazySingleton
+  OnboardingCubit onboardingCubit() => OnboardingCubit(
+    settingsRepositoryLocator: () => getIt<SettingsRepository>(),
+    initialState: const OnboardingState.unknown(),
+  );
 
   /// Screen-scoped `factory` (not `@lazySingleton`) — a fresh instance per
   /// visit to `/settings`, unlike the app-wide cubits above (research.md,

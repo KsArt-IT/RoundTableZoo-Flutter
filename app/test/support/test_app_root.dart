@@ -16,6 +16,8 @@ import 'package:roundtablezoo/domain/entities/day_key.dart';
 import 'package:roundtablezoo/domain/entities/reminder_occurrence.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
 import 'package:roundtablezoo/presentation/app_settings/cubit/app_settings_cubit.dart';
+import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_cubit.dart';
+import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_state.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_cubit.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_state.dart';
 
@@ -36,7 +38,17 @@ import 'mocks.dart';
 /// by [AppClock] presence) — `AppMaterialRouter` reads `AppSettingsCubit`
 /// unconditionally via `BlocBuilder`, so it must already be resolvable by
 /// the time `AppRoot` builds.
-Widget buildTestAppRoot({StorageRecoveryState? initialState, bool remindersMuted = false}) {
+///
+/// [onboardingSeen] defaults to `true` — existing shell widget tests
+/// shouldn't have to know about onboarding at all; each call's fresh
+/// in-memory database would otherwise default `hasSeenOnboarding` to
+/// `false` and send every one of them to `/onboarding` instead
+/// (research.md, R7). Pass `false` for gate tests that need to start there.
+Widget buildTestAppRoot({
+  StorageRecoveryState? initialState,
+  bool remindersMuted = false,
+  bool onboardingSeen = true,
+}) {
   if (!getIt.isRegistered<AppClock>()) configureDependencies();
   _useFakeNotificationScheduler();
 
@@ -56,11 +68,22 @@ Widget buildTestAppRoot({StorageRecoveryState? initialState, bool remindersMuted
     );
   }
 
+  // Same freshening reasoning as `AppSettingsCubit` above — a fresh
+  // `OnboardingCubit` per call, tied to this call's `SettingsRepository`.
+  if (getIt.isRegistered<OnboardingCubit>()) unawaited(Future.value(getIt.unregister<OnboardingCubit>()));
+  getIt.registerLazySingleton<OnboardingCubit>(
+    () => OnboardingCubit(
+      settingsRepositoryLocator: () => getIt<SettingsRepository>(),
+      initialState: onboardingSeen ? const OnboardingState.completed() : const OnboardingState.required(),
+    ),
+  );
+
   return AppRoot(
     storageRecoveryCubit: StorageRecoveryCubit(
       createDatabase: () => AppDatabase(NativeDatabase.memory()),
       initialState: resolvedInitialState,
     ),
+    onboardingCubit: getIt<OnboardingCubit>(),
     remindersMuted: remindersMuted,
   );
 }

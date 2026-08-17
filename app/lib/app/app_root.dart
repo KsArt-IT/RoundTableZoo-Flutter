@@ -14,6 +14,7 @@ import 'package:roundtablezoo/core/notifications/reminder_coordinator.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
 import 'package:roundtablezoo/presentation/app_settings/cubit/app_settings_cubit.dart';
 import 'package:roundtablezoo/presentation/app_settings/cubit/current_day_cubit.dart';
+import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_cubit.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_cubit.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -31,9 +32,19 @@ import 'package:timezone/timezone.dart' as tz;
 /// `AppSettingsCubit` is provided the same lazy way, feeding
 /// `AppMaterialRouter`'s `themeMode`/`locale` (US5).
 class AppRoot extends StatelessWidget {
-  const AppRoot({required this.storageRecoveryCubit, this.remindersMuted = false, super.key});
+  const AppRoot({
+    required this.storageRecoveryCubit,
+    required this.onboardingCubit,
+    this.remindersMuted = false,
+    super.key,
+  });
 
   final StorageRecoveryCubit storageRecoveryCubit;
+
+  /// App-scoped, like [storageRecoveryCubit] — the gate must stay
+  /// terminal ("completed") for the whole session (FR-006a), which a
+  /// screen-scoped cubit couldn't guarantee (research.md, R9).
+  final OnboardingCubit onboardingCubit;
 
   /// FR-021b: reminder enabled but permission not granted, computed once at
   /// startup (`main.dart`) before this widget is built.
@@ -44,6 +55,7 @@ class AppRoot extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: storageRecoveryCubit),
+        BlocProvider.value(value: onboardingCubit),
         // `create:` (not `.value()`) so building it stays lazy — but that
         // also means flutter_bloc will `close()` it if this provider is
         // ever removed from the tree while resolved. AppRoot is the root
@@ -54,15 +66,24 @@ class AppRoot extends StatelessWidget {
         BlocProvider(create: (_) => getIt<CurrentDayCubit>()),
         BlocProvider(create: (_) => getIt<AppSettingsCubit>()),
       ],
-      child: _RoutedApp(storageRecoveryCubit: storageRecoveryCubit, remindersMuted: remindersMuted),
+      child: _RoutedApp(
+        storageRecoveryCubit: storageRecoveryCubit,
+        onboardingCubit: onboardingCubit,
+        remindersMuted: remindersMuted,
+      ),
     );
   }
 }
 
 class _RoutedApp extends StatefulWidget {
-  const _RoutedApp({required this.storageRecoveryCubit, required this.remindersMuted});
+  const _RoutedApp({
+    required this.storageRecoveryCubit,
+    required this.onboardingCubit,
+    required this.remindersMuted,
+  });
 
   final StorageRecoveryCubit storageRecoveryCubit;
+  final OnboardingCubit onboardingCubit;
   final bool remindersMuted;
 
   @override
@@ -70,11 +91,19 @@ class _RoutedApp extends StatefulWidget {
 }
 
 class _RoutedAppState extends State<_RoutedApp> with WidgetsBindingObserver {
-  late final CubitRefreshListenable _refreshListenable = CubitRefreshListenable(
+  late final CubitRefreshListenable _storageRefreshListenable = CubitRefreshListenable(
     widget.storageRecoveryCubit.stream,
   );
+  late final CubitRefreshListenable _onboardingRefreshListenable = CubitRefreshListenable(
+    widget.onboardingCubit.stream,
+  );
+  late final Listenable _refreshListenable = Listenable.merge([
+    _storageRefreshListenable,
+    _onboardingRefreshListenable,
+  ]);
   late final GoRouter _router = buildAppRouter(
     storageRecoveryCubit: widget.storageRecoveryCubit,
+    onboardingCubit: widget.onboardingCubit,
     refreshListenable: _refreshListenable,
   );
   StreamSubscription<String>? _notificationTapSubscription;
@@ -122,7 +151,8 @@ class _RoutedAppState extends State<_RoutedApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_notificationTapSubscription?.cancel());
     _router.dispose();
-    _refreshListenable.dispose();
+    _storageRefreshListenable.dispose();
+    _onboardingRefreshListenable.dispose();
     super.dispose();
   }
 
