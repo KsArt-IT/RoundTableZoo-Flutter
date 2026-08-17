@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:roundtablezoo/core/app_clock/app_clock.dart';
+import 'package:roundtablezoo/core/bootstrap/storage_mode.dart';
 import 'package:roundtablezoo/core/di/injection.dart';
 import 'package:roundtablezoo/data/datasources/diary_local_datasource.dart';
 import 'package:roundtablezoo/data/datasources/drift/app_database.dart';
@@ -20,6 +21,13 @@ import 'package:roundtablezoo/domain/services/day_resolver.dart';
 /// different instance than the one from cold start" — this duplicates that
 /// wiring deliberately, as the one place allowed to call
 /// `getIt.unregister`/`registerLazySingleton` for these types.
+///
+/// It also publishes the resulting [StorageMode]: this is the only place that
+/// knows it at runtime, and screens need it *before* acting (the Table screen
+/// must not fire an AI request whose result has nowhere to be saved — FR-032
+/// of `specs/004-table-screen`). `StorageMode.unavailable` is never registered
+/// — the router redirects to `/storage-error` until the user picks a recovery
+/// action, so nothing downstream can observe it.
 abstract final class StorageDiSwitch {
   const StorageDiSwitch._();
 
@@ -30,7 +38,9 @@ abstract final class StorageDiSwitch {
     _unregisterIfPresent<SettingsLocalDataSource>();
     _unregisterIfPresent<DiaryRepository>();
     _unregisterIfPresent<SettingsRepository>();
+    _unregisterIfPresent<StorageMode>();
 
+    getIt.registerSingleton<StorageMode>(StorageMode.persistent);
     getIt.registerLazySingleton<AppDatabase>(() => database);
     getIt.registerLazySingleton<DiaryLocalDataSource>(() => DiaryLocalDataSource(getIt<AppDatabase>()));
     getIt.registerLazySingleton<SettingsLocalDataSource>(
@@ -55,7 +65,9 @@ abstract final class StorageDiSwitch {
   static void useReadOnlyStorage() {
     _unregisterIfPresent<DiaryRepository>();
     _unregisterIfPresent<SettingsRepository>();
+    _unregisterIfPresent<StorageMode>();
 
+    getIt.registerSingleton<StorageMode>(StorageMode.readOnly);
     getIt.registerLazySingleton<DiaryRepository>(() => const UnavailableDiaryRepository());
     getIt.registerLazySingleton<SettingsRepository>(() => ReadOnlySettingsRepository());
   }

@@ -43,6 +43,7 @@ targets:
               style: dot-delimiter
           integrations:
             flutter_svg: true
+            lottie: true
 
 global_options:
   freezed:
