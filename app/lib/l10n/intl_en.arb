@@ -90,7 +90,7 @@
   "@onboardingDisclaimer": {
     "description": "OnboardingPage point (b) — not medical advice disclaimer (FR-004b)"
   },
-  "onboardingAiDisclosure": "Your text about the day is sent to a third-party AI service to generate lines; your mood and diary entries stay on this device.",
+  "onboardingAiDisclosure": "Your text about the day and an anonymous install identifier are sent to a third-party AI service to generate lines; your mood and diary entries stay on this device.",
   "@onboardingAiDisclosure": {
     "description": "OnboardingPage point (c) — AI disclosure (FR-004c/FR-004d, constitution V)"
   },
@@ -246,6 +246,78 @@
   "moodScaleVeryGood": "Very good",
   "@moodScaleVeryGood": {
     "description": "Table screen — mood scale label, value 5"
+  },
+  "tableDayTextPlaceholder": "Tell us how your day went…",
+  "@tableDayTextPlaceholder": {
+    "description": "Table screen — day text field placeholder (FR-007)"
+  },
+  "tableDayTextCounter": "{count}/{max}",
+  "@tableDayTextCounter": {
+    "description": "Table screen — day text field character counter (FR-008)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "tableCharacterStateIdle": "idle",
+  "@tableCharacterStateIdle": {
+    "description": "Table screen — character semantics state suffix, idle (FR-011, FR-012)"
+  },
+  "tableCharacterStateWaiting": "waiting for a reply",
+  "@tableCharacterStateWaiting": {
+    "description": "Table screen — character semantics state suffix, request in flight (FR-011, FR-012, FR-016)"
+  },
+  "tableCharacterStateSpeaking": "speaking",
+  "@tableCharacterStateSpeaking": {
+    "description": "Table screen — character semantics state suffix, revealing a reply (FR-011, FR-012, FR-017)"
+  },
+  "tableCharacterStateAnswered": "already replied",
+  "@tableCharacterStateAnswered": {
+    "description": "Table screen — character semantics state suffix, has a reply shown (FR-011, FR-012)"
+  },
+  "tableNeedMoodHint": "Pick your mood first",
+  "@tableNeedMoodHint": {
+    "description": "Table screen — inline hint next to the mood scale when a tap on a character is blocked (FR-014, FR-014a)"
+  },
+  "tableNeedTextHint": "Write a few words about your day",
+  "@tableNeedTextHint": {
+    "description": "Table screen — inline hint next to the day text field when a tap on a character is blocked (FR-014, FR-014a)"
+  },
+  "tableAiNetworkError": "No connection — check your network",
+  "@tableAiNetworkError": {
+    "description": "AiProxyFailure.network — inline message next to the character (FR-024)"
+  },
+  "tableAiRateLimitedError": "Today's request limit is reached",
+  "@tableAiRateLimitedError": {
+    "description": "AiProxyFailure.rateLimited — inline message next to the character (FR-025)"
+  },
+  "tableAiDisabledError": "AI is temporarily unavailable",
+  "@tableAiDisabledError": {
+    "description": "AiProxyFailure.aiDisabled — inline message next to the character (FR-026)"
+  },
+  "tableAiInvalidResponseError": "Couldn't parse the reply",
+  "@tableAiInvalidResponseError": {
+    "description": "AiProxyFailure.invalidResponse/timeout — logged message; not shown inline, a fallback reply is shown instead (FR-027, FR-027b)"
+  },
+  "tableReplyStaleLabel": "from an earlier text",
+  "@tableReplyStaleLabel": {
+    "description": "Table screen — speaking bubble mark, reply predates the current day text edit (FR-023)"
+  },
+  "tableReplyFallbackLabel": "canned reply",
+  "@tableReplyFallbackLabel": {
+    "description": "Table screen — speaking bubble mark, prewritten fallback reply, not a real AI answer (FR-027c)"
+  },
+  "tableReplyNotSavedMessage": "Reply wasn't saved",
+  "@tableReplyNotSavedMessage": {
+    "description": "Table screen — inline message when a received reply failed to persist (FR-021c)"
+  },
+  "tableShareAction": "Share",
+  "@tableShareAction": {
+    "description": "Table screen — speaking bubble share action, both the long-press affordance and its named semantics action (FR-030)"
   },
   "end": "---"
 }

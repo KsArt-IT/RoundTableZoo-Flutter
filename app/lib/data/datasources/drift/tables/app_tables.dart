@@ -34,4 +34,13 @@ class UserSettingsTable extends Table {
   IntColumn get dayStartHour => integer()
       .check(dayStartHour.isBiggerOrEqualValue(0) & dayStartHour.isSmallerOrEqualValue(23))
       .withDefault(const Constant(0))();
+
+  /// The `check(id.equals(1))` constraint alone doesn't stop a second row:
+  /// without a real uniqueness constraint on `id`, `INSERT OR IGNORE` has
+  /// nothing to conflict against, so concurrent first-time
+  /// `loadOrCreate()` callers (e.g. `AppSettingsCubit` and
+  /// `CurrentDayCubit` both racing to create the row on first use) can
+  /// each insert their own `id = 1` row.
+  @override
+  Set<Column> get primaryKey => {id};
 }

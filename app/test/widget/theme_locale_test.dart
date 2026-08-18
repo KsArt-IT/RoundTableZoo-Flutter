@@ -6,7 +6,7 @@ import 'package:roundtablezoo/domain/value_objects/locale_preference.dart';
 import 'package:roundtablezoo/domain/value_objects/theme_preference.dart';
 import 'package:roundtablezoo/presentation/diary/diary_placeholder_page.dart';
 import 'package:roundtablezoo/presentation/settings/settings_page.dart';
-import 'package:roundtablezoo/presentation/table/table_placeholder_page.dart';
+import 'package:roundtablezoo/presentation/table/table_page.dart';
 
 import '../support/test_app_root.dart';
 
@@ -25,12 +25,12 @@ void main() {
     await tester.pumpWidget(buildTestAppRoot());
     await tester.pumpAndSettle();
 
-    expect(Theme.of(tester.element(find.byType(TablePlaceholderPage))).brightness, Brightness.light);
+    expect(Theme.of(tester.element(find.byType(TablePage))).brightness, Brightness.light);
 
     await getIt<SettingsRepository>().updateThemeMode(ThemePreference.dark);
     await tester.pumpAndSettle();
 
-    expect(Theme.of(tester.element(find.byType(TablePlaceholderPage))).brightness, Brightness.dark);
+    expect(Theme.of(tester.element(find.byType(TablePage))).brightness, Brightness.dark);
 
     await disposeTestAppRoot(tester);
   });
@@ -42,7 +42,7 @@ void main() {
     await getIt<SettingsRepository>().updateLocale(LocalePreference.uk);
     await tester.pumpAndSettle();
 
-    expect(_bodyText(TablePlaceholderPage, _ukTable), findsOneWidget);
+    expect(_bodyText(TablePage, _ukTable), findsOneWidget);
 
     await tester.tap(find.widgetWithText(NavigationDestination, _ukDiary));
     await tester.pumpAndSettle();
@@ -62,7 +62,7 @@ void main() {
     await tester.pumpWidget(buildTestAppRoot());
     await tester.pumpAndSettle();
 
-    expect(_bodyText(TablePlaceholderPage, 'Стол'), findsOneWidget);
+    expect(_bodyText(TablePage, 'Стол'), findsOneWidget);
 
     await disposeTestAppRoot(tester);
   });

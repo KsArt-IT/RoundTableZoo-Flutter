@@ -90,9 +90,9 @@
   "@onboardingDisclaimer": {
     "description": "OnboardingPage point (b) — not medical advice disclaimer (FR-004b)"
   },
-  "onboardingAiDisclosure": "Текст о вашем дне отправляется стороннему AI-сервису для генерации реплик; настроение и записи дневника остаются на устройстве.",
+  "onboardingAiDisclosure": "Текст о вашем дне и анонимный идентификатор установки отправляются стороннему AI-сервису для генерации реплик; настроение и записи дневника остаются на устройстве.",
   "@onboardingAiDisclosure": {
-    "description": "OnboardingPage point (c) — AI disclosure (FR-004c/FR-004d, constitution V)"
+    "description": "OnboardingPage point (c) — AI disclosure, names the installId (FR-004c/FR-004d, FR-034a, constitution V)"
   },
   "onboardingStart": "Начать",
   "@onboardingStart": {
@@ -246,6 +246,78 @@
   "moodScaleVeryGood": "Отлично",
   "@moodScaleVeryGood": {
     "description": "Table screen — mood scale label, value 5"
+  },
+  "tableDayTextPlaceholder": "Расскажите, как прошёл день…",
+  "@tableDayTextPlaceholder": {
+    "description": "Table screen — day text field placeholder (FR-007)"
+  },
+  "tableDayTextCounter": "{count}/{max}",
+  "@tableDayTextCounter": {
+    "description": "Table screen — day text field character counter (FR-008)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "tableCharacterStateIdle": "в покое",
+  "@tableCharacterStateIdle": {
+    "description": "Table screen — character semantics state suffix, idle (FR-011, FR-012)"
+  },
+  "tableCharacterStateWaiting": "ждёт ответа",
+  "@tableCharacterStateWaiting": {
+    "description": "Table screen — character semantics state suffix, request in flight (FR-011, FR-012, FR-016)"
+  },
+  "tableCharacterStateSpeaking": "говорит",
+  "@tableCharacterStateSpeaking": {
+    "description": "Table screen — character semantics state suffix, revealing a reply (FR-011, FR-012, FR-017)"
+  },
+  "tableCharacterStateAnswered": "уже отвечал",
+  "@tableCharacterStateAnswered": {
+    "description": "Table screen — character semantics state suffix, has a reply shown (FR-011, FR-012)"
+  },
+  "tableNeedMoodHint": "Сначала отметьте настроение",
+  "@tableNeedMoodHint": {
+    "description": "Table screen — inline hint next to the mood scale when a tap on a character is blocked (FR-014, FR-014a)"
+  },
+  "tableNeedTextHint": "Напишите пару слов о дне",
+  "@tableNeedTextHint": {
+    "description": "Table screen — inline hint next to the day text field when a tap on a character is blocked (FR-014, FR-014a)"
+  },
+  "tableAiNetworkError": "Нет сети — проверьте подключение",
+  "@tableAiNetworkError": {
+    "description": "AiProxyFailure.network — inline message next to the character (FR-024)"
+  },
+  "tableAiRateLimitedError": "Лимит запросов на сегодня исчерпан",
+  "@tableAiRateLimitedError": {
+    "description": "AiProxyFailure.rateLimited — inline message next to the character (FR-025)"
+  },
+  "tableAiDisabledError": "AI временно недоступен",
+  "@tableAiDisabledError": {
+    "description": "AiProxyFailure.aiDisabled — inline message next to the character (FR-026)"
+  },
+  "tableAiInvalidResponseError": "Не удалось разобрать ответ",
+  "@tableAiInvalidResponseError": {
+    "description": "AiProxyFailure.invalidResponse/timeout — logged message; not shown inline, a fallback reply is shown instead (FR-027, FR-027b)"
+  },
+  "tableReplyStaleLabel": "на прежний текст",
+  "@tableReplyStaleLabel": {
+    "description": "Table screen — speaking bubble mark, reply predates the current day text edit (FR-023)"
+  },
+  "tableReplyFallbackLabel": "ответ по памяти",
+  "@tableReplyFallbackLabel": {
+    "description": "Table screen — speaking bubble mark, prewritten fallback reply, not a real AI answer (FR-027c)"
+  },
+  "tableReplyNotSavedMessage": "Реплика не сохранена",
+  "@tableReplyNotSavedMessage": {
+    "description": "Table screen — inline message when a received reply failed to persist (FR-021c)"
+  },
+  "tableShareAction": "Поделиться",
+  "@tableShareAction": {
+    "description": "Table screen — speaking bubble share action, both the long-press affordance and its named semantics action (FR-030)"
   },
   "end": "---"
 }

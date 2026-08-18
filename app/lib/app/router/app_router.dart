@@ -12,7 +12,7 @@ import 'package:roundtablezoo/presentation/settings/settings_page.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_cubit.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_state.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/storage_recovery_page.dart';
-import 'package:roundtablezoo/presentation/table/table_placeholder_page.dart';
+import 'package:roundtablezoo/presentation/table/table_page.dart';
 
 /// `StatefulShellRoute.indexedStack` with three branches — switching tabs
 /// preserves each branch's navigation state and never rebuilds the shell
@@ -67,7 +67,7 @@ GoRouter buildAppRouter({
             GoRoute(
               path: AppRoutes.tablePath,
               name: AppRoutes.tableName,
-              builder: (context, state) => const TablePlaceholderPage(),
+              builder: (context, state) => const TablePage(),
             ),
           ],
         ),

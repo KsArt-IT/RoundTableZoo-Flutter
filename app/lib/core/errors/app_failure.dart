@@ -114,6 +114,29 @@ class DatabaseFailure extends AppFailure {
   };
 }
 
+/// ai-proxy related exceptions — codes match the taxonomy in
+/// `specs/004-table-screen/contracts/ai-proxy-client.md` §4. HTTP status →
+/// code mapping happens only in `AiReactionRepositoryImpl` (principle I/II);
+/// `TableCubit` sees just these codes.
+class AiProxyFailure extends AppFailure {
+  const AiProxyFailure(String? message, {String? code}) : super(message ?? '', code);
+
+  static const network = 'network';
+  static const rateLimited = 'rate_limited';
+  static const aiDisabled = 'ai_disabled';
+  static const invalidResponse = 'invalid_response';
+  static const timeout = 'timeout';
+
+  @override
+  String localizedMessage(AppLocalizations locale) => switch (code) {
+    network => locale.tableAiNetworkError,
+    rateLimited => locale.tableAiRateLimitedError,
+    aiDisabled => locale.tableAiDisabledError,
+    timeout || invalidResponse => locale.tableAiInvalidResponseError,
+    _ => message,
+  };
+}
+
 /// Notification related exceptions
 class NotificationFailure extends AppFailure {
   const NotificationFailure(String? message, {String? code}) : super(message ?? '', code);

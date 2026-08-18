@@ -1,6 +1,7 @@
 import 'package:mocktail/mocktail.dart';
 import 'package:roundtablezoo/core/app_clock/app_clock.dart';
 import 'package:roundtablezoo/core/notifications/notification_scheduler.dart';
+import 'package:roundtablezoo/data/datasources/character_catalog.dart';
 import 'package:roundtablezoo/domain/repositories/diary_repository.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
 
@@ -12,3 +13,13 @@ class MockDiaryRepository extends Mock implements DiaryRepository {}
 class MockSettingsRepository extends Mock implements SettingsRepository {}
 
 class MockNotificationScheduler extends Mock implements NotificationScheduler {}
+
+/// `CharacterCatalog` isn't behind an interface (data-model.md §2 — no
+/// runtime dependencies, plain class), so this subclasses it directly
+/// rather than `implements`, same as any other mocktail double over a
+/// concrete class with no injected state.
+class MockCharacterCatalog extends Mock implements CharacterCatalog {}
+
+// MockAiReactionRepository and MockShareService are added once their
+// interfaces exist (`domain/repositories/ai_reaction_repository.dart` —
+// tasks.md T036/US2; `core/sharing/share_service.dart` — T070/US5).

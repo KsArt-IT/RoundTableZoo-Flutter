@@ -15,12 +15,17 @@ import 'package:roundtablezoo/data/datasources/drift/app_database.dart';
 import 'package:roundtablezoo/domain/entities/day_key.dart';
 import 'package:roundtablezoo/domain/entities/reminder_occurrence.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
+import 'package:roundtablezoo/domain/services/day_resolver.dart';
 import 'package:roundtablezoo/presentation/app_settings/cubit/app_settings_cubit.dart';
+import 'package:roundtablezoo/presentation/app_settings/cubit/current_day_cubit.dart';
 import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_cubit.dart';
 import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_state.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_cubit.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_state.dart';
+import 'package:timezone/data/latest_all.dart' as tzdata;
+import 'package:timezone/timezone.dart' as tz;
 
+import 'fake_app_clock.dart';
 import 'mocks.dart';
 
 /// An [AppRoot] whose `StorageRecoveryCubit` already starts `recovered` —
@@ -49,7 +54,33 @@ Widget buildTestAppRoot({
   bool remindersMuted = false,
   bool onboardingSeen = true,
 }) {
-  if (!getIt.isRegistered<AppClock>()) configureDependencies();
+  if (!getIt.isRegistered<AppClock>()) {
+    // `main.dart` sets this via `TimeZones.initialize()` before
+    // `configureDependencies()` runs — its platform channel has no
+    // responder under `flutter test`, so `InjectionModule.appClock`
+    // (`tz.local`) would otherwise throw `LateInitializationError` the
+    // first time anything actually builds `CurrentDayCubit`/`TableCubit`
+    // through `getIt` (research.md R13, `project/process/lessons-learned.md`).
+    tzdata.initializeTimeZones();
+    tz.setLocalLocation(tz.UTC);
+    configureDependencies();
+
+    // `InjectionModule.appClock` registers the real `SystemAppClock`,
+    // which arms a genuine `Timer` for the next minute boundary on
+    // construction — meant to outlive the whole app, so it's never
+    // cancelled. The Table screen (`specs/004-table-screen`) is the first
+    // widget-tree code to actually resolve `AppClock` (via
+    // `DiaryRepository`/`CurrentDayCubit`), and that Timer then outlives
+    // whichever test first triggers it, tripping
+    // `TestWidgetsFlutterBinding`'s "no pending timers" invariant no
+    // matter how many frames get pumped. Swapped for `FakeAppClock` here
+    // — same one-time-per-isolate registration as everything else in this
+    // block — so no widget test ever constructs a real `SystemAppClock`.
+    unawaited(Future.value(getIt.unregister<AppClock>()));
+    getIt.registerLazySingleton<AppClock>(
+      () => FakeAppClock(now: DateTime.utc(2026), location: tz.UTC),
+    );
+  }
   _useFakeNotificationScheduler();
 
   final database = AppDatabase(NativeDatabase.memory());
@@ -65,6 +96,19 @@ Widget buildTestAppRoot({
     if (getIt.isRegistered<AppSettingsCubit>()) unawaited(Future.value(getIt.unregister<AppSettingsCubit>()));
     getIt.registerLazySingleton<AppSettingsCubit>(
       () => AppSettingsCubit(settingsRepository: getIt<SettingsRepository>()),
+    );
+
+    // Same freshening reasoning as `AppSettingsCubit` above: a fresh
+    // `CurrentDayCubit` per call, tied to this call's `SettingsRepository`
+    // — the Table screen (`specs/004-table-screen`) reads it via
+    // `BlocListener` (research.md R13).
+    if (getIt.isRegistered<CurrentDayCubit>()) unawaited(Future.value(getIt.unregister<CurrentDayCubit>()));
+    getIt.registerLazySingleton<CurrentDayCubit>(
+      () => CurrentDayCubit(
+        clock: getIt<AppClock>(),
+        dayResolver: getIt<DayResolver>(),
+        settingsRepository: getIt<SettingsRepository>(),
+      ),
     );
   }
 
@@ -98,6 +142,8 @@ Widget buildTestAppRoot({
 /// none are — and `addTearDown` runs too late to help, after that check.
 /// Call this as the last step of the test body (not via `addTearDown`) to
 /// dispose deterministically and flush the Timer before the test returns.
+/// `CurrentDayCubit.close()` (`specs/004-table-screen`) cancels its own
+/// Drift `watch()` subscription the same way — same fix, same reason.
 Future<void> disposeTestAppRoot(WidgetTester tester) async {
   await tester.pumpWidget(const SizedBox());
   await tester.pump(const Duration());

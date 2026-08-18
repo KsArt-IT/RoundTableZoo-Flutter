@@ -9,7 +9,7 @@ import 'package:roundtablezoo/gen/app_localizations.dart';
 import 'package:roundtablezoo/presentation/onboarding/onboarding_page.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_state.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/storage_recovery_page.dart';
-import 'package:roundtablezoo/presentation/table/table_placeholder_page.dart';
+import 'package:roundtablezoo/presentation/table/table_page.dart';
 
 import '../support/test_app_root.dart';
 
@@ -180,7 +180,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(OnboardingPage), findsNothing);
-      expect(find.byType(TablePlaceholderPage), findsOneWidget);
+      expect(find.byType(TablePage), findsOneWidget);
 
       // Same-session terminality (FR-006a): a direct re-entry attempt
       // bounces straight back, same as C9 above.

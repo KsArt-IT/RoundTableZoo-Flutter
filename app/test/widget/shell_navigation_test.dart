@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
 import 'package:roundtablezoo/presentation/diary/diary_placeholder_page.dart';
 import 'package:roundtablezoo/presentation/settings/settings_page.dart';
-import 'package:roundtablezoo/presentation/table/table_placeholder_page.dart';
+import 'package:roundtablezoo/presentation/table/table_page.dart';
 
 import '../support/test_app_root.dart';
 
@@ -25,7 +25,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final l10n = await _renderedLocalizations(tester);
-    expect(_bodyText(TablePlaceholderPage, l10n.sectionTable), findsOneWidget);
+    expect(_bodyText(TablePage, l10n.sectionTable), findsOneWidget);
     expect(find.byType(DiaryPlaceholderPage), findsNothing);
     expect(find.byType(SettingsPage), findsNothing);
 
@@ -48,7 +48,7 @@ void main() {
 
     await tester.tap(find.widgetWithText(NavigationDestination, l10n.sectionTable));
     await tester.pumpAndSettle();
-    expect(_bodyText(TablePlaceholderPage, l10n.sectionTable), findsOneWidget);
+    expect(_bodyText(TablePage, l10n.sectionTable), findsOneWidget);
 
     await disposeTestAppRoot(tester);
   });
@@ -66,7 +66,7 @@ void main() {
 
     // The Table branch is offstage, not torn down: IndexedStack (not a
     // route push/pop) backs the shell, so its widget stays in the tree.
-    expect(find.byType(TablePlaceholderPage, skipOffstage: false), findsOneWidget);
+    expect(find.byType(TablePage, skipOffstage: false), findsOneWidget);
     expect(find.byType(NavigationBar), findsOneWidget);
 
     await disposeTestAppRoot(tester);

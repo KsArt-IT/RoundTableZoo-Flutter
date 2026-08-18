@@ -54,20 +54,20 @@ description: "Task list for feature implementation: Экран «Стол»"
 
 **⚠️ CRITICAL**: ни одна история не начинается, пока эта фаза не завершена
 
-- [ ] T009 Добавить `AiProxyFailure extends AppFailure` в `app/lib/core/errors/app_failure.dart` с кодами `network`, `rateLimited`, `aiDisabled`, `invalidResponse`, `timeout` и `localizedMessage` по образцу `DatabaseFailure` (research.md R7, FR-024–FR-027b)
-- [ ] T010 [P] Создать `app/lib/domain/entities/character.dart` — Freezed-сущность по `data-model.md` §2 (`id`, `name`, `colorHex`, `idleAnimation?`, `talkAnimation?`, `fallbackReply`, `maxReplyLength`)
-- [ ] T011 [P] Добавить новые ключи локализации в `app/lib/l10n/intl_ru.arb`, `intl_en.arb`, `intl_uk.arb`: подписи шкалы, плейсхолдер и счётчик поля текста, состояния персонажа, подсказки FR-014a, тексты `aiNetwork`/`aiRateLimited`/`aiTemporarilyDisabled`, пометки «на прежний текст» и «ответ по памяти», подпись действия «поделиться» (research.md R16)
-- [ ] T012 Дополнить строку `onboardingAiDisclosure` во всех трёх ARB упоминанием анонимного идентификатора установки, уходящего вместе с текстом (FR-034a)
-- [ ] T013 Создать `app/lib/data/datasources/character_catalog.dart` — загрузка `assets/characters/characters.json` через `rootBundle`, кэш на сессию, `Result<List<Character>>`, `SerializationFailure` при нарушении схемы (research.md R4, contracts/character-config.md §3)
-- [ ] T014 [P] Написать `app/test/data/character_catalog_test.dart`: корректный разбор, отсутствие обязательного поля, дубль `id`, пустой массив, неизвестные поля игнорируются
-- [ ] T015 Зарегистрировать `CharacterCatalog` и `AiProxyClient` (боевой/заглушка по `AiProxyConfig`) в `app/lib/core/di/injection_module.dart`
-- [ ] T016 Выполнить `dart run build_runner build --delete-conflicting-outputs` и `flutter gen-l10n`, убедиться в отсутствии ошибок кодогенерации
-- [ ] T017 Обновить `app/test/support/test_app_root.dart`: пересоздавать `CurrentDayCubit` на каждый `buildTestAppRoot()` тем же приёмом, что уже применён к `AppSettingsCubit` (research.md R13, `project/process/lessons-learned.md`)
-- [ ] T018 [P] Добавить в `app/test/support/mocks.dart` моки `AiReactionRepository`, `CharacterCatalog`, `ShareService` на `mocktail`
-- [ ] T019 Подменять `ShareService` на мок в `app/test/support/test_app_root.dart`, чтобы widget-тесты не уходили в платформенный канал (урок про `MissingPluginException`)
+- [x] T009 Добавить `AiProxyFailure extends AppFailure` в `app/lib/core/errors/app_failure.dart` с кодами `network`, `rateLimited`, `aiDisabled`, `invalidResponse`, `timeout` и `localizedMessage` по образцу `DatabaseFailure` (research.md R7, FR-024–FR-027b)
+- [x] T010 [P] Создать `app/lib/domain/entities/character.dart` — Freezed-сущность по `data-model.md` §2 (`id`, `name`, `colorHex`, `idleAnimation?`, `talkAnimation?`, `fallbackReply`, `maxReplyLength`)
+- [x] T011 [P] Добавить новые ключи локализации в `app/lib/l10n/intl_ru.arb`, `intl_en.arb`, `intl_uk.arb`: подписи шкалы, плейсхолдер и счётчик поля текста, состояния персонажа, подсказки FR-014a, тексты `aiNetwork`/`aiRateLimited`/`aiTemporarilyDisabled`, пометки «на прежний текст» и «ответ по памяти», подпись действия «поделиться» (research.md R16)
+- [x] T012 Дополнить строку `onboardingAiDisclosure` во всех трёх ARB упоминанием анонимного идентификатора установки, уходящего вместе с текстом (FR-034a)
+- [x] T013 Создать `app/lib/data/datasources/character_catalog.dart` — загрузка `assets/characters/characters.json` через `rootBundle`, кэш на сессию, `Result<List<Character>>`, `SerializationFailure` при нарушении схемы (research.md R4, contracts/character-config.md §3) — конструктор берёт `assetLoader` (по умолчанию `rootBundle.loadString`) для тестируемости без реального бандла
+- [x] T014 [P] Написать `app/test/data/character_catalog_test.dart`: корректный разбор, отсутствие обязательного поля, дубль `id`, пустой массив, неизвестные поля игнорируются
+- [x] T015 Зарегистрировать `CharacterCatalog` в `app/lib/core/di/injection_module.dart` — **`AiProxyClient` не регистрируется здесь**: его интерфейс создаётся только в T037 (Phase 4/US2), регистрировать в Phase 2 нечего; отложено до T037/T040, когда тип существует
+- [x] T016 Выполнить `dart run build_runner build --delete-conflicting-outputs` и `flutter gen-l10n`, убедиться в отсутствии ошибок кодогенерации
+- [x] T017 Обновить `app/test/support/test_app_root.dart`: пересоздавать `CurrentDayCubit` на каждый `buildTestAppRoot()` тем же приёмом, что уже применён к `AppSettingsCubit` (research.md R13, `project/process/lessons-learned.md`)
+- [x] T018 [P] Добавить в `app/test/support/mocks.dart` мок `CharacterCatalog` на `mocktail` — **`AiReactionRepository`/`ShareService` мокам** пока неоткуда взять интерфейс (те же T036/US2 и T070/US5); добавляются вместе с этими типами
+- [ ] T019 Подменять `ShareService` на мок в `app/test/support/test_app_root.dart`, чтобы widget-тесты не уходили в платформенный канал (урок про `MissingPluginException`) — **отложено до Phase 7/US5**: `ShareService` создаётся только в T070, подменять пока нечего
 - [x] T020a Публиковать текущий `StorageMode` в `app/lib/core/di/storage_di_switch.dart` в обеих ветках (`usePersistentStorage` → `persistent`, `useReadOnlyStorage` → `readOnly`) со снятием прежней регистрации; `unavailable` не регистрируется (research.md R12, FR-032) — **выполнено при `/speckit-analyze`**, `flutter analyze` без ошибок, 163 теста зелёные
-- [ ] T020b Регистрировать `StorageMode.persistent` в `app/test/support/test_app_root.dart` рядом с пересозданием `CurrentDayCubit` — иначе widget-тесты на `/table` упадут с `GetIt: StorageMode is not registered` (`project/process/lessons-learned.md`)
-- [ ] T020 Прогнать `flutter analyze` и `flutter test` — фундамент не ломает существующие тесты
+- [x] T020b Регистрировать `StorageMode.persistent` в `app/test/support/test_app_root.dart` рядом с пересозданием `CurrentDayCubit` — иначе widget-тесты на `/table` упадут с `GetIt: StorageMode is not registered` (`project/process/lessons-learned.md`) — **проверено уже покрытым T020a**: `buildTestAppRoot()` идёт через `StorageDiSwitch.usePersistentStorage()` для дефолтного (`recovered`) состояния, которое теперь публикует `StorageMode.persistent` само; отдельная регистрация не нужна
+- [x] T020 Прогнать `flutter analyze` и `flutter test` — фундамент не ломает существующие тесты — 0 ошибок analyze, 168 тестов зелёные (163 базовых + 5 новых `character_catalog_test.dart`)
 
 **Checkpoint**: доменные типы, ошибки, каталог и тестовая обвязка готовы — можно начинать истории
 
@@ -83,19 +83,19 @@ description: "Task list for feature implementation: Экран «Стол»"
 
 ### Tests for User Story 1
 
-- [ ] T021 [P] [US1] Написать `app/test/presentation/table_cubit_test.dart` — блок US1: `load()` на пустом дне, `load()` с существующей записью, `setMood` создаёт запись, `setMood` обновляет существующую, отказ репозитория уходит в `failures` без смены состояния, `readOnly` не вызывает репозиторий, `setMood` не затирает сохранённый `dayText` и не меняется от правки текста (FR-009, contracts/table-cubit.md §4)
-- [ ] T022 [P] [US1] Написать `app/test/widget/table_page_test.dart` — блок US1: шкала из 5 вариантов, выбор выделен, восстановление сохранённой оценки, баннер и сообщение в режиме только чтения; последней строкой каждого теста — `disposeTestAppRoot(tester)`
+- [x] T021 [P] [US1] Написать `app/test/presentation/table_cubit_test.dart` — блок US1: `load()` на пустом дне, `load()` с существующей записью, `setMood` создаёт запись, `setMood` обновляет существующую, отказ репозитория уходит в `failures` без смены состояния, `readOnly` не вызывает репозиторий, `setMood` не затирает сохранённый `dayText` и не меняется от правки текста (FR-009, contracts/table-cubit.md §4)
+- [x] T022 [P] [US1] Написать `app/test/widget/table_page_test.dart` — блок US1: шкала из 5 вариантов, выбор выделен, восстановление сохранённой оценки, баннер и сообщение в режиме только чтения; последней строкой каждого теста — `disposeTestAppRoot(tester)`
 
 ### Implementation for User Story 1
 
-- [ ] T023 [US1] Создать `app/lib/presentation/table/cubit/table_state.dart` — Freezed sealed `initial/loading/loaded/error` и `TableData` по `data-model.md` §3 (без полей реакций на этом шаге)
-- [ ] T024 [US1] Создать `app/lib/presentation/table/cubit/table_cubit.dart` — конструктор по `contracts/table-cubit.md` §1, методы `load()` и `setMood()`, поток `failures`, `StorageMode` для `readOnly` (research.md R12)
-- [ ] T025 [US1] Зарегистрировать `TableCubit` как `@injectable` factory в `app/lib/core/di/injection_module.dart` (research.md R5 — экранный, не `lazySingleton`)
-- [ ] T026 [P] [US1] Создать `app/lib/presentation/table/widgets/mood_scale_row.dart` — пять вариантов из `mood_scale.dart`, выбранный выделен формой и цветом, тап-таргет ≥`AppConstants.minTapTargetDp`, `Semantics` с подписью и состоянием (FR-001, FR-013)
-- [ ] T027 [US1] Создать `app/lib/presentation/table/table_page.dart` — `BlocProvider` через `getIt`, `state.when` с общими состояниями загрузки/ошибки, inline-подача ошибок из `failures` (FR-006b, FR-029)
-- [ ] T028 [US1] Заменить `TablePlaceholderPage` на `TablePage` в `app/lib/app/router/app_router.dart` и удалить `app/lib/presentation/table/table_placeholder_page.dart`
-- [ ] T029 [US1] Реализовать поведение режима «только чтение» в `TableCubit`/`TablePage`: сохранение не вызывается, показывается объяснение, баннер рисует существующий `ShellPage` (FR-032)
-- [ ] T030 [US1] Прогнать `flutter analyze` и `flutter test`, затем ручной прогон шагов US1 из `quickstart.md` §2 и §5
+- [x] T023 [US1] Создать `app/lib/presentation/table/cubit/table_state.dart` — Freezed sealed `initial/loading/loaded/error` и `TableData` по `data-model.md` §3 (без полей реакций на этом шаге)
+- [x] T024 [US1] Создать `app/lib/presentation/table/cubit/table_cubit.dart` — конструктор по `contracts/table-cubit.md` §1, методы `load()` и `setMood()`, поток `failures`, `StorageMode` для `readOnly` (research.md R12) — конструктор в этом срезе берёт только `DiaryRepository`/`StorageMode`: `SettingsRepository`/`AiReactionRepository`/`CharacterCatalog`/`AppClock` из полного контракта §1 присоединяются в US2 (T041a/T043), когда появляются текст/реакции; `load()` принимает `DayKey` явно (день приходит из `CurrentDayCubit` через `TablePage`, а не пересчитывается в Cubit-е — принцип IV)
+- [x] T025 [US1] Зарегистрировать `TableCubit` как `@injectable` factory в `app/lib/core/di/injection_module.dart` (research.md R5 — экранный, не `lazySingleton`) — по образцу `settingsCubit`: фабрика-метод в `InjectionModule`, не аннотация на классе (в этом кодовом стиле ни один Cubit не аннотируется `@injectable` напрямую)
+- [x] T026 [P] [US1] Создать `app/lib/presentation/table/widgets/mood_scale_row.dart` — пять вариантов из `mood_scale.dart`, выбранный выделен формой и цветом, тап-таргет ≥`AppConstants.minTapTargetDp`, `Semantics` с подписью и состоянием (FR-001, FR-013)
+- [x] T027 [US1] Создать `app/lib/presentation/table/table_page.dart` — `BlocProvider` через `getIt`, `state.when` с общими состояниями загрузки/ошибки, inline-подача ошибок из `failures` (FR-006b, FR-029)
+- [x] T028 [US1] Заменить `TablePlaceholderPage` на `TablePage` в `app/lib/app/router/app_router.dart` и удалить `app/lib/presentation/table/table_placeholder_page.dart` — также обновлены ссылки на `TablePlaceholderPage` в `shell_navigation_test.dart`/`theme_locale_test.dart`/`onboarding_gate_test.dart`
+- [x] T029 [US1] Реализовать поведение режима «только чтение» в `TableCubit`/`TablePage`: сохранение не вызывается, показывается объяснение, баннер рисует существующий `ShellPage` (FR-032) — `ShellPage` уже рисует `ReadOnlyBanner` глобально (существовало до этой фичи); `TablePage` добавляет свою inline-подсказку (`l10n.storageReadOnly`) рядом со шкалой и отключает `MoodScaleRow`
+- [x] T030 [US1] Прогнать `flutter analyze` и `flutter test`, затем ручной прогон шагов US1 из `quickstart.md` §2 и §5 — 0 ошибок analyze, 179 тестов зелёные (168 + 7 `table_cubit_test.dart` + 4 `table_page_test.dart`); по пути найдены и исправлены три независимые баги, не связанные с логикой US1 напрямую, но блокировавшие первый реальный widget-тест `CurrentDayCubit`/`TableCubit` — см. `project/process/lessons-learned.md`: `tz.local` не инициализировался в тестах, `SystemAppClock` армировал настоящий `Timer` в widget-тестах, `UserSettingsTable` не имел `primaryKey`
 
 **Checkpoint**: офлайн-ядро поставлено — приложение уже полезно как трекер настроения
 
