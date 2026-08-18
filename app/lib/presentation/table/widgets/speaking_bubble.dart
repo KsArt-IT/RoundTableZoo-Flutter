@@ -56,7 +56,15 @@ class _SpeakingBubbleState extends State<SpeakingBubble> with SingleTickerProvid
     if (_started) return;
     _started = true;
     if (widget.restored || MediaQuery.disableAnimationsOf(context)) {
-      _controller.value = 1;
+      // A restored reply can be part of the very first build (US3 —
+      // reactions restored by `load()`). Setting `_controller.value = 1`
+      // here fires its status listener synchronously, which calls
+      // `setState` on an ancestor mid-build — deferred to the next frame
+      // instead (harmless for the freshly-received case: this only runs
+      // once, on mount).
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _controller.value = 1;
+      });
     } else {
       _controller.forward();
     }
@@ -112,11 +120,17 @@ class _SpeakingBubbleState extends State<SpeakingBubble> with SingleTickerProvid
                             color: Theme.of(context).colorScheme.outline,
                           ),
                           const SizedBox(width: 4),
-                          Text(l10n.tableReplyFallbackLabel, style: Theme.of(context).textTheme.labelSmall),
+                          Text(
+                            l10n.tableReplyFallbackLabel,
+                            style: Theme.of(context).textTheme.labelSmall,
+                          ),
                         ],
                         if (isFallback && widget.stale) const SizedBox(width: 8),
                         if (widget.stale)
-                          Text(l10n.tableReplyStaleLabel, style: Theme.of(context).textTheme.labelSmall),
+                          Text(
+                            l10n.tableReplyStaleLabel,
+                            style: Theme.of(context).textTheme.labelSmall,
+                          ),
                       ],
                     ),
                   ],

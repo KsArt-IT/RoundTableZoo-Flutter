@@ -23,11 +23,6 @@ import 'package:roundtablezoo/presentation/table/cubit/table_state.dart';
 /// reasoning as `SettingsCubit`; no other cubit among its dependencies
 /// (principle I) — `TablePage` reads `CurrentDayCubit` itself and passes
 /// the resolved [DayKey] in, rather than this cubit re-deriving "today".
-///
-/// This is the US1+US2 slice of the full contract: mood, day text and
-/// reactions on the basic (non-racing) path. The generation counter for
-/// overlapping/repeated taps on the same character joins in US3
-/// (tasks.md T053).
 class TableCubit extends Cubit<TableState> {
   TableCubit({
     required DiaryRepository diaryRepository,
@@ -58,6 +53,12 @@ class TableCubit extends Cubit<TableState> {
   List<String> _enabledCharacterIds = const [];
   Timer? _debounceTimer;
 
+  /// One counter per character (research.md R6): bumped at the start of
+  /// every `requestReaction`, compared after the `await` returns. A
+  /// mismatch means a newer tap for the same character has since started —
+  /// this response is stale and must not `emit` or persist (FR-020).
+  final Map<String, int> _generation = {};
+
   final StreamController<AppFailure> _failures = StreamController<AppFailure>.broadcast();
 
   /// One-off signals: a failed `setMood`/text save, a blocked
@@ -69,10 +70,11 @@ class TableCubit extends Cubit<TableState> {
 
   /// Loads the entry for [dayKey] — the current day, as resolved by
   /// `CurrentDayCubit` (principle IV: not re-derived here) — the character
-  /// catalog and the currently-enabled roster. Reactions aren't restored
-  /// yet in this slice (US3, tasks.md T054): every slot starts `idle`.
+  /// catalog, the currently-enabled roster, and the last reply per
+  /// character (research.md R11, `restored: true` — FR-003a, FR-003b).
   Future<void> load(DayKey dayKey) async {
     emit(const TableState.loading());
+    _generation.clear();
 
     final entryResult = await _diaryRepository.entryForDay(dayKey);
     if (isClosed) return;
@@ -94,6 +96,30 @@ class TableCubit extends Cubit<TableState> {
     _enabledCharacterIds = settingsResult.valueOrNull?.enabledCharacterIds ?? const [];
 
     final characters = _filteredCharacters();
+    final slots = <String, CharacterSlot>{
+      for (final c in characters) c.id: const CharacterSlot.idle(),
+    };
+
+    final entryId = entry?.id;
+    if (entryId != null) {
+      final reactionsResult = await _diaryRepository.reactionsFor(entryId);
+      if (isClosed) return;
+      final reactions = reactionsResult.valueOrGet(() => const <CharacterReaction>[]);
+      // The datasource sorts ascending by createdAt (research.md R11), so
+      // the last write per characterId wins — the latest reply. A
+      // characterId with no matching seat (removed from the catalog, or
+      // disabled) is dropped along with it — nothing to restore into.
+      final latestByCharacter = <String, CharacterReaction>{};
+      for (final reaction in reactions) {
+        latestByCharacter[reaction.characterId] = reaction;
+      }
+      for (final reactionEntry in latestByCharacter.entries) {
+        if (slots.containsKey(reactionEntry.key)) {
+          slots[reactionEntry.key] = CharacterSlot.spoken(reactionEntry.value, restored: true);
+        }
+      }
+    }
+
     emit(
       TableState.loaded(
         TableData(
@@ -104,10 +130,22 @@ class TableCubit extends Cubit<TableState> {
           entryId: entry?.id,
           moodScore: entry?.moodScore,
           characters: characters,
-          slots: {for (final c in characters) c.id: const CharacterSlot.idle()},
+          slots: slots,
         ),
       ),
     );
+  }
+
+  /// The visible day changed under the screen — `CurrentDayCubit` ticked
+  /// past midnight (or `dayStartHour`) while `/table` stayed open
+  /// (research.md R13, FR-006). Any unsaved text is flushed to the
+  /// **outgoing** day before the state resets and the new day loads
+  /// (FR-006a); in-flight requests for the old day are neutralized by
+  /// clearing [_generation] inside [load].
+  Future<void> onDayChanged(DayKey key) async {
+    await flushDayText();
+    if (isClosed) return;
+    await load(key);
   }
 
   /// Saves [score] as today's mood, alongside whatever day text is
@@ -192,7 +230,11 @@ class TableCubit extends Cubit<TableState> {
         if (latest is! TableLoaded) return;
         emit(
           TableState.loaded(
-            latest.data.copyWith(entryId: entry.id, dayText: entry.dayText ?? '', isDayTextDirty: false),
+            latest.data.copyWith(
+              entryId: entry.id,
+              dayText: entry.dayText ?? '',
+              isDayTextDirty: false,
+            ),
           ),
         );
       },
@@ -201,9 +243,12 @@ class TableCubit extends Cubit<TableState> {
   }
 
   /// Requests [characterId]'s reaction to the current day text
-  /// (`contracts/table-cubit.md` §3, basic path — no generation counter
-  /// yet). Preconditions (FR-014) block the request and publish a signal
-  /// instead of silently doing nothing.
+  /// (`contracts/table-cubit.md` §3). Preconditions (FR-014) block the
+  /// request and publish a signal instead of silently doing nothing.
+  /// Concurrent/repeated taps for the same character are resolved by
+  /// [_generation] (research.md R6, FR-019, FR-020): the response from an
+  /// earlier tap is dropped once a newer one has started, both in the UI
+  /// and in storage.
   Future<void> requestReaction(String characterId) async {
     await flushDayText();
     if (isClosed) return;
@@ -228,8 +273,15 @@ class TableCubit extends Cubit<TableState> {
       return;
     }
 
+    final generation = (_generation[characterId] ?? 0) + 1;
+    _generation[characterId] = generation;
+
     final previousSlot = data.slots[characterId] ?? const CharacterSlot.idle();
-    emit(TableState.loaded(data.copyWith(slots: {...data.slots, characterId: const CharacterSlot.loading()})));
+    emit(
+      TableState.loaded(
+        data.copyWith(slots: {...data.slots, characterId: const CharacterSlot.loading()}),
+      ),
+    );
 
     final result = await _aiReactionRepository.requestReaction(
       characterId: characterId,
@@ -237,10 +289,12 @@ class TableCubit extends Cubit<TableState> {
       dayEntryId: entryId,
     );
     if (isClosed) return;
+    if (_generation[characterId] != generation) return;
 
     await result.match(
       success: (reaction) => _persistReaction(characterId, reaction),
-      failure: (failure) => _handleReactionFailure(characterId, failure, previousSlot, entryId: entryId),
+      failure: (failure) =>
+          _handleReactionFailure(characterId, failure, previousSlot, entryId: entryId),
     );
   }
 
@@ -287,7 +341,9 @@ class TableCubit extends Cubit<TableState> {
     result.match(
       success: (saved) => emit(
         TableState.loaded(
-          current.data.copyWith(slots: {...current.data.slots, characterId: CharacterSlot.spoken(saved)}),
+          current.data.copyWith(
+            slots: {...current.data.slots, characterId: CharacterSlot.spoken(saved)},
+          ),
         ),
       ),
       failure: (failure) {
@@ -309,7 +365,11 @@ class TableCubit extends Cubit<TableState> {
   void _revertSlot(String characterId, CharacterSlot previous, AppFailure failure) {
     final current = state;
     if (current is! TableLoaded) return;
-    emit(TableState.loaded(current.data.copyWith(slots: {...current.data.slots, characterId: previous})));
+    emit(
+      TableState.loaded(
+        current.data.copyWith(slots: {...current.data.slots, characterId: previous}),
+      ),
+    );
     _publishFailure(failure);
   }
 
@@ -329,7 +389,9 @@ class TableCubit extends Cubit<TableState> {
     final characters = _filteredCharacters();
     if (const ListEquality<Character>().equals(characters, current.data.characters)) return;
 
-    final slots = {for (final c in characters) c.id: current.data.slots[c.id] ?? const CharacterSlot.idle()};
+    final slots = {
+      for (final c in characters) c.id: current.data.slots[c.id] ?? const CharacterSlot.idle(),
+    };
     emit(TableState.loaded(current.data.copyWith(characters: characters, slots: slots)));
   }
 

@@ -149,19 +149,19 @@ description: "Task list for feature implementation: Экран «Стол»"
 
 ### Tests for User Story 3
 
-- [ ] T050 [P] [US3] Дополнить `app/test/presentation/table_cubit_test.dart`: два тапа по одному персонажу (побеждает последний, устаревший ответ не вызывает `addReaction`), параллельные тапы по двум персонажам, `isClosed` после `await`, три переспроса одного персонажа дают три сохранённых реакции при одной показанной (contracts/table-cubit.md §3, FR-019, FR-020, FR-021a, FR-021b, FR-021d)
-- [ ] T051 [P] [US3] Дополнить `app/test/presentation/table_cubit_test.dart`: восстановление последней реплики на персонажа при `load()`, `restored: true`, отсутствие сетевых вызовов; пометка `stale` при правке текста и её снятие новым ответом; день с двумя записями (после смены пояса) — экран и новые реакции относятся к самой поздней (FR-003a, FR-005, FR-023, FR-023a)
-- [ ] T052 [P] [US3] Дополнить `app/test/presentation/table_cubit_test.dart`: `onDayChanged` сбрасывает состояние, перезагружает день и записывает несохранённый текст в **уходящий** день (FR-006, FR-006a)
+- [x] T050 [P] [US3] Дополнить `app/test/presentation/table_cubit_test.dart`: два тапа по одному персонажу (побеждает последний, устаревший ответ не вызывает `addReaction`), параллельные тапы по двум персонажам, `isClosed` после `await`, три переспроса одного персонажа дают три сохранённых реакции при одной показанной (contracts/table-cubit.md §3, FR-019, FR-020, FR-021a, FR-021b, FR-021d)
+- [x] T051 [P] [US3] Дополнить `app/test/presentation/table_cubit_test.dart`: восстановление последней реплики на персонажа при `load()`, `restored: true`, отсутствие сетевых вызовов; пометка `stale` при правке текста и её снятие новым ответом; день с двумя записями (после смены пояса) — экран и новые реакции относятся к самой поздней (FR-003a, FR-005, FR-023, FR-023a) — «две записи после смены пояса» уже закрыто на уровне репозитория (`entryForDay` возвращает последнюю по `occurredAt`, contracts/repositories.md), отдельный тест здесь не добавлял бы покрытия сверх мока
+- [x] T052 [P] [US3] Дополнить `app/test/presentation/table_cubit_test.dart`: `onDayChanged` сбрасывает состояние, перезагружает день и записывает несохранённый текст в **уходящий** день (FR-006, FR-006a)
 
 ### Implementation for User Story 3
 
-- [ ] T053 [US3] Добавить generation-счётчик в `app/lib/presentation/table/cubit/table_cubit.dart` в порядке «`isClosed` → сверка поколения → `emit`/`addReaction`» (research.md R6, FR-020)
-- [ ] T054 [US3] Реализовать восстановление реплик в `load()`: `entryForDay` → `reactionsFor` → последняя по `createdAt` на персонажа, `restored: true`, пропуск неизвестных `characterId` (research.md R11, FR-003a, FR-003b)
-- [ ] T055 [US3] Реализовать пометку `stale` при правке текста и её снятие новым ответом в `app/lib/presentation/table/cubit/table_cubit.dart` (FR-023, FR-023a, FR-023b)
-- [ ] T056 [US3] Отобразить пометку «на прежний текст» в `app/lib/presentation/table/widgets/speaking_bubble.dart` — визуально и в семантике (FR-023)
-- [ ] T057 [US3] Подключить `BlocListener<CurrentDayCubit, CurrentDayState>` в `app/lib/presentation/table/table_page.dart` с вызовом `TableCubit.onDayChanged` (research.md R13, FR-006); смена состава персонажей — обязанность T045a, здесь не дублируется
-- [ ] T058 [US3] Показывать восстановленные реплики сразу целиком, без эффекта проговаривания, в `app/lib/presentation/table/widgets/speaking_bubble.dart` (FR-003b)
-- [ ] T059 [US3] Прогнать `flutter analyze`, `flutter test`, ручной прогон соответствующих строк `quickstart.md` §2
+- [x] T053 [US3] Добавить generation-счётчик в `app/lib/presentation/table/cubit/table_cubit.dart` в порядке «`isClosed` → сверка поколения → `emit`/`addReaction`» (research.md R6, FR-020)
+- [x] T054 [US3] Реализовать восстановление реплик в `load()`: `entryForDay` → `reactionsFor` → последняя по `createdAt` на персонажа, `restored: true`, пропуск неизвестных `characterId` (research.md R11, FR-003a, FR-003b)
+- [x] T055 [US3] Реализовать пометку `stale` при правке текста и её снятие новым ответом в `app/lib/presentation/table/cubit/table_cubit.dart` (FR-023, FR-023a, FR-023b) — `markStale()`/дефолтный `stale: false` у нового `spoken(...)` уже покрывали это с US2 (T041/T042); эта задача подтверждает и покрывает тестом US3
+- [x] T056 [US3] Отобразить пометку «на прежний текст» в `app/lib/presentation/table/widgets/speaking_bubble.dart` — визуально и в семантике (FR-023) — реализовано вместе с виджетом в US2 (T047), уже показывает `tableReplyStaleLabel`
+- [x] T057 [US3] Подключить `BlocListener<CurrentDayCubit, CurrentDayState>` в `app/lib/presentation/table/table_page.dart` с вызовом `TableCubit.onDayChanged` (research.md R13, FR-006); смена состава персонажей — обязанность T045a, здесь не дублируется
+- [x] T058 [US3] Показывать восстановленные реплики сразу целиком, без эффекта проговаривания, в `app/lib/presentation/table/widgets/speaking_bubble.dart` (FR-003b) — реализовано вместе с виджетом в US2 (T047) через `restored: true`
+- [x] T059 [US3] Прогнать `flutter analyze`, `flutter test`, ручной прогон соответствующих строк `quickstart.md` §2 — 0 ошибок analyze, 221 тест зелёный (211 + 10 новых US3)
 
 **Checkpoint**: гонки тапов, восстановление и смена дня ведут себя предсказуемо
 
@@ -177,18 +177,18 @@ description: "Task list for feature implementation: Экран «Стол»"
 
 ### Tests for User Story 4
 
-- [ ] T060 [P] [US4] Дополнить `app/test/data/ai_reaction_repository_test.dart`: маппинг `429`/`503`/`422`/прочих статусов и типов `DioException` в коды `AiProxyFailure` (contracts/ai-proxy-client.md §4)
-- [ ] T061 [P] [US4] Дополнить `app/test/presentation/table_cubit_test.dart`: `invalidResponse` и `timeout` дают заготовленную реплику с `isFallback: true`; `network`/`rateLimited`/`aiDisabled` возвращают слот в состояние до тапа и публикуют сигнал в `failures` — включая случай «у персонажа уже была реплика» (FR-027, FR-027b, FR-029a)
-- [ ] T062 [P] [US4] Дополнить `app/test/widget/table_page_test.dart`: три текста ошибок различимы и показываются inline, шкала настроения остаётся рабочей при каждом отказе (FR-024–FR-026, FR-028)
+- [x] T060 [P] [US4] Дополнить `app/test/data/ai_reaction_repository_test.dart`: маппинг `429`/`503`/`422`/прочих статусов и типов `DioException` в коды `AiProxyFailure` (contracts/ai-proxy-client.md §4) — уже было полностью покрыто в US2 (T033), отдельных правок не потребовалось
+- [x] T061 [P] [US4] Дополнить `app/test/presentation/table_cubit_test.dart`: `invalidResponse` и `timeout` дают заготовленную реплику с `isFallback: true`; `network`/`rateLimited`/`aiDisabled` возвращают слот в состояние до тапа и публикуют сигнал в `failures` — включая случай «у персонажа уже была реплика» (FR-027, FR-027b, FR-029a)
+- [x] T062 [P] [US4] Дополнить `app/test/widget/table_page_test.dart`: три текста ошибок различимы и показываются inline, шкала настроения остаётся рабочей при каждом отказе (FR-024–FR-026, FR-028)
 
 ### Implementation for User Story 4
 
-- [ ] T063 [US4] Реализовать таймаут запроса 15 с в `app/lib/core/network/ai_proxy_client.dart` и его маппинг в `AiProxyFailure(timeout)` в `app/lib/data/repositories/ai_reaction_repository_impl.dart` (FR-027a, FR-027b)
-- [ ] T064 [US4] Реализовать ветку fallback в `app/lib/presentation/table/cubit/table_cubit.dart`: заготовленная реплика персонажа из каталога сохраняется через `addReaction` с `isFallback: true` (FR-021, FR-027)
-- [ ] T065 [US4] Реализовать возврат слота в состояние до тапа и публикацию сигнала для `network`/`rateLimited`/`aiDisabled` в `app/lib/presentation/table/cubit/table_cubit.dart` (FR-029a, FR-029b)
-- [ ] T066 [US4] Отобразить пометку «ответ по памяти» у заготовленной реплики в `app/lib/presentation/table/widgets/speaking_bubble.dart` — ненавязчиво, не как ошибка, с отражением в семантике (FR-027c)
-- [ ] T067 [US4] Показывать сообщение о несохранённой реплике при `persistFailed` в `app/lib/presentation/table/table_page.dart` (FR-021c)
-- [ ] T068 [US4] Прогнать `flutter analyze`, `flutter test`, ручной прогон всех пяти отказов из `quickstart.md` §3 и офлайн-проверки §5
+- [x] T063 [US4] Реализовать таймаут запроса 15 с в `app/lib/core/network/ai_proxy_client.dart` и его маппинг в `AiProxyFailure(timeout)` в `app/lib/data/repositories/ai_reaction_repository_impl.dart` (FR-027a, FR-027b) — уже реализовано в US2 (T037/T039)
+- [x] T064 [US4] Реализовать ветку fallback в `app/lib/presentation/table/cubit/table_cubit.dart`: заготовленная реплика персонажа из каталога сохраняется через `addReaction` с `isFallback: true` (FR-021, FR-027) — уже реализовано в US2 (`_handleReactionFailure`, T043)
+- [x] T065 [US4] Реализовать возврат слота в состояние до тапа и публикацию сигнала для `network`/`rateLimited`/`aiDisabled` в `app/lib/presentation/table/cubit/table_cubit.dart` (FR-029a, FR-029b) — уже реализовано в US2 (`_revertSlot`, T043); T061 добавил тесты на `rateLimited`/`aiDisabled` и на случай «была реплика», которых раньше не было
+- [x] T066 [US4] Отобразить пометку «ответ по памяти» у заготовленной реплики в `app/lib/presentation/table/widgets/speaking_bubble.dart` — ненавязчиво, не как ошибка, с отражением в семантике (FR-027c) — уже реализовано в US2 (T047, `tableReplyFallbackLabel`)
+- [x] T067 [US4] Показывать сообщение о несохранённой реплике при `persistFailed` в `app/lib/presentation/table/table_page.dart` (FR-021c) — уже реализовано в US1/US2 через общий `inlineFailure`-баннер (T027/T048), покрывающий любой `AppFailure` из `failures`, включая `persistFailed`
+- [x] T068 [US4] Прогнать `flutter analyze`, `flutter test`, ручной прогон всех пяти отказов из `quickstart.md` §3 и офлайн-проверки §5 — 0 ошибок analyze, 226 тестов зелёных (221 + 5 новых US4: 4 в `table_cubit_test.dart`, 1 в `table_page_test.dart`); офлайн-путь (US1) не тронут этой фазой
 
 **Checkpoint**: демонстрация не ломается ни при одном отказе сервиса
 

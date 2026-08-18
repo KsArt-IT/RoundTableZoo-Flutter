@@ -20,8 +20,7 @@ import 'package:roundtablezoo/presentation/table/widgets/round_table_layout.dart
 import 'package:roundtablezoo/presentation/table/widgets/speaking_bubble.dart';
 
 /// The `/table` screen: round table on top, mood scale and day text at the
-/// bottom (US1+US2 — restoring past reactions, generation-counted retaps
-/// and AI-failure fallbacks join in later user stories).
+/// bottom.
 ///
 /// No app bar — the table itself is the screen, and every bit of vertical
 /// space goes to it and to the reply bubbles.
@@ -82,37 +81,46 @@ class _TablePageState extends State<TablePage> with WidgetsBindingObserver {
 
     return BlocProvider.value(
       value: _cubit,
-      child: BlocConsumer<TableCubit, TableState>(
-        // A fresh `loaded` state means the last write succeeded — clears a
-        // stale failure banner without a separate success signal.
-        listener: (context, state) {
-          if (state is TableLoaded && _inlineFailure != null) {
-            setState(() => _inlineFailure = null);
-          }
+      child: BlocListener<CurrentDayCubit, CurrentDayState>(
+        // research.md R13 — the day tracked elsewhere (midnight/dayStartHour
+        // tick) moved on while this screen stayed open; flush the outgoing
+        // day's text and reload for the new one (FR-006, FR-006a).
+        listener: (context, dayState) {
+          if (dayState is CurrentDayDay) unawaited(_cubit.onDayChanged(dayState.key));
         },
-        builder: (context, state) {
-          return Scaffold(
-            body: SafeArea(
-              child: switch (state) {
-                TableInitial() || TableLoading() => const Center(child: CircularProgressIndicator()),
-                TableError(:final failure) => Center(child: Text(failure.localizedMessage(l10n))),
-                TableLoaded(:final data) => _TableContent(
-                  data: data,
-                  inlineFailure: _inlineFailure,
-                  onMoodSelected: (option) => unawaited(
-                    _cubit.setMood(
-                      MoodScore.create(
-                        option.value,
-                      ).valueOrGet(() => throw StateError('MoodScale.value is always 1..5')),
+        child: BlocConsumer<TableCubit, TableState>(
+          // A fresh `loaded` state means the last write succeeded — clears
+          // a stale failure banner without a separate success signal.
+          listener: (context, state) {
+            if (state is TableLoaded && _inlineFailure != null) {
+              setState(() => _inlineFailure = null);
+            }
+          },
+          builder: (context, state) {
+            return Scaffold(
+              body: SafeArea(
+                child: switch (state) {
+                  TableInitial() ||
+                  TableLoading() => const Center(child: CircularProgressIndicator()),
+                  TableError(:final failure) => Center(child: Text(failure.localizedMessage(l10n))),
+                  TableLoaded(:final data) => _TableContent(
+                    data: data,
+                    inlineFailure: _inlineFailure,
+                    onMoodSelected: (option) => unawaited(
+                      _cubit.setMood(
+                        MoodScore.create(
+                          option.value,
+                        ).valueOrGet(() => throw StateError('MoodScale.value is always 1..5')),
+                      ),
                     ),
+                    onDayTextChanged: _cubit.onDayTextChanged,
+                    onCharacterTap: (characterId) => unawaited(_cubit.requestReaction(characterId)),
                   ),
-                  onDayTextChanged: _cubit.onDayTextChanged,
-                  onCharacterTap: (characterId) => unawaited(_cubit.requestReaction(characterId)),
-                ),
-              },
-            ),
-          );
-        },
+                },
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -172,7 +180,11 @@ class _TableContent extends StatelessWidget {
                 Text(l10n.storageReadOnly, style: errorStyle),
               ],
               const SizedBox(height: 12),
-              DayTextField(text: data.dayText, onChanged: onDayTextChanged, enabled: !data.readOnly),
+              DayTextField(
+                text: data.dayText,
+                onChanged: onDayTextChanged,
+                enabled: !data.readOnly,
+              ),
               if (data.moodScore != null && data.dayText.trim().isEmpty) ...[
                 const SizedBox(height: 4),
                 Text(l10n.tableNeedTextHint, style: errorStyle, textAlign: TextAlign.center),
@@ -246,7 +258,8 @@ class _RoundTableState extends State<_RoundTable> {
     final visualState = switch (slot) {
       CharacterSlotIdle() => CharacterVisualState.idle,
       CharacterSlotLoading() => CharacterVisualState.waiting,
-      CharacterSlotSpoken() => isRevealing ? CharacterVisualState.speaking : CharacterVisualState.answered,
+      CharacterSlotSpoken() =>
+        isRevealing ? CharacterVisualState.speaking : CharacterVisualState.answered,
     };
 
     return RoundTableSeat(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:roundtablezoo/core/di/injection.dart';
 import 'package:roundtablezoo/core/errors/app_failure.dart';
+import 'package:roundtablezoo/core/network/stub_ai_proxy_client.dart';
 import 'package:roundtablezoo/domain/repositories/diary_repository.dart';
 import 'package:roundtablezoo/domain/value_objects/mood_score.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
@@ -11,12 +12,15 @@ import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recove
 
 import '../support/test_app_root.dart';
 
-Future<AppLocalizations> _renderedLocalizations(WidgetTester tester) =>
-    AppLocalizations.delegate.load(Localizations.localeOf(tester.element(find.byType(Scaffold).first)));
+Future<AppLocalizations> _renderedLocalizations(WidgetTester tester) => AppLocalizations.delegate
+    .load(Localizations.localeOf(tester.element(find.byType(Scaffold).first)));
 
-MoodScore _mood(int value) => MoodScore.create(value).valueOrGet(() => throw StateError('bad fixture'));
+MoodScore _mood(int value) =>
+    MoodScore.create(value).valueOrGet(() => throw StateError('bad fixture'));
 
 void main() {
+  tearDown(StubAiProxyClient.clearFailure);
+
   testWidgets('shows the five-option mood scale (FR-001)', (tester) async {
     final handle = tester.ensureSemantics();
     await tester.pumpWidget(buildTestAppRoot());
@@ -75,7 +79,9 @@ void main() {
     const cause = DatabaseFailure(null, code: DatabaseFailure.storageUnavailable);
     final handle = tester.ensureSemantics();
 
-    await tester.pumpWidget(buildTestAppRoot(initialState: const StorageRecoveryState.idle(cause: cause)));
+    await tester.pumpWidget(
+      buildTestAppRoot(initialState: const StorageRecoveryState.idle(cause: cause)),
+    );
     await tester.pumpAndSettle();
 
     final l10n = await _renderedLocalizations(tester);
@@ -161,45 +167,109 @@ void main() {
     await disposeTestAppRoot(tester);
   });
 
-  testWidgets('tapping two different characters shows two distinct bubbles, each over its own seat', (
-    tester,
-  ) async {
-    // Regression for a `Positioned`-without-`Key` bug in
-    // `RoundTableLayout`: with two bubbles both full-width, `Stack`
-    // reconciled them by list position instead of by character once the
-    // "who currently has a bubble" sublist changed shape, so a second
-    // reply could surface over the wrong seat.
-    await tester.pumpWidget(buildTestAppRoot());
-    await tester.pumpAndSettle();
+  testWidgets(
+    'tapping two different characters shows two distinct bubbles, each over its own seat',
+    (
+      tester,
+    ) async {
+      // Regression for a `Positioned`-without-`Key` bug in
+      // `RoundTableLayout`: with two bubbles both full-width, `Stack`
+      // reconciled them by list position instead of by character once the
+      // "who currently has a bubble" sublist changed shape, so a second
+      // reply could surface over the wrong seat.
+      await tester.pumpWidget(buildTestAppRoot());
+      await tester.pumpAndSettle();
 
-    final l10n = await _renderedLocalizations(tester);
-    await tester.tap(find.bySemanticsLabel(l10n.moodScaleGood));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), 'привет мир');
-    await tester.pump();
+      final l10n = await _renderedLocalizations(tester);
+      await tester.tap(find.bySemanticsLabel(l10n.moodScaleGood));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'привет мир');
+      await tester.pump();
 
-    await tester.tap(_idleSeats(l10n).first);
-    await tester.pumpAndSettle();
-    await tester.tap(_idleSeats(l10n).first);
-    await tester.pumpAndSettle();
+      await tester.tap(_idleSeats(l10n).first);
+      await tester.pumpAndSettle();
+      await tester.tap(_idleSeats(l10n).first);
+      await tester.pumpAndSettle();
 
-    final bubbleTexts = tester
-        .widgetList<Text>(find.byWidgetPredicate((widget) => widget is Text && (widget.data ?? '').contains('привет мир')))
-        .map((text) => text.data)
-        .toSet();
+      final bubbleTexts = tester
+          .widgetList<Text>(
+            find.byWidgetPredicate(
+              (widget) => widget is Text && (widget.data ?? '').contains('привет мир'),
+            ),
+          )
+          .map((text) => text.data)
+          .toSet();
 
-    // Two taps on two different characters must produce exactly two
-    // bubbles, each with its own character-flavored reply — not the same
-    // reply duplicated, and not a bubble stranded over a third seat.
-    expect(bubbleTexts, hasLength(2));
+      // Two taps on two different characters must produce exactly two
+      // bubbles, each with its own character-flavored reply — not the same
+      // reply duplicated, and not a bubble stranded over a third seat.
+      expect(bubbleTexts, hasLength(2));
 
-    await disposeTestAppRoot(tester);
-  });
+      await disposeTestAppRoot(tester);
+    },
+  );
+
+  testWidgets(
+    'network/rateLimited/aiDisabled show three distinct inline errors; mood scale stays usable '
+    '(US4, FR-024–FR-026, FR-028)',
+    (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(buildTestAppRoot());
+      await tester.pumpAndSettle();
+
+      final l10n = await _renderedLocalizations(tester);
+      await tester.tap(find.bySemanticsLabel(l10n.moodScaleGood));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'привет мир');
+      await tester.pump();
+
+      final failuresAndTexts = [
+        (const AiProxyFailure(null, code: AiProxyFailure.network), l10n.tableAiNetworkError),
+        (
+          const AiProxyFailure(null, code: AiProxyFailure.rateLimited),
+          l10n.tableAiRateLimitedError,
+        ),
+        (const AiProxyFailure(null, code: AiProxyFailure.aiDisabled), l10n.tableAiDisabledError),
+      ];
+
+      // Alternates between two mood values across iterations, so each
+      // check is a real state change — a re-tap of the already-selected
+      // value would trivially stay "selected" even if the scale broke.
+      final moodLabels = [l10n.moodScaleNeutral, l10n.moodScaleGood];
+
+      for (var i = 0; i < failuresAndTexts.length; i++) {
+        final (failure, expectedText) = failuresAndTexts[i];
+        StubAiProxyClient.enqueueFailure(failure);
+        await tester.tap(_idleSeats(l10n).first);
+        await tester.pumpAndSettle();
+
+        expect(find.text(expectedText), findsOneWidget);
+        // Every other error text stays absent — the three are genuinely
+        // distinct, not one generic banner.
+        for (final (_, otherText) in failuresAndTexts) {
+          if (otherText == expectedText) continue;
+          expect(find.text(otherText), findsNothing);
+        }
+
+        // The mood scale must still work after each of the three failures
+        // (FR-028).
+        final targetFinder = find.bySemanticsLabel(moodLabels[i % moodLabels.length]);
+        await tester.tap(targetFinder);
+        await tester.pumpAndSettle();
+        expect(tester.getSemantics(targetFinder).flagsCollection.isSelected, Tristate.isTrue);
+      }
+
+      handle.dispose();
+      await disposeTestAppRoot(tester);
+    },
+  );
 }
 
 /// Character seats are addressed by their own `Semantics` label
 /// (`"<name>, <state>"`, `character_avatar.dart`) rather than a fixed id —
 /// this matches any seat currently in the idle state.
 Finder _idleSeats(AppLocalizations l10n) => find.byWidgetPredicate(
-  (widget) => widget is Semantics && (widget.properties.label?.endsWith(l10n.tableCharacterStateIdle) ?? false),
+  (widget) =>
+      widget is Semantics &&
+      (widget.properties.label?.endsWith(l10n.tableCharacterStateIdle) ?? false),
 );
