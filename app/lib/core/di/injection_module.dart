@@ -3,9 +3,14 @@ import 'package:roundtablezoo/core/app_clock/app_clock.dart';
 import 'package:roundtablezoo/core/app_clock/system_app_clock.dart';
 import 'package:roundtablezoo/core/bootstrap/storage_mode.dart';
 import 'package:roundtablezoo/core/di/injection.dart';
+import 'package:roundtablezoo/core/network/ai_proxy_client.dart';
+import 'package:roundtablezoo/core/network/ai_proxy_config.dart';
+import 'package:roundtablezoo/core/network/stub_ai_proxy_client.dart';
 import 'package:roundtablezoo/core/notifications/notification_scheduler.dart';
 import 'package:roundtablezoo/core/notifications/reminder_coordinator.dart';
 import 'package:roundtablezoo/data/datasources/character_catalog.dart';
+import 'package:roundtablezoo/data/repositories/ai_reaction_repository_impl.dart';
+import 'package:roundtablezoo/domain/repositories/ai_reaction_repository.dart';
 import 'package:roundtablezoo/domain/repositories/diary_repository.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
 import 'package:roundtablezoo/domain/services/day_resolver.dart';
@@ -38,22 +43,47 @@ abstract class InjectionModule {
   DayResolver get dayResolver => DayResolver();
 
   /// No runtime dependencies — parses `assets/characters/characters.json`
-  /// and caches the result for the app's lifetime (data-model.md §2). The
-  /// ai-proxy client (real/stub, chosen by `AiProxyConfig.isConfigured`) is
-  /// registered alongside `AiReactionRepository` once it exists
-  /// (`specs/004-table-screen/tasks.md` T037/T040) — nothing here needs it
-  /// yet.
+  /// and caches the result for the app's lifetime (data-model.md §2).
   @lazySingleton
   CharacterCatalog get characterCatalog => CharacterCatalog();
 
+  /// Real client when a proxy address is configured, the deterministic
+  /// stub otherwise (research.md R2, R14) — never both, never chosen by
+  /// anything downstream.
+  @lazySingleton
+  AiProxyClient get aiProxyClient => AiProxyConfig.isConfigured ? DioAiProxyClient() : StubAiProxyClient();
+
+  /// `SettingsRepository` is only resolved from `getIt` the first time this
+  /// is actually built, by which point `StorageDiSwitch` has registered it
+  /// (same lazy-resolution reasoning as [currentDayCubit]).
+  @lazySingleton
+  AiReactionRepository aiReactionRepository(
+    AiProxyClient aiProxyClient,
+    SettingsRepository settingsRepository,
+    AppClock clock,
+  ) => AiReactionRepositoryImpl(client: aiProxyClient, settingsRepository: settingsRepository, clock: clock);
+
   /// Screen-scoped `factory` (not `@lazySingleton`) — a fresh instance per
-  /// visit to `/table`, same reasoning as [settingsCubit]. `DiaryRepository`
-  /// and `StorageMode` are only resolved from `getIt` the first time this
-  /// is actually built, by which point `StorageDiSwitch` has registered
-  /// them (same lazy-resolution reasoning as [currentDayCubit]).
+  /// visit to `/table`, same reasoning as [settingsCubit]. `DiaryRepository`,
+  /// `SettingsRepository` and `StorageMode` are only resolved from `getIt`
+  /// the first time this is actually built, by which point `StorageDiSwitch`
+  /// has registered them (same lazy-resolution reasoning as [currentDayCubit]).
   @injectable
-  TableCubit tableCubit(DiaryRepository diaryRepository, StorageMode storageMode) =>
-      TableCubit(diaryRepository: diaryRepository, storageMode: storageMode);
+  TableCubit tableCubit(
+    DiaryRepository diaryRepository,
+    SettingsRepository settingsRepository,
+    AiReactionRepository aiReactionRepository,
+    CharacterCatalog characterCatalog,
+    AppClock clock,
+    StorageMode storageMode,
+  ) => TableCubit(
+    diaryRepository: diaryRepository,
+    settingsRepository: settingsRepository,
+    aiReactionRepository: aiReactionRepository,
+    characterCatalog: characterCatalog,
+    clock: clock,
+    storageMode: storageMode,
+  );
 
   @lazySingleton
   ReminderPlanner reminderPlanner(DayResolver dayResolver) => ReminderPlanner(dayResolver: dayResolver);

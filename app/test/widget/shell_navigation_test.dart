@@ -24,8 +24,9 @@ void main() {
     await tester.pumpWidget(buildTestAppRoot());
     await tester.pumpAndSettle();
 
-    final l10n = await _renderedLocalizations(tester);
-    expect(_bodyText(TablePage, l10n.sectionTable), findsOneWidget);
+    // `TablePage` has no title of its own — the round table fills the
+    // screen instead (it's the only content the shell shows here).
+    expect(find.byType(TablePage), findsOneWidget);
     expect(find.byType(DiaryPlaceholderPage), findsNothing);
     expect(find.byType(SettingsPage), findsNothing);
 
@@ -48,7 +49,7 @@ void main() {
 
     await tester.tap(find.widgetWithText(NavigationDestination, l10n.sectionTable));
     await tester.pumpAndSettle();
-    expect(_bodyText(TablePage, l10n.sectionTable), findsOneWidget);
+    expect(find.byType(TablePage), findsOneWidget);
 
     await disposeTestAppRoot(tester);
   });

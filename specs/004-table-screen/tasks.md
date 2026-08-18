@@ -111,29 +111,29 @@ description: "Task list for feature implementation: Экран «Стол»"
 
 ### Tests for User Story 2
 
-- [ ] T031 [P] [US2] Дополнить `app/test/presentation/table_cubit_test.dart` блоком текста: дебаунс через `fake_async` (одно сохранение на серию правок), `flushDayText` из `close()` **и по `AppLifecycleState.paused`** (SC-009), текст до выбора эмодзи уходит первым `setMood` (FR-008a–FR-008c)
-- [ ] T032 [P] [US2] Дополнить `app/test/presentation/table_cubit_test.dart` блоком реакции: успешный ответ сохраняется и попадает в слот, предусловия FR-014 (нет настроения / пустой текст / `readOnly`) не отправляют запрос, отказ `addReaction` даёт `persistFailed` (FR-021c)
-- [ ] T033 [P] [US2] Написать `app/test/data/ai_reaction_repository_test.dart` — разбор успешного ответа по `contracts/ai-proxy-client.md` §3: несовпадение `character`, неизвестный `mood` → `neutral`, отсутствующая `intensity` → 0.5, пустой `reply` → `invalidResponse`
-- [ ] T034 [P] [US2] Дополнить `app/test/widget/table_page_test.dart`: поле текста со счётчиком и лимитом 2000, недоступность тапа по зверю без текста с видимой подсказкой, появление бабла после ответа
+- [x] T031 [P] [US2] Дополнить `app/test/presentation/table_cubit_test.dart` блоком текста: дебаунс через `fake_async` (одно сохранение на серию правок), `flushDayText` из `close()` **и по `AppLifecycleState.paused`** (SC-009), текст до выбора эмодзи уходит первым `setMood` (FR-008a–FR-008c)
+- [x] T032 [P] [US2] Дополнить `app/test/presentation/table_cubit_test.dart` блоком реакции: успешный ответ сохраняется и попадает в слот, предусловия FR-014 (нет настроения / пустой текст / `readOnly`) не отправляют запрос, отказ `addReaction` даёт `persistFailed` (FR-021c)
+- [x] T033 [P] [US2] Написать `app/test/data/ai_reaction_repository_test.dart` — разбор успешного ответа по `contracts/ai-proxy-client.md` §3: несовпадение `character`, неизвестный `mood` → `neutral`, отсутствующая `intensity` → 0.5, пустой `reply` → `invalidResponse`
+- [x] T034 [P] [US2] Дополнить `app/test/widget/table_page_test.dart`: поле текста со счётчиком и лимитом 2000, недоступность тапа по зверю без текста с видимой подсказкой, появление бабла после ответа
 
 ### Implementation for User Story 2
 
-- [ ] T035 [P] [US2] Создать `app/lib/data/models/ai_reaction_dto.dart` — `@JsonSerializable` по `contracts/ai-proxy-client.md` §3
-- [ ] T036 [P] [US2] Создать `app/lib/domain/repositories/ai_reaction_repository.dart` — интерфейс из `contracts/ai-proxy-client.md` §5
-- [ ] T037 [US2] Создать `app/lib/core/network/ai_proxy_client.dart` — интерфейс `AiProxyClient` и `DioAiProxyClient` с базовым URL из `AiProxyConfig`, таймаутами 10/15 с, без интерцептора подлинности (research.md R1, FR-016a)
-- [ ] T038 [P] [US2] Создать `app/lib/core/network/stub_ai_proxy_client.dart` — детерминированные реплики на персонажа (четыре зверя дают четыре различающиеся реплики на один текст — SC-003a), задержка ~1.2 с, управляемый сценарий отказа по образцу `DebugFailureInjector` (contracts/ai-proxy-client.md §6)
-- [ ] T039 [US2] Создать `app/lib/data/repositories/ai_reaction_repository_impl.dart` — единственное место маппинга HTTP/`DioException` → `AiProxyFailure`, правила разбора §3, логирование только кода отказа и `characterId` (FR-034b)
-- [ ] T040 [US2] Зарегистрировать `AiReactionRepository` в `app/lib/core/di/injection_module.dart`
-- [ ] T041 [US2] Расширить `TableData`/`CharacterSlot` в `app/lib/presentation/table/cubit/table_state.dart` полями по `data-model.md` §3 (`slots`, `characters`, `isDayTextDirty`)
-- [ ] T042 [US2] Реализовать в `app/lib/presentation/table/cubit/table_cubit.dart` работу с текстом: `onDayTextChanged` с дебаунсом, `flushDayText` (из `close()`, `paused`, перед запросом), сохранение текста, набранного до выбора эмодзи (FR-008a–FR-008c, FR-006a)
-- [ ] T043 [US2] Реализовать `requestReaction` в `app/lib/presentation/table/cubit/table_cubit.dart` без гонок (базовый путь: предусловия → `loading` → ответ → `addReaction` → `spoken`); generation-счётчик добавляется в US3
-- [ ] T044 [P] [US2] Создать `app/lib/presentation/table/widgets/day_text_field.dart` — поле с лимитом `AppConstants.maxDayTextLength`, счётчиком, вызовом `onDayTextChanged` (FR-007, FR-008)
-- [ ] T045a [US2] Фильтровать каталог по `enabledCharacterIds` и подписываться на `SettingsRepository.watch()` в `app/lib/presentation/table/cubit/table_cubit.dart`: состав стола обновляется без перезахода, выключенный персонаж исчезает вместе с баблом, его реакции остаются в хранилище (FR-010, FR-010c)
-- [ ] T045 [P] [US2] Создать `app/lib/presentation/table/widgets/round_table_layout.dart` — `LayoutBuilder` + `Stack` с тригонометрией, 1..6 персонажей, порядок из каталога (research.md R9, FR-010a)
-- [ ] T046 [P] [US2] Создать `app/lib/presentation/table/widgets/character_avatar.dart` — четыре состояния, Lottie при наличии ассета и статичный аватар при его отсутствии, `Semantics(button: true, label: '<имя>, <состояние>')`, тап-таргет ≥48dp (FR-010e, FR-011, FR-012, FR-013)
-- [ ] T047 [P] [US2] Создать `app/lib/presentation/table/widgets/speaking_bubble.dart` — эффект проговаривания через `AnimationController` с верхней границей 4 с, мгновенный показ при `MediaQuery.disableAnimationsOf` (research.md R8, FR-017, FR-017b, FR-033a)
-- [ ] T048 [US2] Собрать экран в `app/lib/presentation/table/table_page.dart`: шкала + поле текста + круглый стол + баблы, состояние ожидания сразу по тапу (FR-016), подсказки FR-014a
-- [ ] T049 [US2] Прогнать `flutter analyze`, `flutter test`, затем ручной прогон US2 из `quickstart.md` §2 на заглушке
+- [x] T035 [P] [US2] Создать `app/lib/data/models/ai_reaction_dto.dart` — `@JsonSerializable` по `contracts/ai-proxy-client.md` §3
+- [x] T036 [P] [US2] Создать `app/lib/domain/repositories/ai_reaction_repository.dart` — интерфейс из `contracts/ai-proxy-client.md` §5
+- [x] T037 [US2] Создать `app/lib/core/network/ai_proxy_client.dart` — интерфейс `AiProxyClient` и `DioAiProxyClient` с базовым URL из `AiProxyConfig`, таймаутами 10/15 с, без интерцептора подлинности (research.md R1, FR-016a)
+- [x] T038 [P] [US2] Создать `app/lib/core/network/stub_ai_proxy_client.dart` — детерминированные реплики на персонажа (четыре зверя дают четыре различающиеся реплики на один текст — SC-003a), задержка ~1.2 с, управляемый сценарий отказа по образцу `DebugFailureInjector` (contracts/ai-proxy-client.md §6)
+- [x] T039 [US2] Создать `app/lib/data/repositories/ai_reaction_repository_impl.dart` — единственное место маппинга HTTP/`DioException` → `AiProxyFailure`, правила разбора §3, логирование только кода отказа и `characterId` (FR-034b) — читает `installId` через `SettingsRepository.load()` (installId исключён из публичного `AiReactionRepository.requestReaction()` по контракту §5, значит источник — только внутри реализации)
+- [x] T040 [US2] Зарегистрировать `AiReactionRepository` в `app/lib/core/di/injection_module.dart` — вместе с `AiProxyClient` (реальный/заглушка по `AiProxyConfig.isConfigured`), отложенным ещё в Phase 2 (T015)
+- [x] T041 [US2] Расширить `TableData`/`CharacterSlot` в `app/lib/presentation/table/cubit/table_state.dart` полями по `data-model.md` §3 (`slots`, `characters`, `isDayTextDirty`)
+- [x] T042 [US2] Реализовать в `app/lib/presentation/table/cubit/table_cubit.dart` работу с текстом: `onDayTextChanged` с дебаунсом, `flushDayText` (из `close()`, `paused`, перед запросом), сохранение текста, набранного до выбора эмодзи (FR-008a–FR-008c, FR-006a)
+- [x] T043 [US2] Реализовать `requestReaction` в `app/lib/presentation/table/cubit/table_cubit.dart` без гонок (базовый путь: предусловия → `loading` → ответ → `addReaction` → `spoken`); generation-счётчик добавляется в US3
+- [x] T044 [P] [US2] Создать `app/lib/presentation/table/widgets/day_text_field.dart` — поле с лимитом `AppConstants.maxDayTextLength`, счётчиком, вызовом `onDayTextChanged` (FR-007, FR-008)
+- [x] T045a [US2] Фильтровать каталог по `enabledCharacterIds` и подписываться на `SettingsRepository.watch()` в `app/lib/presentation/table/cubit/table_cubit.dart`: состав стола обновляется без перезахода, выключенный персонаж исчезает вместе с баблом, его реакции остаются в хранилище (FR-010, FR-010c)
+- [x] T045 [P] [US2] Создать `app/lib/presentation/table/widgets/round_table_layout.dart` — `LayoutBuilder` + `Stack` с тригонометрией, 1..6 персонажей, порядок из каталога (research.md R9, FR-010a)
+- [x] T046 [P] [US2] Создать `app/lib/presentation/table/widgets/character_avatar.dart` — четыре состояния, Lottie при наличии ассета и статичный аватар при его отсутствии, `Semantics(button: true, label: '<имя>, <состояние>')`, тап-таргет ≥48dp (FR-010e, FR-011, FR-012, FR-013) — состояние «speaking» отслеживается локально в `_CharacterSeat` (`table_page.dart`), не в `TableCubit` (research.md R8)
+- [x] T047 [P] [US2] Создать `app/lib/presentation/table/widgets/speaking_bubble.dart` — эффект проговаривания через `AnimationController` с верхней границей 4 с, мгновенный показ при `MediaQuery.disableAnimationsOf` (research.md R8, FR-017, FR-017b, FR-033a) — долгое нажатие/шаринг присоединяется в US5 (T071), сейчас только короткий тап
+- [x] T048 [US2] Собрать экран в `app/lib/presentation/table/table_page.dart`: шкала + поле текста + круглый стол + баблы, состояние ожидания сразу по тапу (FR-016), подсказки FR-014a
+- [x] T049 [US2] Прогнать `flutter analyze`, `flutter test`, затем ручной прогон US2 из `quickstart.md` §2 на заглушке — 0 ошибок analyze, 211 тестов зелёные (179 + 20 `table_cubit_test.dart` US2-блоки + 16 `ai_reaction_repository_test.dart` + 3 `table_page_test.dart` US2-блоки, с учётом замены старых на новые); визуально проверено на iOS Simulator (реальная платформа проекта) — шкала, поле текста со счётчиком, подсказка FR-014a и круглый стол из 4 персонажей рендерятся корректно
 
 **Checkpoint**: US1 и US2 работают независимо — стол отвечает, реплики сохраняются
 

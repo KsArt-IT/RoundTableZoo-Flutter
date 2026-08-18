@@ -42,7 +42,9 @@ void main() {
     await getIt<SettingsRepository>().updateLocale(LocalePreference.uk);
     await tester.pumpAndSettle();
 
-    expect(_bodyText(TablePage, _ukTable), findsOneWidget);
+    // `TablePage` has no title text of its own — the shell's own
+    // navigation label is the locale signal for this section instead.
+    expect(find.widgetWithText(NavigationDestination, _ukTable), findsOneWidget);
 
     await tester.tap(find.widgetWithText(NavigationDestination, _ukDiary));
     await tester.pumpAndSettle();
@@ -62,7 +64,7 @@ void main() {
     await tester.pumpWidget(buildTestAppRoot());
     await tester.pumpAndSettle();
 
-    expect(_bodyText(TablePage, 'Стол'), findsOneWidget);
+    expect(find.widgetWithText(NavigationDestination, 'Стол'), findsOneWidget);
 
     await disposeTestAppRoot(tester);
   });

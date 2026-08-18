@@ -1,7 +1,9 @@
 import 'package:mocktail/mocktail.dart';
 import 'package:roundtablezoo/core/app_clock/app_clock.dart';
+import 'package:roundtablezoo/core/network/ai_proxy_client.dart';
 import 'package:roundtablezoo/core/notifications/notification_scheduler.dart';
 import 'package:roundtablezoo/data/datasources/character_catalog.dart';
+import 'package:roundtablezoo/domain/repositories/ai_reaction_repository.dart';
 import 'package:roundtablezoo/domain/repositories/diary_repository.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
 
@@ -20,6 +22,9 @@ class MockNotificationScheduler extends Mock implements NotificationScheduler {}
 /// concrete class with no injected state.
 class MockCharacterCatalog extends Mock implements CharacterCatalog {}
 
-// MockAiReactionRepository and MockShareService are added once their
-// interfaces exist (`domain/repositories/ai_reaction_repository.dart` —
-// tasks.md T036/US2; `core/sharing/share_service.dart` — T070/US5).
+class MockAiReactionRepository extends Mock implements AiReactionRepository {}
+
+class MockAiProxyClient extends Mock implements AiProxyClient {}
+
+// MockShareService is added once its interface exists
+// (`core/sharing/share_service.dart` — tasks.md T070/US5).

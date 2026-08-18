@@ -76,6 +76,14 @@ class ValidationFailure extends AppFailure {
   static const dayTextTooLong = 'day_text_too_long';
   static const reminderTimeInvalid = 'reminder_time_invalid';
 
+  /// `TableCubit.requestReaction` precondition (FR-014): no mood picked
+  /// yet. Same wording as the always-visible on-screen hint (FR-014a) —
+  /// this signal is defense in depth, not a separate message.
+  static const moodNotSelected = 'mood_not_selected';
+
+  /// `TableCubit.requestReaction` precondition (FR-014): day text blank.
+  static const dayTextEmpty = 'day_text_empty';
+
   @override
   String localizedMessage(AppLocalizations locale) => switch (code) {
     moodScoreOutOfRange => locale.moodScoreOutOfRange,
@@ -84,6 +92,8 @@ class ValidationFailure extends AppFailure {
     noCharactersEnabled => locale.noCharactersEnabled,
     dayTextTooLong => locale.dayTextTooLong,
     reminderTimeInvalid => locale.reminderTimeInvalid,
+    moodNotSelected => locale.tableNeedMoodHint,
+    dayTextEmpty => locale.tableNeedTextHint,
     _ => message,
   };
 }

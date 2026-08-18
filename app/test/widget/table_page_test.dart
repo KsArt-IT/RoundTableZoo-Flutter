@@ -96,4 +96,110 @@ void main() {
     handle.dispose();
     await disposeTestAppRoot(tester);
   });
+
+  testWidgets('day text field shows a counter and enforces the length limit (FR-007, FR-008)', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildTestAppRoot());
+    await tester.pumpAndSettle();
+
+    final l10n = await _renderedLocalizations(tester);
+    await tester.enterText(find.byType(TextField), 'hello');
+    await tester.pump();
+
+    expect(find.text(l10n.tableDayTextCounter(5, 2000)), findsOneWidget);
+
+    await disposeTestAppRoot(tester);
+  });
+
+  testWidgets('tapping a character without text shows a hint and does nothing (FR-014, FR-014a)', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(buildTestAppRoot());
+    await tester.pumpAndSettle();
+
+    final l10n = await _renderedLocalizations(tester);
+    await tester.tap(find.bySemanticsLabel(l10n.moodScaleGood));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.tableNeedTextHint), findsOneWidget);
+    // No character seat is tappable yet — every seat's `Semantics` label
+    // still ends in the idle-state suffix, never a `waiting`/`answered` one.
+    expect(_idleSeats(l10n), findsWidgets);
+
+    handle.dispose();
+    await disposeTestAppRoot(tester);
+  });
+
+  testWidgets('a reply bubble appears after tapping a character (US2 basic path, stub client)', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildTestAppRoot());
+    await tester.pumpAndSettle();
+
+    final l10n = await _renderedLocalizations(tester);
+    await tester.tap(find.bySemanticsLabel(l10n.moodScaleGood));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'сегодня был хороший день');
+    await tester.pump();
+
+    await tester.tap(_idleSeats(l10n).first);
+    // The stub client answers after ~1.2s (research.md R14) — pumpAndSettle
+    // advances virtual time until no more frames/timers are pending.
+    await tester.pumpAndSettle();
+
+    // Scoped to `Text` — `find.textContaining` alone also matches the day
+    // text field's own `EditableText` render, which holds the same string.
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget is Text && (widget.data ?? '').contains('сегодня был хороший день'),
+      ),
+      findsOneWidget,
+    );
+
+    await disposeTestAppRoot(tester);
+  });
+
+  testWidgets('tapping two different characters shows two distinct bubbles, each over its own seat', (
+    tester,
+  ) async {
+    // Regression for a `Positioned`-without-`Key` bug in
+    // `RoundTableLayout`: with two bubbles both full-width, `Stack`
+    // reconciled them by list position instead of by character once the
+    // "who currently has a bubble" sublist changed shape, so a second
+    // reply could surface over the wrong seat.
+    await tester.pumpWidget(buildTestAppRoot());
+    await tester.pumpAndSettle();
+
+    final l10n = await _renderedLocalizations(tester);
+    await tester.tap(find.bySemanticsLabel(l10n.moodScaleGood));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'привет мир');
+    await tester.pump();
+
+    await tester.tap(_idleSeats(l10n).first);
+    await tester.pumpAndSettle();
+    await tester.tap(_idleSeats(l10n).first);
+    await tester.pumpAndSettle();
+
+    final bubbleTexts = tester
+        .widgetList<Text>(find.byWidgetPredicate((widget) => widget is Text && (widget.data ?? '').contains('привет мир')))
+        .map((text) => text.data)
+        .toSet();
+
+    // Two taps on two different characters must produce exactly two
+    // bubbles, each with its own character-flavored reply — not the same
+    // reply duplicated, and not a bubble stranded over a third seat.
+    expect(bubbleTexts, hasLength(2));
+
+    await disposeTestAppRoot(tester);
+  });
 }
+
+/// Character seats are addressed by their own `Semantics` label
+/// (`"<name>, <state>"`, `character_avatar.dart`) rather than a fixed id —
+/// this matches any seat currently in the idle state.
+Finder _idleSeats(AppLocalizations l10n) => find.byWidgetPredicate(
+  (widget) => widget is Semantics && (widget.properties.label?.endsWith(l10n.tableCharacterStateIdle) ?? false),
+);

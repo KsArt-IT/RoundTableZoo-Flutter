@@ -7,6 +7,7 @@ import 'package:roundtablezoo/core/bootstrap/app_bootstrap.dart';
 import 'package:roundtablezoo/core/bootstrap/storage_mode.dart';
 import 'package:roundtablezoo/core/di/injection.dart';
 import 'package:roundtablezoo/core/di/storage_di_switch.dart';
+import 'package:roundtablezoo/core/network/ai_proxy_config.dart';
 import 'package:roundtablezoo/core/notifications/notification_permission_status.dart';
 import 'package:roundtablezoo/core/notifications/notification_scheduler.dart';
 import 'package:roundtablezoo/core/notifications/reminder_coordinator.dart';
@@ -32,8 +33,14 @@ Future<void> main() async {
 /// single frame is drawn. Caught and retried via [StartupErrorPage]
 /// instead (FR-018a) — a path that must never fire for storage failures,
 /// which have their own recovery flow (FR-021a).
+///
+/// [AiProxyConfig.assertConfiguredForRelease] lives in this same try block
+/// for the same reason: a release build with no `PROXY_BASE_URL` must fail
+/// loudly here, not silently fall back to `StubAiProxyClient` the first
+/// time `/table` resolves `AiReactionRepository` (SC-012).
 Future<void> _start() async {
   try {
+    AiProxyConfig.assertConfiguredForRelease();
     await TimeZones.initialize();
     // Retrying after a partial `configureDependencies()` would otherwise
     // hit get_it's "already registered" — safe to reset since nothing has
