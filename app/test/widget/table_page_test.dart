@@ -2,14 +2,18 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:roundtablezoo/core/di/injection.dart';
 import 'package:roundtablezoo/core/errors/app_failure.dart';
 import 'package:roundtablezoo/core/network/stub_ai_proxy_client.dart';
+import 'package:roundtablezoo/core/sharing/share_service.dart';
 import 'package:roundtablezoo/domain/repositories/diary_repository.dart';
 import 'package:roundtablezoo/domain/value_objects/mood_score.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_state.dart';
+import 'package:roundtablezoo/presentation/table/widgets/speaking_bubble.dart';
 
+import '../support/mocks.dart';
 import '../support/test_app_root.dart';
 
 Future<AppLocalizations> _renderedLocalizations(WidgetTester tester) => AppLocalizations.delegate
@@ -204,6 +208,58 @@ void main() {
       // bubbles, each with its own character-flavored reply — not the same
       // reply duplicated, and not a bubble stranded over a third seat.
       expect(bubbleTexts, hasLength(2));
+
+      await disposeTestAppRoot(tester);
+    },
+  );
+
+  testWidgets(
+    'long-pressing a reply bubble shares its text and character name; a short tap does not '
+    '(US5, FR-030)',
+    (tester) async {
+      // A taller viewport gives `RoundTableLayout` enough room for an
+      // "opens upward" bubble (the top/right seats, `round_table_layout.dart`)
+      // to stay fully on-screen — the default 800x600 clips it, which
+      // makes `longPress` below miss the widget entirely.
+      tester.view.physicalSize = const Size(800, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(buildTestAppRoot());
+      await tester.pumpAndSettle();
+
+      final l10n = await _renderedLocalizations(tester);
+      await tester.tap(find.bySemanticsLabel(l10n.moodScaleGood));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'привет мир');
+      await tester.pump();
+
+      await tester.tap(_idleSeats(l10n).first);
+      await tester.pumpAndSettle();
+
+      final shareService = getIt<ShareService>() as MockShareService;
+      verifyNever(() => shareService.shareText(any()));
+
+      // The short tap that revealed the reply above must not itself count
+      // as a share — only a long press does (FR-017a). Long-pressing the
+      // whole bubble widget (not the `Text` line, which can sit a few
+      // pixels off the default 800x600 test viewport) keeps the tap point
+      // reliably on-screen.
+      await tester.longPress(find.byType(SpeakingBubble).first);
+      await tester.pumpAndSettle();
+
+      final captured = verify(() => shareService.shareText(captureAny())).captured;
+      expect(captured, hasLength(1));
+      final sharedText = captured.single as String;
+      expect(sharedText, contains('привет мир'));
+      // Contains one of the four MVP character names — the exact seat
+      // tapped isn't deterministic (`_idleSeats(l10n).first`).
+      expect(
+        RegExp('Кот|Пёс|Крокодил|Бегемот').hasMatch(sharedText),
+        isTrue,
+        reason: 'shared text "$sharedText" should include the character name',
+      );
 
       await disposeTestAppRoot(tester);
     },

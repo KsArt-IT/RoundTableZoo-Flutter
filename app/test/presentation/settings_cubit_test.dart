@@ -45,8 +45,10 @@ void main() {
     ).thenAnswer((_) async => NotificationPermissionStatus.unknown);
   });
 
-  SettingsCubit build() =>
-      SettingsCubit(settingsRepository: settingsRepository, notificationScheduler: notificationScheduler);
+  SettingsCubit build() => SettingsCubit(
+    settingsRepository: settingsRepository,
+    notificationScheduler: notificationScheduler,
+  );
 
   test('a fresh install defaults to reminder disabled at 20:00', () async {
     final cubit = build();

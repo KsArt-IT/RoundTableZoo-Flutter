@@ -22,9 +22,11 @@ class ShellPage extends StatelessWidget {
         children: [
           BlocBuilder<StorageRecoveryCubit, StorageRecoveryState>(
             buildWhen: (previous, current) =>
-                previous is StorageRecoveryReadOnlyAccepted || current is StorageRecoveryReadOnlyAccepted,
-            builder: (context, state) =>
-                state is StorageRecoveryReadOnlyAccepted ? const ReadOnlyBanner() : const SizedBox.shrink(),
+                previous is StorageRecoveryReadOnlyAccepted ||
+                current is StorageRecoveryReadOnlyAccepted,
+            builder: (context, state) => state is StorageRecoveryReadOnlyAccepted
+                ? const ReadOnlyBanner()
+                : const SizedBox.shrink(),
           ),
           Expanded(child: navigationShell),
         ],

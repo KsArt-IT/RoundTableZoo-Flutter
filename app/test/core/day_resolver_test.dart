@@ -48,14 +48,17 @@ void main() {
     });
   });
 
-  test('same instant resolves to different days in different zones, instant itself is unchanged', () {
-    final instant = utcOfLocal(kyiv, 2026, 3, 10, 20);
-    final inKyiv = resolver.resolve(instant, zone: kyiv, dayStartHour: 0);
-    final inKiritimati = resolver.resolve(instant, zone: kiritimati, dayStartHour: 0);
+  test(
+    'same instant resolves to different days in different zones, instant itself is unchanged',
+    () {
+      final instant = utcOfLocal(kyiv, 2026, 3, 10, 20);
+      final inKyiv = resolver.resolve(instant, zone: kyiv, dayStartHour: 0);
+      final inKiritimati = resolver.resolve(instant, zone: kiritimati, dayStartHour: 0);
 
-    expect(inKyiv, isNot(equals(inKiritimati)));
-    expect(instant.isUtc, isTrue);
-  });
+      expect(inKyiv, isNot(equals(inKiritimati)));
+      expect(instant.isUtc, isTrue);
+    },
+  );
 
   test('resolve depends only on its arguments, never on the system clock', () {
     final instant = utcOfLocal(kyiv, 2020, 1, 1, 12);

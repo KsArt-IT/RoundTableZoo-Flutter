@@ -15,6 +15,7 @@ abstract class UserSettings with _$UserSettings {
     required ThemePreference themeMode,
     required LocalePreference locale,
     required bool soundEnabled,
+
     /// Must not be empty (`Validators.enabledCharacterIds`).
     required List<String> enabledCharacterIds,
     required bool hasSeenOnboarding,

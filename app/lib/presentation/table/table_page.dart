@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:roundtablezoo/core/constants/mood_scale.dart';
 import 'package:roundtablezoo/core/di/injection.dart';
 import 'package:roundtablezoo/core/errors/app_failure.dart';
+import 'package:roundtablezoo/core/sharing/share_service.dart';
 import 'package:roundtablezoo/domain/entities/character.dart';
 import 'package:roundtablezoo/domain/entities/day_key.dart';
 import 'package:roundtablezoo/domain/value_objects/mood_score.dart';
@@ -29,6 +31,30 @@ import 'package:roundtablezoo/presentation/table/widgets/speaking_bubble.dart';
 /// as `SettingsPage`. Failures surface inline, next to the relevant part
 /// of the screen, not as a toast — the Table screen is explicitly not a
 /// "global notification" surface (FR-029, data-model.md §3).
+/// Numeric positions for the explicit traversal order required by FR-035:
+/// mood scale → day text → characters (seating order) → active
+/// character's bubble. Shared by both the screen-reader order
+/// (`Semantics.sortKey`) and the keyboard order (`FocusTraversalOrder`) so
+/// the two never drift apart.
+abstract final class TableTraversalOrder {
+  const TableTraversalOrder._();
+
+  static const double moodScale = 0;
+  static const double dayText = 1;
+
+  /// Seat `i`'s avatar, in seating order (`round_table_layout.dart`).
+  static double avatar(int index) => 2 + index.toDouble();
+
+  /// A seat's bubble when it is **not** the just-tapped character —
+  /// ordered right after its own avatar, ahead of the next seat.
+  static double bubble(int index) => avatar(index) + 0.5;
+
+  /// The active character's bubble always sorts last, regardless of seat
+  /// position — comfortably above `avatar`/`bubble` for
+  /// `AppConstants.maxCharactersAtTable` seats.
+  static const double activeBubble = 1000;
+}
+
 class TablePage extends StatefulWidget {
   const TablePage({super.key});
 
@@ -38,6 +64,7 @@ class TablePage extends StatefulWidget {
 
 class _TablePageState extends State<TablePage> with WidgetsBindingObserver {
   late final TableCubit _cubit = getIt<TableCubit>();
+  late final ShareService _shareService = getIt<ShareService>();
   StreamSubscription<AppFailure>? _failureSubscription;
   AppFailure? _inlineFailure;
 
@@ -106,6 +133,7 @@ class _TablePageState extends State<TablePage> with WidgetsBindingObserver {
                   TableLoaded(:final data) => _TableContent(
                     data: data,
                     inlineFailure: _inlineFailure,
+                    shareService: _shareService,
                     onMoodSelected: (option) => unawaited(
                       _cubit.setMood(
                         MoodScore.create(
@@ -130,6 +158,7 @@ class _TableContent extends StatelessWidget {
   const _TableContent({
     required this.data,
     required this.inlineFailure,
+    required this.shareService,
     required this.onMoodSelected,
     required this.onDayTextChanged,
     required this.onCharacterTap,
@@ -137,6 +166,7 @@ class _TableContent extends StatelessWidget {
 
   final TableData data;
   final AppFailure? inlineFailure;
+  final ShareService shareService;
   final ValueChanged<MoodScale> onMoodSelected;
   final ValueChanged<String> onDayTextChanged;
   final ValueChanged<String> onCharacterTap;
@@ -149,54 +179,78 @@ class _TableContent extends StatelessWidget {
       context,
     ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.error);
 
-    return Column(
-      children: [
-        // Full width, no side padding — a reply bubble spans the whole
-        // screen, not just the seat it belongs to.
-        Expanded(
-          child: data.characters.isEmpty
-              ? const SizedBox.shrink()
-              : _RoundTable(
-                  characters: data.characters,
-                  slots: data.slots,
-                  canTap: data.canRequestReaction,
-                  onCharacterTap: onCharacterTap,
-                ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              MoodScaleRow(selected: selected, onSelected: data.readOnly ? null : onMoodSelected),
-              // FR-014a: the missing-precondition hint sits next to
-              // whichever element is actually missing, never as a popup.
-              if (data.moodScore == null) ...[
-                const SizedBox(height: 4),
-                Text(l10n.tableNeedMoodHint, style: errorStyle, textAlign: TextAlign.center),
-              ],
-              if (data.readOnly) ...[
-                const SizedBox(height: 8),
-                Text(l10n.storageReadOnly, style: errorStyle),
-              ],
-              const SizedBox(height: 12),
-              DayTextField(
-                text: data.dayText,
-                onChanged: onDayTextChanged,
-                enabled: !data.readOnly,
-              ),
-              if (data.moodScore != null && data.dayText.trim().isEmpty) ...[
-                const SizedBox(height: 4),
-                Text(l10n.tableNeedTextHint, style: errorStyle, textAlign: TextAlign.center),
-              ],
-              if (inlineFailure != null) ...[
-                const SizedBox(height: 8),
-                Text(inlineFailure!.localizedMessage(l10n), style: errorStyle),
-              ],
-            ],
+    // FR-035: mood scale → day text → characters (seating order) → active
+    // character's bubble — the reverse of paint order (the round table
+    // sits above the scale/text in the tree below), so both screen-reader
+    // and keyboard traversal need an explicit override rather than
+    // following source order.
+    return FocusTraversalGroup(
+      policy: OrderedTraversalPolicy(),
+      child: Column(
+        children: [
+          // Full width, no side padding — a reply bubble spans the whole
+          // screen, not just the seat it belongs to.
+          Expanded(
+            child: data.characters.isEmpty
+                ? const SizedBox.shrink()
+                : _RoundTable(
+                    characters: data.characters,
+                    slots: data.slots,
+                    canTap: data.canRequestReaction,
+                    shareService: shareService,
+                    onCharacterTap: onCharacterTap,
+                  ),
           ),
-        ),
-      ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Semantics(
+                  sortKey: const OrdinalSortKey(TableTraversalOrder.moodScale),
+                  child: FocusTraversalOrder(
+                    order: const NumericFocusOrder(TableTraversalOrder.moodScale),
+                    child: MoodScaleRow(
+                      selected: selected,
+                      onSelected: data.readOnly ? null : onMoodSelected,
+                    ),
+                  ),
+                ),
+                // FR-014a: the missing-precondition hint sits next to
+                // whichever element is actually missing, never as a popup.
+                if (data.moodScore == null) ...[
+                  const SizedBox(height: 4),
+                  Text(l10n.tableNeedMoodHint, style: errorStyle, textAlign: TextAlign.center),
+                ],
+                if (data.readOnly) ...[
+                  const SizedBox(height: 8),
+                  Text(l10n.storageReadOnly, style: errorStyle),
+                ],
+                const SizedBox(height: 12),
+                Semantics(
+                  sortKey: const OrdinalSortKey(TableTraversalOrder.dayText),
+                  child: FocusTraversalOrder(
+                    order: const NumericFocusOrder(TableTraversalOrder.dayText),
+                    child: DayTextField(
+                      text: data.dayText,
+                      onChanged: onDayTextChanged,
+                      enabled: !data.readOnly,
+                    ),
+                  ),
+                ),
+                if (data.moodScore != null && data.dayText.trim().isEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(l10n.tableNeedTextHint, style: errorStyle, textAlign: TextAlign.center),
+                ],
+                if (inlineFailure != null) ...[
+                  const SizedBox(height: 8),
+                  Text(inlineFailure!.localizedMessage(l10n), style: errorStyle),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -212,12 +266,14 @@ class _RoundTable extends StatefulWidget {
     required this.characters,
     required this.slots,
     required this.canTap,
+    required this.shareService,
     required this.onCharacterTap,
   });
 
   final List<Character> characters;
   final Map<String, CharacterSlot> slots;
   final bool canTap;
+  final ShareService shareService;
   final ValueChanged<String> onCharacterTap;
 
   @override
@@ -248,11 +304,13 @@ class _RoundTableState extends State<_RoundTable> {
   Widget build(BuildContext context) {
     return RoundTableLayout(
       activeCharacterId: _activeCharacterId,
-      seats: [for (final character in widget.characters) _seatFor(character)],
+      seats: [
+        for (final (index, character) in widget.characters.indexed) _seatFor(character, index),
+      ],
     );
   }
 
-  RoundTableSeat _seatFor(Character character) {
+  RoundTableSeat _seatFor(Character character, int index) {
     final slot = widget.slots[character.id] ?? const CharacterSlot.idle();
     final isRevealing = _revealing[character.id] ?? (slot is CharacterSlotSpoken && !slot.restored);
     final visualState = switch (slot) {
@@ -262,28 +320,47 @@ class _RoundTableState extends State<_RoundTable> {
         isRevealing ? CharacterVisualState.speaking : CharacterVisualState.answered,
     };
 
+    final avatarOrder = TableTraversalOrder.avatar(index);
+
     return RoundTableSeat(
       characterId: character.id,
-      avatar: CharacterAvatar(
-        key: ValueKey('avatar-${character.id}'),
-        character: character,
-        state: visualState,
-        onTap: widget.canTap
-            ? () {
-                setState(() => _activeCharacterId = character.id);
-                widget.onCharacterTap(character.id);
-              }
-            : null,
+      avatar: Semantics(
+        sortKey: OrdinalSortKey(avatarOrder),
+        child: FocusTraversalOrder(
+          order: NumericFocusOrder(avatarOrder),
+          child: CharacterAvatar(
+            key: ValueKey('avatar-${character.id}'),
+            character: character,
+            state: visualState,
+            onTap: widget.canTap
+                ? () {
+                    setState(() => _activeCharacterId = character.id);
+                    widget.onCharacterTap(character.id);
+                  }
+                : null,
+          ),
+        ),
       ),
       bubble: switch (slot) {
-        CharacterSlotSpoken(:final reaction, :final stale, :final restored) => SpeakingBubble(
-          key: ValueKey('bubble-${character.id}-${reaction.id ?? reaction.createdAt}'),
-          reaction: reaction,
-          stale: stale,
-          restored: restored,
-          onRevealed: () {
-            if (mounted) setState(() => _revealing[character.id] = false);
-          },
+        CharacterSlotSpoken(:final reaction, :final stale, :final restored) => Semantics(
+          // FR-035: the active character's bubble always sorts last; any
+          // other still-visible bubble slots in right after its own seat.
+          sortKey: OrdinalSortKey(
+            character.id == _activeCharacterId
+                ? TableTraversalOrder.activeBubble
+                : TableTraversalOrder.bubble(index),
+          ),
+          child: SpeakingBubble(
+            key: ValueKey('bubble-${character.id}-${reaction.id ?? reaction.createdAt}'),
+            reaction: reaction,
+            characterName: character.name,
+            shareService: widget.shareService,
+            stale: stale,
+            restored: restored,
+            onRevealed: () {
+              if (mounted) setState(() => _revealing[character.id] = false);
+            },
+          ),
         ),
         CharacterSlotIdle() || CharacterSlotLoading() => null,
       },

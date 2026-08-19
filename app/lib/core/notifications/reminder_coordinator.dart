@@ -31,7 +31,9 @@ class ReminderCoordinator {
        _settingsRepository = settingsRepository,
        _diaryRepository = diaryRepository {
     _settingsSubscription = _settingsRepository.watch().listen((_) => unawaited(reconcile()));
-    _diarySubscription = _diaryRepository.watchEntriesChanged().listen((_) => unawaited(reconcile()));
+    _diarySubscription = _diaryRepository.watchEntriesChanged().listen(
+      (_) => unawaited(reconcile()),
+    );
   }
 
   final AppClock _clock;
@@ -101,7 +103,13 @@ class ReminderCoordinator {
     if (entries == null) return entriesResult.map((_) {});
 
     final recordedDays = entries
-        .map((entry) => _dayResolver.resolve(entry.occurredAt, zone: zone, dayStartHour: dayStartHour))
+        .map(
+          (entry) => _dayResolver.resolve(
+            entry.occurredAt,
+            zone: zone,
+            dayStartHour: dayStartHour,
+          ),
+        )
         .toSet();
 
     final plan = _reminderPlanner.plan(

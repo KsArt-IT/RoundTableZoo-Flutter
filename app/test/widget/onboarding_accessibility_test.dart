@@ -23,7 +23,9 @@ Widget _wrapped() => MaterialApp(
 );
 
 void main() {
-  testWidgets('OnboardingPage meets Android tap-target and label guidelines (FR-010)', (tester) async {
+  testWidgets('OnboardingPage meets Android tap-target and label guidelines (FR-010)', (
+    tester,
+  ) async {
     final handle = tester.ensureSemantics();
 
     await tester.pumpWidget(_wrapped());
@@ -52,7 +54,9 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('accessibility focus lands on the title when the screen opens (FR-010a)', (tester) async {
+  testWidgets('accessibility focus lands on the title when the screen opens (FR-010a)', (
+    tester,
+  ) async {
     final handle = tester.ensureSemantics();
 
     await tester.pumpWidget(_wrapped());

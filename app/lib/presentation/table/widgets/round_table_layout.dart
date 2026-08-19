@@ -54,7 +54,9 @@ class RoundTableLayout extends StatelessWidget {
         final radius = math.max(0.0, math.min(size.width, size.height) / 2 - _seatSize / 2 - 8);
         final count = seats.length;
 
-        final angles = <double>[for (var i = 0; i < count; i++) -math.pi / 2 + 2 * math.pi * i / count];
+        final angles = <double>[
+          for (var i = 0; i < count; i++) -math.pi / 2 + 2 * math.pi * i / count,
+        ];
         final tops = <double>[
           for (final angle in angles) center.dy + radius * math.sin(angle) - _seatSize / 2,
         ];

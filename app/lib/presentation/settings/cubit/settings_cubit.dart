@@ -17,10 +17,12 @@ import 'package:roundtablezoo/presentation/settings/cubit/settings_state.dart';
 /// it never reproduces the global-Cubit widget-test failures in
 /// `project/process/lessons-learned.md`.
 class SettingsCubit extends Cubit<SettingsState> {
-  SettingsCubit({required SettingsRepository settingsRepository, required NotificationScheduler notificationScheduler})
-    : _settingsRepository = settingsRepository,
-      _notificationScheduler = notificationScheduler,
-      super(const SettingsState.loading()) {
+  SettingsCubit({
+    required SettingsRepository settingsRepository,
+    required NotificationScheduler notificationScheduler,
+  }) : _settingsRepository = settingsRepository,
+       _notificationScheduler = notificationScheduler,
+       super(const SettingsState.loading()) {
     _subscription = _settingsRepository.watch().listen(_onSettings, onError: _onError);
   }
 
@@ -58,14 +60,17 @@ class SettingsCubit extends Cubit<SettingsState> {
     emit(SettingsState.error(failure: AppFailure.fromError(error)));
   }
 
-  Future<void> setThemeMode(ThemePreference value) => _guarded(_settingsRepository.updateThemeMode(value));
+  Future<void> setThemeMode(ThemePreference value) =>
+      _guarded(_settingsRepository.updateThemeMode(value));
 
-  Future<void> setLocale(LocalePreference value) => _guarded(_settingsRepository.updateLocale(value));
+  Future<void> setLocale(LocalePreference value) =>
+      _guarded(_settingsRepository.updateLocale(value));
 
   Future<void> setSoundEnabled({required bool value}) =>
       _guarded(_settingsRepository.updateSoundEnabled(value: value));
 
-  Future<void> setReminderTime(ReminderTime value) => _guarded(_settingsRepository.updateReminderTime(value));
+  Future<void> setReminderTime(ReminderTime value) =>
+      _guarded(_settingsRepository.updateReminderTime(value));
 
   /// Turning the reminder on doubles as the moment intent is expressed
   /// (FR-020a) — the system prompt fires right from here, with no

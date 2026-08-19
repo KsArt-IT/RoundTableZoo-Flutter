@@ -8,6 +8,7 @@ import 'package:roundtablezoo/core/network/ai_proxy_config.dart';
 import 'package:roundtablezoo/core/network/stub_ai_proxy_client.dart';
 import 'package:roundtablezoo/core/notifications/notification_scheduler.dart';
 import 'package:roundtablezoo/core/notifications/reminder_coordinator.dart';
+import 'package:roundtablezoo/core/sharing/share_service.dart';
 import 'package:roundtablezoo/data/datasources/character_catalog.dart';
 import 'package:roundtablezoo/data/repositories/ai_reaction_repository_impl.dart';
 import 'package:roundtablezoo/domain/repositories/ai_reaction_repository.dart';
@@ -51,7 +52,8 @@ abstract class InjectionModule {
   /// stub otherwise (research.md R2, R14) — never both, never chosen by
   /// anything downstream.
   @lazySingleton
-  AiProxyClient get aiProxyClient => AiProxyConfig.isConfigured ? DioAiProxyClient() : StubAiProxyClient();
+  AiProxyClient get aiProxyClient =>
+      AiProxyConfig.isConfigured ? DioAiProxyClient() : StubAiProxyClient();
 
   /// `SettingsRepository` is only resolved from `getIt` the first time this
   /// is actually built, by which point `StorageDiSwitch` has registered it
@@ -61,7 +63,11 @@ abstract class InjectionModule {
     AiProxyClient aiProxyClient,
     SettingsRepository settingsRepository,
     AppClock clock,
-  ) => AiReactionRepositoryImpl(client: aiProxyClient, settingsRepository: settingsRepository, clock: clock);
+  ) => AiReactionRepositoryImpl(
+    client: aiProxyClient,
+    settingsRepository: settingsRepository,
+    clock: clock,
+  );
 
   /// Screen-scoped `factory` (not `@lazySingleton`) — a fresh instance per
   /// visit to `/table`, same reasoning as [settingsCubit]. `DiaryRepository`,
@@ -86,7 +92,13 @@ abstract class InjectionModule {
   );
 
   @lazySingleton
-  ReminderPlanner reminderPlanner(DayResolver dayResolver) => ReminderPlanner(dayResolver: dayResolver);
+  ReminderPlanner reminderPlanner(DayResolver dayResolver) =>
+      ReminderPlanner(dayResolver: dayResolver);
+
+  /// Stateless wrapper over `share_plus` — no runtime dependencies
+  /// (research.md R3).
+  @lazySingleton
+  ShareService get shareService => const SharePlusShareService();
 
   /// A `LazySingleton` factory, not a getter: the `SettingsRepository`
   /// parameter is only resolved from `getIt` the first time this cubit is
@@ -128,7 +140,10 @@ abstract class InjectionModule {
   SettingsCubit settingsCubit(
     SettingsRepository settingsRepository,
     NotificationScheduler notificationScheduler,
-  ) => SettingsCubit(settingsRepository: settingsRepository, notificationScheduler: notificationScheduler);
+  ) => SettingsCubit(
+    settingsRepository: settingsRepository,
+    notificationScheduler: notificationScheduler,
+  );
 
   /// Same lazy-resolution reasoning as [currentDayCubit]: `SettingsRepository`
   /// and `DiaryRepository` are only resolved from `getIt` the first time

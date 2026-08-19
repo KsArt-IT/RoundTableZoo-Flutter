@@ -53,7 +53,11 @@ void main() {
     when(() => settingsRepository.load()).thenAnswer((_) async => const Result.success(_settings));
     when(() => clock.nowUtc()).thenReturn(DateTime.utc(2026, 3, 10, 12));
 
-    repository = AiReactionRepositoryImpl(client: client, settingsRepository: settingsRepository, clock: clock);
+    repository = AiReactionRepositoryImpl(
+      client: client,
+      settingsRepository: settingsRepository,
+      clock: clock,
+    );
   });
 
   Future<Result<CharacterReaction>> _requestFor(AiReactionDto dto) async {
@@ -110,7 +114,9 @@ void main() {
     });
 
     test('an out-of-range intensity defaults to 0.5, reply still saved', () async {
-      final result = await _requestFor(const AiReactionDto(character: 'cat', reply: 'Мр-р', intensity: 5));
+      final result = await _requestFor(
+        const AiReactionDto(character: 'cat', reply: 'Мр-р', intensity: 5),
+      );
 
       expect(result.isSuccess, isTrue);
       expect((result.valueOrNull!).intensity, 0.5);
@@ -146,28 +152,52 @@ void main() {
           dayText: any(named: 'dayText'),
         ),
       ).thenThrow(error);
-      final result = await repository.requestReaction(characterId: 'cat', dayText: 'hi', dayEntryId: 1);
+      final result = await repository.requestReaction(
+        characterId: 'cat',
+        dayText: 'hi',
+        dayEntryId: 1,
+      );
       return result.errorOrNull;
     }
 
     test('429 maps to rateLimited', () async {
-      final failure = await _failureFor(_dioError(type: DioExceptionType.badResponse, statusCode: 429));
-      expect(failure, isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.rateLimited));
+      final failure = await _failureFor(
+        _dioError(type: DioExceptionType.badResponse, statusCode: 429),
+      );
+      expect(
+        failure,
+        isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.rateLimited),
+      );
     });
 
     test('503 maps to aiDisabled', () async {
-      final failure = await _failureFor(_dioError(type: DioExceptionType.badResponse, statusCode: 503));
-      expect(failure, isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.aiDisabled));
+      final failure = await _failureFor(
+        _dioError(type: DioExceptionType.badResponse, statusCode: 503),
+      );
+      expect(
+        failure,
+        isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.aiDisabled),
+      );
     });
 
     test('422 maps to invalidResponse', () async {
-      final failure = await _failureFor(_dioError(type: DioExceptionType.badResponse, statusCode: 422));
-      expect(failure, isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.invalidResponse));
+      final failure = await _failureFor(
+        _dioError(type: DioExceptionType.badResponse, statusCode: 422),
+      );
+      expect(
+        failure,
+        isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.invalidResponse),
+      );
     });
 
     test('an unrecognized status maps to invalidResponse', () async {
-      final failure = await _failureFor(_dioError(type: DioExceptionType.badResponse, statusCode: 500));
-      expect(failure, isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.invalidResponse));
+      final failure = await _failureFor(
+        _dioError(type: DioExceptionType.badResponse, statusCode: 500),
+      );
+      expect(
+        failure,
+        isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.invalidResponse),
+      );
     });
 
     test('connectionError maps to network', () async {
@@ -193,7 +223,11 @@ void main() {
           dayText: any(named: 'dayText'),
         ),
       ).thenThrow(TimeoutException('too slow'));
-      final result = await repository.requestReaction(characterId: 'cat', dayText: 'hi', dayEntryId: 1);
+      final result = await repository.requestReaction(
+        characterId: 'cat',
+        dayText: 'hi',
+        dayEntryId: 1,
+      );
       expect(
         result.errorOrNull,
         isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.timeout),
@@ -201,20 +235,27 @@ void main() {
     });
   });
 
-  test('logging never includes dayText or the reply (FR-034b) — a smoke check on the failure payload', () async {
-    // Not directly observable via the public API; this asserts the
-    // returned AppFailure itself carries no request/response content,
-    // which is the only thing `TableCubit`/the UI ever sees.
-    when(
-      () => client.react(
-        installId: any(named: 'installId'),
-        characterId: any(named: 'characterId'),
-        dayText: any(named: 'dayText'),
-      ),
-    ).thenThrow(_dioError(type: DioExceptionType.connectionError));
+  test(
+    'logging never includes dayText or the reply (FR-034b) — a smoke check on the failure payload',
+    () async {
+      // Not directly observable via the public API; this asserts the
+      // returned AppFailure itself carries no request/response content,
+      // which is the only thing `TableCubit`/the UI ever sees.
+      when(
+        () => client.react(
+          installId: any(named: 'installId'),
+          characterId: any(named: 'characterId'),
+          dayText: any(named: 'dayText'),
+        ),
+      ).thenThrow(_dioError(type: DioExceptionType.connectionError));
 
-    final result = await repository.requestReaction(characterId: 'cat', dayText: 'secret diary text', dayEntryId: 1);
-    final failure = result.errorOrNull! as AiProxyFailure;
-    expect(failure.message, isNot(contains('secret diary text')));
-  });
+      final result = await repository.requestReaction(
+        characterId: 'cat',
+        dayText: 'secret diary text',
+        dayEntryId: 1,
+      );
+      final failure = result.errorOrNull! as AiProxyFailure;
+      expect(failure.message, isNot(contains('secret diary text')));
+    },
+  );
 }

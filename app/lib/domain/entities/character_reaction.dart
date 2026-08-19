@@ -11,10 +11,12 @@ abstract class CharacterReaction with _$CharacterReaction {
     required String characterId,
     required ReactionTone tone,
     required String reply,
+
     /// Animation amplitude, 0.0..1.0.
     required double intensity,
     required bool isFallback,
     required DateTime createdAt,
+
     /// `null` until the reaction is persisted.
     int? id,
   }) = _CharacterReaction;

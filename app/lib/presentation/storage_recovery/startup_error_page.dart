@@ -55,7 +55,10 @@ class StartupErrorPage extends StatelessWidget {
                       label: l10n.startupErrorRetry,
                       child: SizedBox(
                         height: AppConstants.minTapTargetDp,
-                        child: FilledButton(onPressed: onRetry, child: Text(l10n.startupErrorRetry)),
+                        child: FilledButton(
+                          onPressed: onRetry,
+                          child: Text(l10n.startupErrorRetry),
+                        ),
                       ),
                     ),
                   ],

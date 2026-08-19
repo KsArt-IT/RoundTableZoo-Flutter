@@ -43,7 +43,8 @@ void main() {
     await db.close();
   });
 
-  MoodScore mood(int value) => MoodScore.create(value).valueOrGet(() => throw StateError('bad fixture'));
+  MoodScore mood(int value) =>
+      MoodScore.create(value).valueOrGet(() => throw StateError('bad fixture'));
 
   test('saving again on the same day updates the existing entry, not a new one', () async {
     final first = await repository.saveTodayEntry(moodScore: mood(3));
@@ -71,44 +72,47 @@ void main() {
     expect(all, hasLength(1));
   });
 
-  test('two entries that land in the same computed day (post dayStartHour change) both stay readable', () async {
-    // dayStartHour = 12, Kyiv (UTC+2): day 2026-03-10 spans
-    // [2026-03-10T10:00Z, 2026-03-11T10:00Z).
-    await SettingsLocalDataSource(
-      db,
-    ).update(const UserSettingsTableCompanion(dayStartHour: Value(12)));
+  test(
+    'two entries that land in the same computed day (post dayStartHour change) both stay readable',
+    () async {
+      // dayStartHour = 12, Kyiv (UTC+2): day 2026-03-10 spans
+      // [2026-03-10T10:00Z, 2026-03-11T10:00Z).
+      await SettingsLocalDataSource(
+        db,
+      ).update(const UserSettingsTableCompanion(dayStartHour: Value(12)));
 
-    final earlier = DateTime.utc(2026, 3, 10, 11);
-    final later = DateTime.utc(2026, 3, 10, 20);
-    final earlierId = await db
-        .into(db.dayEntries)
-        .insert(
-          DayEntriesCompanion.insert(
-            occurredAt: earlier,
-            moodScore: 2,
-            createdAt: earlier,
-            updatedAt: earlier,
-          ),
-        );
-    final laterId = await db
-        .into(db.dayEntries)
-        .insert(
-          DayEntriesCompanion.insert(
-            occurredAt: later,
-            moodScore: 4,
-            createdAt: later,
-            updatedAt: later,
-          ),
-        );
+      final earlier = DateTime.utc(2026, 3, 10, 11);
+      final later = DateTime.utc(2026, 3, 10, 20);
+      final earlierId = await db
+          .into(db.dayEntries)
+          .insert(
+            DayEntriesCompanion.insert(
+              occurredAt: earlier,
+              moodScore: 2,
+              createdAt: earlier,
+              updatedAt: earlier,
+            ),
+          );
+      final laterId = await db
+          .into(db.dayEntries)
+          .insert(
+            DayEntriesCompanion.insert(
+              occurredAt: later,
+              moodScore: 4,
+              createdAt: later,
+              updatedAt: later,
+            ),
+          );
 
-    final key = const DayKey(year: 2026, month: 3, day: 10);
-    final entries = await repository.entriesForDay(key);
-    expect(entries.isSuccess, isTrue);
-    expect(entries.valueOrNull?.map((e) => e.id).toSet(), {earlierId, laterId});
+      final key = const DayKey(year: 2026, month: 3, day: 10);
+      final entries = await repository.entriesForDay(key);
+      expect(entries.isSuccess, isTrue);
+      expect(entries.valueOrNull?.map((e) => e.id).toSet(), {earlierId, laterId});
 
-    final latest = await repository.entryForDay(key);
-    expect(latest.valueOrNull?.id, laterId);
-  });
+      final latest = await repository.entryForDay(key);
+      expect(latest.valueOrNull?.id, laterId);
+    },
+  );
 
   test('entryForDay returns the latest entry by occurredAt', () async {
     await repository.saveTodayEntry(moodScore: mood(2));

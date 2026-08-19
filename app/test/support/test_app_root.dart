@@ -11,6 +11,7 @@ import 'package:roundtablezoo/core/di/storage_di_switch.dart';
 import 'package:roundtablezoo/core/errors/result.dart';
 import 'package:roundtablezoo/core/notifications/notification_permission_status.dart';
 import 'package:roundtablezoo/core/notifications/notification_scheduler.dart';
+import 'package:roundtablezoo/core/sharing/share_service.dart';
 import 'package:roundtablezoo/data/datasources/drift/app_database.dart';
 import 'package:roundtablezoo/domain/entities/day_key.dart';
 import 'package:roundtablezoo/domain/entities/reminder_occurrence.dart';
@@ -82,6 +83,7 @@ Widget buildTestAppRoot({
     );
   }
   _useFakeNotificationScheduler();
+  _useFakeShareService();
 
   final database = AppDatabase(NativeDatabase.memory());
   final resolvedInitialState = initialState ?? StorageRecoveryState.recovered(database: database);
@@ -93,7 +95,8 @@ Widget buildTestAppRoot({
     // fresh "app instance" with its own `SettingsRepository`. Without this,
     // the second test in a file would read a cubit still wired to the
     // first test's (by-then-closed) repository and never see its changes.
-    if (getIt.isRegistered<AppSettingsCubit>()) unawaited(Future.value(getIt.unregister<AppSettingsCubit>()));
+    if (getIt.isRegistered<AppSettingsCubit>())
+      unawaited(Future.value(getIt.unregister<AppSettingsCubit>()));
     getIt.registerLazySingleton<AppSettingsCubit>(
       () => AppSettingsCubit(settingsRepository: getIt<SettingsRepository>()),
     );
@@ -102,7 +105,8 @@ Widget buildTestAppRoot({
     // `CurrentDayCubit` per call, tied to this call's `SettingsRepository`
     // — the Table screen (`specs/004-table-screen`) reads it via
     // `BlocListener` (research.md R13).
-    if (getIt.isRegistered<CurrentDayCubit>()) unawaited(Future.value(getIt.unregister<CurrentDayCubit>()));
+    if (getIt.isRegistered<CurrentDayCubit>())
+      unawaited(Future.value(getIt.unregister<CurrentDayCubit>()));
     getIt.registerLazySingleton<CurrentDayCubit>(
       () => CurrentDayCubit(
         clock: getIt<AppClock>(),
@@ -114,11 +118,14 @@ Widget buildTestAppRoot({
 
   // Same freshening reasoning as `AppSettingsCubit` above — a fresh
   // `OnboardingCubit` per call, tied to this call's `SettingsRepository`.
-  if (getIt.isRegistered<OnboardingCubit>()) unawaited(Future.value(getIt.unregister<OnboardingCubit>()));
+  if (getIt.isRegistered<OnboardingCubit>())
+    unawaited(Future.value(getIt.unregister<OnboardingCubit>()));
   getIt.registerLazySingleton<OnboardingCubit>(
     () => OnboardingCubit(
       settingsRepositoryLocator: () => getIt<SettingsRepository>(),
-      initialState: onboardingSeen ? const OnboardingState.completed() : const OnboardingState.required(),
+      initialState: onboardingSeen
+          ? const OnboardingState.completed()
+          : const OnboardingState.required(),
     ),
   );
 
@@ -156,7 +163,9 @@ Future<void> disposeTestAppRoot(WidgetTester tester) async {
 /// keeps widget tests hermetic and avoids one test's stubbing leaking into
 /// the next (mirrors the `AppSettingsCubit` freshening above).
 void _useFakeNotificationScheduler() {
-  registerFallbackValue(ReminderOccurrence(day: DayKey.fromDateTime(DateTime(2026)), scheduledAtUtc: DateTime(2026)));
+  registerFallbackValue(
+    ReminderOccurrence(day: DayKey.fromDateTime(DateTime(2026)), scheduledAtUtc: DateTime(2026)),
+  );
 
   if (getIt.isRegistered<NotificationScheduler>()) {
     unawaited(Future.value(getIt.unregister<NotificationScheduler>()));
@@ -172,8 +181,27 @@ void _useFakeNotificationScheduler() {
   when(() => scheduler.openSystemSettings()).thenAnswer((_) async => const Result.success(null));
   when(() => scheduler.pendingIds()).thenAnswer((_) async => const Result.success(<int>{}));
   when(
-    () => scheduler.schedule(any(), title: any(named: 'title'), body: any(named: 'body')),
+    () => scheduler.schedule(
+      any(),
+      title: any(named: 'title'),
+      body: any(named: 'body'),
+    ),
   ).thenAnswer((_) async => const Result.success(null));
   when(() => scheduler.cancel(any())).thenAnswer((_) async => const Result.success(null));
   getIt.registerLazySingleton<NotificationScheduler>(() => scheduler);
+}
+
+/// `ShareService`'s real implementation (`SharePlusShareService`) talks to
+/// a platform channel with no responder under `flutter test` — any widget
+/// test that long-presses a reply bubble (US5) would otherwise throw
+/// `MissingPluginException` (research.md R3,
+/// `project/process/lessons-learned.md`). Same freshening reasoning as
+/// `_useFakeNotificationScheduler`.
+void _useFakeShareService() {
+  if (getIt.isRegistered<ShareService>()) {
+    unawaited(Future.value(getIt.unregister<ShareService>()));
+  }
+  final shareService = MockShareService();
+  when(() => shareService.shareText(any())).thenAnswer((_) async {});
+  getIt.registerLazySingleton<ShareService>(() => shareService);
 }

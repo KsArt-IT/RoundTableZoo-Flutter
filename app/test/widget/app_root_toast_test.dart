@@ -6,7 +6,9 @@ import 'package:toastification/toastification.dart';
 import '../support/test_app_root.dart';
 
 void main() {
-  testWidgets('remindersMuted shows the toast exactly once, even across a tab switch', (tester) async {
+  testWidgets('remindersMuted shows the toast exactly once, even across a tab switch', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildTestAppRoot(remindersMuted: true));
     await tester.pumpAndSettle();
 

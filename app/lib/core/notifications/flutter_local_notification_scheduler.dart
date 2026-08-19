@@ -81,7 +81,9 @@ class FlutterLocalNotificationScheduler with SafeCallMixin implements Notificati
           ?.areNotificationsEnabled();
     }
     if (enabled == true) return NotificationPermissionStatus.granted;
-    return _permissionEverRequested ? NotificationPermissionStatus.denied : NotificationPermissionStatus.unknown;
+    return _permissionEverRequested
+        ? NotificationPermissionStatus.denied
+        : NotificationPermissionStatus.unknown;
   }
 
   @override
@@ -97,7 +99,9 @@ class FlutterLocalNotificationScheduler with SafeCallMixin implements Notificati
           .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
           ?.requestNotificationsPermission();
     }
-    return granted == true ? NotificationPermissionStatus.granted : NotificationPermissionStatus.denied;
+    return granted == true
+        ? NotificationPermissionStatus.granted
+        : NotificationPermissionStatus.denied;
   }
 
   @override
@@ -130,7 +134,12 @@ class FlutterLocalNotificationScheduler with SafeCallMixin implements Notificati
         // (FR-016c). No `matchDateTimeComponents`: this is a one-shot
         // notification, one per day, keyed by `id` (research.md, R2).
         android: AndroidNotificationDetails(_channelId, _channelId),
-        iOS: DarwinNotificationDetails(presentAlert: true, presentBanner: true, presentList: true, presentSound: true),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBanner: true,
+          presentList: true,
+          presentSound: true,
+        ),
       ),
     );
   });

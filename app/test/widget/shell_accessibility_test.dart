@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+
 import '../support/test_app_root.dart';
 
 void main() {

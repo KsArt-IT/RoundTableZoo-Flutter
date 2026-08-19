@@ -28,7 +28,8 @@ UserSettings _settingsWith(DayStartHour dayStartHour) => UserSettings(
   dayStartHour: dayStartHour,
 );
 
-DayStartHour _hour(int value) => DayStartHour.create(value).valueOrGet(() => throw StateError('bad fixture'));
+DayStartHour _hour(int value) =>
+    DayStartHour.create(value).valueOrGet(() => throw StateError('bad fixture'));
 
 void main() {
   late FakeAppClock clock;

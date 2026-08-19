@@ -24,8 +24,7 @@ const _validJson = '''
 ]
 ''';
 
-CharacterCatalog _catalogWith(String json) =>
-    CharacterCatalog(assetLoader: (_) async => json);
+CharacterCatalog _catalogWith(String json) => CharacterCatalog(assetLoader: (_) async => json);
 
 void main() {
   test('load() parses a well-formed catalog, in asset order', () async {
@@ -58,7 +57,8 @@ void main() {
   });
 
   test('load() fails with SerializationFailure on a missing required field', () async {
-    const json = '[{"id": "cat", "colorHex": "#8A7CA8", "fallbackReply": "x", "maxReplyLength": 1}]';
+    const json =
+        '[{"id": "cat", "colorHex": "#8A7CA8", "fallbackReply": "x", "maxReplyLength": 1}]';
 
     final result = await _catalogWith(json).load();
 

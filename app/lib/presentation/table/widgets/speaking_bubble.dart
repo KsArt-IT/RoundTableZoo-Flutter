@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:roundtablezoo/core/constants/app_constants.dart';
+import 'package:roundtablezoo/core/sharing/share_service.dart';
 import 'package:roundtablezoo/domain/entities/character_reaction.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
 
@@ -10,10 +14,14 @@ import 'package:roundtablezoo/gen/app_localizations.dart';
 /// A **short tap** completes the reveal instantly (FR-017a). A restored
 /// reply (`restored: true`, FR-003b) or the system's "reduce motion"
 /// setting (FR-033a) shows the full text immediately, no reveal at all.
-/// Long-press sharing joins in US5 (tasks.md T071) — out of scope here.
+/// A **long press** shares the reply text plus the character's name
+/// through [shareService] (FR-030); the same action is also exposed as a
+/// named semantics action, not only as a gesture (FR-030).
 class SpeakingBubble extends StatefulWidget {
   const SpeakingBubble({
     required this.reaction,
+    required this.characterName,
+    required this.shareService,
     this.stale = false,
     this.restored = false,
     this.onRevealed,
@@ -21,6 +29,8 @@ class SpeakingBubble extends StatefulWidget {
   });
 
   final CharacterReaction reaction;
+  final String characterName;
+  final ShareService shareService;
   final bool stale;
   final bool restored;
 
@@ -78,6 +88,9 @@ class _SpeakingBubbleState extends State<SpeakingBubble> with SingleTickerProvid
 
   void _revealNow() => _controller.value = 1;
 
+  Future<void> _share() =>
+      widget.shareService.shareText('${widget.characterName}: ${widget.reaction.reply}');
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -86,12 +99,18 @@ class _SpeakingBubbleState extends State<SpeakingBubble> with SingleTickerProvid
 
     return GestureDetector(
       onTap: _revealNow,
+      onLongPress: () => unawaited(_share()),
       child: Semantics(
         // Re-announced whenever this subtree's semantics change — a fresh
         // bubble mounting (or `stale` toggling) reaches screen readers
         // without a separate polite-announcement channel (FR-036).
         liveRegion: true,
         label: _semanticsLabel(l10n, reply, isFallback: isFallback),
+        // FR-030: "поделиться" must reach screen-reader users as a named
+        // action, not only as a long-press gesture they'd have to guess.
+        customSemanticsActions: {
+          CustomSemanticsAction(label: l10n.tableShareAction): () => unawaited(_share()),
+        },
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {

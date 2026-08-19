@@ -38,7 +38,8 @@ final class ReminderTime {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || (other is ReminderTime && hour == other.hour && minute == other.minute);
+      identical(this, other) ||
+      (other is ReminderTime && hour == other.hour && minute == other.minute);
 
   @override
   int get hashCode => Object.hash(hour, minute);

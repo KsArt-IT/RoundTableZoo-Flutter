@@ -38,7 +38,11 @@ class StorageRecoveryPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(Icons.storage_outlined, size: 64, color: Theme.of(context).colorScheme.error),
+                  Icon(
+                    Icons.storage_outlined,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     l10n.storageRecoveryTitle,
@@ -127,7 +131,9 @@ class _RecoveryButton extends StatelessWidget {
         child: isDestructive
             ? OutlinedButton(
                 onPressed: onPressed,
-                style: OutlinedButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                ),
                 child: Text(label),
               )
             : FilledButton(onPressed: onPressed, child: Text(label)),

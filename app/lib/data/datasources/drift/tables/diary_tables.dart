@@ -27,8 +27,7 @@ class DayEntries extends Table {
 class CharacterReactions extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  IntColumn get dayEntryId =>
-      integer().references(DayEntries, #id, onDelete: KeyAction.cascade)();
+  IntColumn get dayEntryId => integer().references(DayEntries, #id, onDelete: KeyAction.cascade)();
 
   /// Static character config id (`'cat' | 'dog' | 'crocodile' | 'hippo' | …`) — not a table FK.
   TextColumn get characterId => text()();

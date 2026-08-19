@@ -40,7 +40,11 @@ class ReminderPlanner {
     final seenDays = <DayKey>{};
 
     for (var i = 0; i < horizonDays; i++) {
-      final targetDate = DateTime.utc(nowLocal.year, nowLocal.month, nowLocal.day + startOffset + i);
+      final targetDate = DateTime.utc(
+        nowLocal.year,
+        nowLocal.month,
+        nowLocal.day + startOffset + i,
+      );
       final scheduledLocal = tz.TZDateTime(
         zone,
         targetDate.year,

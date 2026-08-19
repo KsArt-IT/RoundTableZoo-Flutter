@@ -41,12 +41,14 @@ class CharacterCatalog with SafeCallMixin {
     }
 
     final seenIds = <String>{};
-    return decoded.map((entry) {
-      if (entry is! Map<String, dynamic>) {
-        throw const FormatException('characters.json entry must be an object');
-      }
-      return _parseCharacter(entry, seenIds);
-    }).toList(growable: false);
+    return decoded
+        .map((entry) {
+          if (entry is! Map<String, dynamic>) {
+            throw const FormatException('characters.json entry must be an object');
+          }
+          return _parseCharacter(entry, seenIds);
+        })
+        .toList(growable: false);
   }
 
   Character _parseCharacter(Map<String, dynamic> json, Set<String> seenIds) {

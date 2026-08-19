@@ -23,18 +23,25 @@ import 'package:timezone/timezone.dart' as tz;
 import '../support/fake_app_clock.dart';
 import '../support/mocks.dart';
 
-UserSettings _settings({bool reminderEnabled = true, int hour = 20, int minute = 0, int dayStartHour = 0}) =>
-    UserSettings(
-      installId: 'test',
-      themeMode: ThemePreference.system,
-      locale: LocalePreference.ru,
-      soundEnabled: true,
-      enabledCharacterIds: const ['cat'],
-      hasSeenOnboarding: true,
-      reminderEnabled: reminderEnabled,
-      reminderTime: ReminderTime.create(hour: hour, minute: minute).valueOrGet(() => throw StateError('x')),
-      dayStartHour: DayStartHour.create(dayStartHour).valueOrGet(() => throw StateError('x')),
-    );
+UserSettings _settings({
+  bool reminderEnabled = true,
+  int hour = 20,
+  int minute = 0,
+  int dayStartHour = 0,
+}) => UserSettings(
+  installId: 'test',
+  themeMode: ThemePreference.system,
+  locale: LocalePreference.ru,
+  soundEnabled: true,
+  enabledCharacterIds: const ['cat'],
+  hasSeenOnboarding: true,
+  reminderEnabled: reminderEnabled,
+  reminderTime: ReminderTime.create(
+    hour: hour,
+    minute: minute,
+  ).valueOrGet(() => throw StateError('x')),
+  dayStartHour: DayStartHour.create(dayStartHour).valueOrGet(() => throw StateError('x')),
+);
 
 void main() {
   late MockSettingsRepository settingsRepository;
@@ -48,7 +55,12 @@ void main() {
   setUpAll(() {
     tz.initializeTimeZones();
     utc = tz.UTC;
-    registerFallbackValue(ReminderOccurrence(day: const DayKey(year: 2026, month: 1, day: 1), scheduledAtUtc: DateTime.utc(2026)));
+    registerFallbackValue(
+      ReminderOccurrence(
+        day: const DayKey(year: 2026, month: 1, day: 1),
+        scheduledAtUtc: DateTime.utc(2026),
+      ),
+    );
     registerFallbackValue(const DayKey(year: 2026, month: 1, day: 1));
   });
 
@@ -56,7 +68,11 @@ void main() {
     when(() => scheduler.permissionStatus()).thenAnswer((_) async => permission);
     when(() => scheduler.pendingIds()).thenAnswer((_) async => Result.success(Set.of(pending)));
     when(
-      () => scheduler.schedule(any(), title: any(named: 'title'), body: any(named: 'body')),
+      () => scheduler.schedule(
+        any(),
+        title: any(named: 'title'),
+        body: any(named: 'body'),
+      ),
     ).thenAnswer((invocation) async {
       final occurrence = invocation.positionalArguments[0] as ReminderOccurrence;
       pending.add(occurrence.notificationId);
@@ -78,7 +94,8 @@ void main() {
     when(() => settingsRepository.watch()).thenAnswer((_) => const Stream.empty());
     when(() => diaryRepository.watchEntriesChanged()).thenAnswer((_) => const Stream.empty());
     when(() => settingsRepository.load()).thenAnswer((_) async => Result.success(_settings()));
-    when(() => diaryRepository.entriesBetween(any(), any())).thenAnswer((_) async => const Result.success([]));
+    when(() => diaryRepository.entriesBetween(any(), any()))
+        .thenAnswer((_) async => const Result.success([]));
     stubScheduler(NotificationPermissionStatus.granted);
 
     coordinator = ReminderCoordinator(
@@ -122,12 +139,22 @@ void main() {
     await coordinator.reconcile();
 
     expect(pending, {555});
-    verifyNever(() => scheduler.schedule(any(), title: any(named: 'title'), body: any(named: 'body')));
+    verifyNever(
+      () => scheduler.schedule(
+        any(),
+        title: any(named: 'title'),
+        body: any(named: 'body'),
+      ),
+    );
   });
 
   test('marking today recorded cancels today and keeps the rest of the plan', () async {
     await coordinator.reconcile();
-    final todayId = const DayKey(year: 2026, month: 3, day: 10).let((key) => key.year * 10000 + key.month * 100 + key.day);
+    final todayId = const DayKey(
+      year: 2026,
+      month: 3,
+      day: 10,
+    ).let((key) => key.year * 10000 + key.month * 100 + key.day);
     expect(pending.contains(todayId), isTrue);
 
     final entry = DayEntry(
@@ -136,7 +163,8 @@ void main() {
       createdAt: DateTime.utc(2026, 3, 10, 9),
       updatedAt: DateTime.utc(2026, 3, 10, 9),
     );
-    when(() => diaryRepository.entriesBetween(any(), any())).thenAnswer((_) async => Result.success([entry]));
+    when(() => diaryRepository.entriesBetween(any(), any()))
+        .thenAnswer((_) async => Result.success([entry]));
 
     await coordinator.reconcile();
 
@@ -151,12 +179,18 @@ void main() {
       createdAt: DateTime.utc(2026, 3, 10, 9),
       updatedAt: DateTime.utc(2026, 3, 10, 9),
     );
-    when(() => diaryRepository.entriesBetween(any(), any())).thenAnswer((_) async => Result.success([entry]));
+    when(() => diaryRepository.entriesBetween(any(), any()))
+        .thenAnswer((_) async => Result.success([entry]));
     await coordinator.reconcile();
-    final todayId = const DayKey(year: 2026, month: 3, day: 10).let((key) => key.year * 10000 + key.month * 100 + key.day);
+    final todayId = const DayKey(
+      year: 2026,
+      month: 3,
+      day: 10,
+    ).let((key) => key.year * 10000 + key.month * 100 + key.day);
     expect(pending.contains(todayId), isFalse);
 
-    when(() => diaryRepository.entriesBetween(any(), any())).thenAnswer((_) async => const Result.success([]));
+    when(() => diaryRepository.entriesBetween(any(), any()))
+        .thenAnswer((_) async => const Result.success([]));
     await coordinator.reconcile();
 
     expect(pending.contains(todayId), isTrue);
@@ -192,12 +226,17 @@ void main() {
     await coordinator.reconcile();
     final before = Set.of(pending);
 
-    when(() => settingsRepository.load()).thenAnswer((_) async => Result.success(_settings(hour: 21)));
+    when(() => settingsRepository.load())
+        .thenAnswer((_) async => Result.success(_settings(hour: 21)));
     await coordinator.reconcile();
 
     expect(pending, before);
     verify(
-      () => scheduler.schedule(any(), title: any(named: 'title'), body: any(named: 'body')),
+      () => scheduler.schedule(
+        any(),
+        title: any(named: 'title'),
+        body: any(named: 'body'),
+      ),
     ).called(AppConstants.reminderHorizonDays * 2);
   });
 }

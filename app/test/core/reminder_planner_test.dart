@@ -58,7 +58,12 @@ void main() {
       final occurrences = planner.plan(
         nowUtc: now,
         zone: kyiv,
-        settings: _settings(reminderTime: ReminderTime.create(hour: 20, minute: 0).valueOrGet(() => throw StateError('x'))),
+        settings: _settings(
+          reminderTime: ReminderTime.create(
+            hour: 20,
+            minute: 0,
+          ).valueOrGet(() => throw StateError('x')),
+        ),
         recordedDays: const {},
       );
       expect(occurrences.first.day, const DayKey(year: 2026, month: 3, day: 10));
@@ -70,7 +75,12 @@ void main() {
       final occurrences = planner.plan(
         nowUtc: now,
         zone: kyiv,
-        settings: _settings(reminderTime: ReminderTime.create(hour: 20, minute: 0).valueOrGet(() => throw StateError('x'))),
+        settings: _settings(
+          reminderTime: ReminderTime.create(
+            hour: 20,
+            minute: 0,
+          ).valueOrGet(() => throw StateError('x')),
+        ),
         recordedDays: const {},
       );
       expect(occurrences.first.day, const DayKey(year: 2026, month: 3, day: 11));
@@ -87,11 +97,19 @@ void main() {
       expect(occurrences.any((o) => o.day == const DayKey(year: 2026, month: 3, day: 10)), isFalse);
     });
 
-    test('the horizon is exactly AppConstants.reminderHorizonDays occurrences when none are recorded', () {
-      final now = utcOfLocal(kyiv, 2026, 3, 10, 10);
-      final occurrences = planner.plan(nowUtc: now, zone: kyiv, settings: _settings(), recordedDays: const {});
-      expect(occurrences, hasLength(AppConstants.reminderHorizonDays));
-    });
+    test(
+      'the horizon is exactly AppConstants.reminderHorizonDays occurrences when none are recorded',
+      () {
+        final now = utcOfLocal(kyiv, 2026, 3, 10, 10);
+        final occurrences = planner.plan(
+          nowUtc: now,
+          zone: kyiv,
+          settings: _settings(),
+          recordedDays: const {},
+        );
+        expect(occurrences, hasLength(AppConstants.reminderHorizonDays));
+      },
+    );
 
     test('a custom horizon overrides the constant', () {
       final now = utcOfLocal(kyiv, 2026, 3, 10, 10);
@@ -115,7 +133,10 @@ void main() {
         nowUtc: now,
         zone: kyiv,
         settings: _settings(
-          reminderTime: ReminderTime.create(hour: 2, minute: 0).valueOrGet(() => throw StateError('x')),
+          reminderTime: ReminderTime.create(
+            hour: 2,
+            minute: 0,
+          ).valueOrGet(() => throw StateError('x')),
           dayStartHour: 4,
         ),
         recordedDays: const {},
@@ -131,7 +152,10 @@ void main() {
         nowUtc: now,
         zone: kyiv,
         settings: _settings(
-          reminderTime: ReminderTime.create(hour: 4, minute: 0).valueOrGet(() => throw StateError('x')),
+          reminderTime: ReminderTime.create(
+            hour: 4,
+            minute: 0,
+          ).valueOrGet(() => throw StateError('x')),
           dayStartHour: 4,
         ),
         recordedDays: const {},
@@ -154,7 +178,9 @@ void main() {
         recordedDays: const {},
         horizonDays: 3,
       );
-      final onSkipDay = occurrences.where((o) => o.day == const DayKey(year: 2018, month: 11, day: 4));
+      final onSkipDay = occurrences.where(
+        (o) => o.day == const DayKey(year: 2018, month: 11, day: 4),
+      );
       expect(onSkipDay, hasLength(1));
     });
 
@@ -162,7 +188,10 @@ void main() {
       // 2018-02-18 00:00 -> clocks fall back an hour; 23:30 on Feb 17 is
       // ambiguous (occurs twice in absolute time).
       final now = utcOfLocal(saoPaulo, 2018, 2, 16, 10);
-      final time = ReminderTime.create(hour: 23, minute: 30).valueOrGet(() => throw StateError('x'));
+      final time = ReminderTime.create(
+        hour: 23,
+        minute: 30,
+      ).valueOrGet(() => throw StateError('x'));
       final occurrences = planner.plan(
         nowUtc: now,
         zone: saoPaulo,
@@ -170,7 +199,9 @@ void main() {
         recordedDays: const {},
         horizonDays: 4,
       );
-      final onFoldDay = occurrences.where((o) => o.day == const DayKey(year: 2018, month: 2, day: 17));
+      final onFoldDay = occurrences.where(
+        (o) => o.day == const DayKey(year: 2018, month: 2, day: 17),
+      );
       expect(onFoldDay, hasLength(1));
     });
   });
@@ -179,7 +210,12 @@ void main() {
     final now = utcOfLocal(kyiv, 2026, 6, 1, 5);
     final time = ReminderTime.create(hour: 20, minute: 0).valueOrGet(() => throw StateError('x'));
 
-    final inKyiv = planner.plan(nowUtc: now, zone: kyiv, settings: _settings(reminderTime: time), recordedDays: const {});
+    final inKyiv = planner.plan(
+      nowUtc: now,
+      zone: kyiv,
+      settings: _settings(reminderTime: time),
+      recordedDays: const {},
+    );
     final inSaoPaulo = planner.plan(
       nowUtc: now,
       zone: saoPaulo,

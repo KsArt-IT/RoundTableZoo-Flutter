@@ -33,7 +33,10 @@ class OnboardingPage extends StatelessWidget {
                 autofocus: true,
                 child: Semantics(
                   header: true,
-                  child: Text(l10n.onboardingTitle, style: Theme.of(context).textTheme.headlineSmall),
+                  child: Text(
+                    l10n.onboardingTitle,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -47,7 +50,9 @@ class OnboardingPage extends StatelessWidget {
                     child: SizedBox(
                       width: double.infinity,
                       child: FilledButton(
-                        onPressed: isSubmitting ? null : () => context.read<OnboardingCubit>().complete(),
+                        onPressed: isSubmitting
+                            ? null
+                            : () => context.read<OnboardingCubit>().complete(),
                         child: Text(l10n.onboardingStart),
                       ),
                     ),

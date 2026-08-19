@@ -12,6 +12,7 @@ abstract class DayEntry with _$DayEntry {
     required MoodScore moodScore,
     required DateTime createdAt,
     required DateTime updatedAt,
+
     /// `null` until the entry is persisted.
     int? id,
     String? dayText,

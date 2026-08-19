@@ -15,7 +15,12 @@ enum CharacterVisualState { idle, waiting, speaking, answered }
 /// letter — a standing branch, not a placeholder for missing test fixtures
 /// (`contracts/character-config.md` §5).
 class CharacterAvatar extends StatelessWidget {
-  const CharacterAvatar({required this.character, required this.state, required this.onTap, super.key});
+  const CharacterAvatar({
+    required this.character,
+    required this.state,
+    required this.onTap,
+    super.key,
+  });
 
   final Character character;
   final CharacterVisualState state;
@@ -32,15 +37,19 @@ class CharacterAvatar extends StatelessWidget {
     return Semantics(
       button: true,
       label: '${character.name}, ${_stateLabel(l10n)}',
-      child: GestureDetector(
+      // `InkResponse` (not a plain `GestureDetector`) so a seat is
+      // reachable by keyboard `Tab` traversal, same idiom as
+      // `MoodScaleRow`'s `_MoodOption` (FR-035).
+      child: InkResponse(
         onTap: onTap,
+        radius: size / 2,
         child: SizedBox(
           width: size,
           height: size,
           child: Stack(
             alignment: Alignment.center,
             children: [
-              ClipOval(child: _visual()),
+              ClipOval(child: _visual(context)),
               if (state == CharacterVisualState.waiting)
                 const Positioned(
                   bottom: 4,
@@ -67,13 +76,18 @@ class CharacterAvatar extends StatelessWidget {
     );
   }
 
-  Widget _visual() {
-    final asset = state == CharacterVisualState.speaking ? character.talkAnimation : character.idleAnimation;
+  Widget _visual(BuildContext context) {
+    final asset = state == CharacterVisualState.speaking
+        ? character.talkAnimation
+        : character.idleAnimation;
     if (asset == null) return _staticAvatar();
 
+    // FR-033a: "reduce motion" freezes idle/talk animations too, not just
+    // `SpeakingBubble`'s reveal effect — a still frame, not a moving loop.
     return Lottie.asset(
       asset,
       fit: BoxFit.cover,
+      animate: !MediaQuery.disableAnimationsOf(context),
       errorBuilder: (context, error, stackTrace) => _staticAvatar(),
     );
   }

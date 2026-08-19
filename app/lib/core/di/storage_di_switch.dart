@@ -42,7 +42,9 @@ abstract final class StorageDiSwitch {
 
     getIt.registerSingleton<StorageMode>(StorageMode.persistent);
     getIt.registerLazySingleton<AppDatabase>(() => database);
-    getIt.registerLazySingleton<DiaryLocalDataSource>(() => DiaryLocalDataSource(getIt<AppDatabase>()));
+    getIt.registerLazySingleton<DiaryLocalDataSource>(
+      () => DiaryLocalDataSource(getIt<AppDatabase>()),
+    );
     getIt.registerLazySingleton<SettingsLocalDataSource>(
       () => SettingsLocalDataSource(getIt<AppDatabase>()),
     );

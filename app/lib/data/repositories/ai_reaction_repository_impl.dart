@@ -19,12 +19,10 @@ import 'package:roundtablezoo/domain/value_objects/validators.dart';
 /// `AiProxyFailure` only (principle I/II).
 class AiReactionRepositoryImpl implements AiReactionRepository {
   AiReactionRepositoryImpl({
-    required AiProxyClient client,
-    required SettingsRepository settingsRepository,
-    required AppClock clock,
-  }) : _client = client,
-       _settingsRepository = settingsRepository,
-       _clock = clock;
+    required this._client,
+    required this._settingsRepository,
+    required this._clock,
+  });
 
   final AiProxyClient _client;
   final SettingsRepository _settingsRepository;
@@ -39,11 +37,17 @@ class AiReactionRepositoryImpl implements AiReactionRepository {
     final settingsResult = await _settingsRepository.load();
     final installId = settingsResult.valueOrNull?.installId;
     if (installId == null) {
-      return Result.failure(settingsResult.errorOrNull ?? const UnknownFailure('settings unavailable'));
+      return Result.failure(
+        settingsResult.errorOrNull ?? const UnknownFailure('settings unavailable'),
+      );
     }
 
     try {
-      final dto = await _client.react(installId: installId, characterId: characterId, dayText: dayText);
+      final dto = await _client.react(
+        installId: installId,
+        characterId: characterId,
+        dayText: dayText,
+      );
       return _parse(dto, characterId: characterId, dayEntryId: dayEntryId);
     } on AiProxyFailure catch (failure) {
       // The stub client (research.md R14) throws these directly to

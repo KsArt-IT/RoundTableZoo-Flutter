@@ -16,8 +16,8 @@ import '../support/test_app_root.dart';
 // The test harness's platform locale doesn't drive `WidgetsApp`'s locale
 // resolution the way a real device's does, so these tests read whatever
 // locale actually rendered instead of forcing one.
-Future<AppLocalizations> _renderedLocalizations(WidgetTester tester) =>
-    AppLocalizations.delegate.load(Localizations.localeOf(tester.element(find.byType(Scaffold).first)));
+Future<AppLocalizations> _renderedLocalizations(WidgetTester tester) => AppLocalizations.delegate
+    .load(Localizations.localeOf(tester.element(find.byType(Scaffold).first)));
 
 GoRouter _router(WidgetTester tester) => GoRouter.of(tester.element(find.byType(Scaffold).first));
 
@@ -42,7 +42,9 @@ void main() {
     await disposeTestAppRoot(tester);
   });
 
-  testWidgets('tapping the continue action leaves onboarding for the shell (SC-002)', (tester) async {
+  testWidgets('tapping the continue action leaves onboarding for the shell (SC-002)', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildTestAppRoot(onboardingSeen: false));
     await tester.pumpAndSettle();
 
@@ -126,20 +128,23 @@ void main() {
     await disposeTestAppRoot(tester);
   });
 
-  testWidgets('point (c) discloses the third-party AI service, what is sent, and what stays on-device', (
-    tester,
-  ) async {
-    await tester.pumpWidget(buildTestAppRoot(onboardingSeen: false));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'point (c) discloses the third-party AI service, what is sent, and what stays on-device',
+    (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestAppRoot(onboardingSeen: false));
+      await tester.pumpAndSettle();
 
-    final l10n = await _renderedLocalizations(tester);
-    final disclosure = l10n.onboardingAiDisclosure;
-    expect(disclosure, isNotEmpty);
-    expect(disclosure.toLowerCase(), contains('ai'));
-    expect(find.text(disclosure), findsOneWidget);
+      final l10n = await _renderedLocalizations(tester);
+      final disclosure = l10n.onboardingAiDisclosure;
+      expect(disclosure, isNotEmpty);
+      expect(disclosure.toLowerCase(), contains('ai'));
+      expect(find.text(disclosure), findsOneWidget);
 
-    await disposeTestAppRoot(tester);
-  });
+      await disposeTestAppRoot(tester);
+    },
+  );
 
   group('storage recovery interaction (FR-006a, FR-006b)', () {
     const cause = DatabaseFailure(null, code: DatabaseFailure.storageUnavailable);
@@ -159,36 +164,41 @@ void main() {
       await disposeTestAppRoot(tester);
     });
 
-    testWidgets('after accepting read-only, onboarding is shown; after confirming it, it stays gone', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        buildTestAppRoot(
-          initialState: const StorageRecoveryState.idle(cause: cause),
-          onboardingSeen: false,
-        ),
-      );
-      await tester.pumpAndSettle();
+    testWidgets(
+      'after accepting read-only, onboarding is shown; after confirming it, it stays gone',
+      (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestAppRoot(
+            initialState: const StorageRecoveryState.idle(cause: cause),
+            onboardingSeen: false,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      final l10n = await _renderedLocalizations(tester);
-      await tester.tap(find.widgetWithText(FilledButton, l10n.storageRecoveryContinueWithoutSaving));
-      await tester.pumpAndSettle();
+        final l10n = await _renderedLocalizations(tester);
+        await tester.tap(
+          find.widgetWithText(FilledButton, l10n.storageRecoveryContinueWithoutSaving),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byType(OnboardingPage), findsOneWidget);
+        expect(find.byType(OnboardingPage), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(FilledButton, l10n.onboardingStart));
-      await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(FilledButton, l10n.onboardingStart));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(OnboardingPage), findsNothing);
-      expect(find.byType(TablePage), findsOneWidget);
+        expect(find.byType(OnboardingPage), findsNothing);
+        expect(find.byType(TablePage), findsOneWidget);
 
-      // Same-session terminality (FR-006a): a direct re-entry attempt
-      // bounces straight back, same as C9 above.
-      _router(tester).go(AppRoutes.onboardingPath);
-      await tester.pumpAndSettle();
-      expect(find.byType(OnboardingPage), findsNothing);
+        // Same-session terminality (FR-006a): a direct re-entry attempt
+        // bounces straight back, same as C9 above.
+        _router(tester).go(AppRoutes.onboardingPath);
+        await tester.pumpAndSettle();
+        expect(find.byType(OnboardingPage), findsNothing);
 
-      await disposeTestAppRoot(tester);
-    });
+        await disposeTestAppRoot(tester);
+      },
+    );
   });
 }

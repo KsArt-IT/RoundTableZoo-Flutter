@@ -11,7 +11,11 @@ import 'package:roundtablezoo/data/models/ai_reaction_dto.dart';
 /// repository boundary un-mapped, and this interface is the one place
 /// allowed to see them at all).
 abstract interface class AiProxyClient {
-  Future<AiReactionDto> react({required String installId, required String characterId, required String dayText});
+  Future<AiReactionDto> react({
+    required String installId,
+    required String characterId,
+    required String dayText,
+  });
 }
 
 /// The real implementation — talks to `AiProxyConfig.baseUrl`. Selected

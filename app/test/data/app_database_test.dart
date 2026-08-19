@@ -55,37 +55,40 @@ void main() {
     expect(remainingReactions, isEmpty);
   });
 
-  test('a reaction with a tone outside the enum is stored with neutral tone, text unchanged', () async {
-    final now = DateTime.utc(2026, 1, 1, 12);
-    final entryId = await db
-        .into(db.dayEntries)
-        .insert(
-          DayEntriesCompanion.insert(
-            occurredAt: now,
-            moodScore: 3,
-            createdAt: now,
-            updatedAt: now,
-          ),
-        );
-    await db
-        .into(db.characterReactions)
-        .insert(
-          CharacterReactionsCompanion.insert(
-            dayEntryId: entryId,
-            characterId: 'dog',
-            tone: const Value('ecstatic-not-a-real-tone'),
-            reply: 'woof but weird',
-            intensity: 0.9,
-            createdAt: now,
-          ),
-        );
+  test(
+    'a reaction with a tone outside the enum is stored with neutral tone, text unchanged',
+    () async {
+      final now = DateTime.utc(2026, 1, 1, 12);
+      final entryId = await db
+          .into(db.dayEntries)
+          .insert(
+            DayEntriesCompanion.insert(
+              occurredAt: now,
+              moodScore: 3,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await db
+          .into(db.characterReactions)
+          .insert(
+            CharacterReactionsCompanion.insert(
+              dayEntryId: entryId,
+              characterId: 'dog',
+              tone: const Value('ecstatic-not-a-real-tone'),
+              reply: 'woof but weird',
+              intensity: 0.9,
+              createdAt: now,
+            ),
+          );
 
-    final row = await db.select(db.characterReactions).getSingle();
-    final entity = row.toEntity();
+      final row = await db.select(db.characterReactions).getSingle();
+      final entity = row.toEntity();
 
-    expect(entity.tone, ReactionTone.neutral);
-    expect(entity.reply, 'woof but weird');
-  });
+      expect(entity.tone, ReactionTone.neutral);
+      expect(entity.reply, 'woof but weird');
+    },
+  );
 
   test('mapping a stored day entry round-trips through toEntity', () async {
     final now = DateTime.utc(2026, 1, 1, 12);

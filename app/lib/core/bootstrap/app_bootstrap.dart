@@ -26,9 +26,11 @@ abstract final class AppBootstrap {
     try {
       await _backupExclusionChannel.invokeMethod<bool>('excludeFromBackup', path);
     } on PlatformException catch (e, st) {
-      if (!kReleaseMode) logger.w('Failed to exclude "$path" from backup', error: e, stackTrace: st);
+      if (!kReleaseMode)
+        logger.w('Failed to exclude "$path" from backup', error: e, stackTrace: st);
     } on MissingPluginException catch (e, st) {
-      if (!kReleaseMode) logger.w('Failed to exclude "$path" from backup', error: e, stackTrace: st);
+      if (!kReleaseMode)
+        logger.w('Failed to exclude "$path" from backup', error: e, stackTrace: st);
     }
   }
 
@@ -71,7 +73,9 @@ abstract final class AppBootstrap {
       return const Result.success(null);
     } on Object catch (e, st) {
       logger.e('Failed to reset the database', error: e, stackTrace: st);
-      return Result.failure(DatabaseFailure(e.toString(), code: DatabaseFailure.storageUnavailable));
+      return Result.failure(
+        DatabaseFailure(e.toString(), code: DatabaseFailure.storageUnavailable),
+      );
     }
   }
 }

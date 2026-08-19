@@ -45,7 +45,9 @@ void main() {
 
   test('watch() emits an updated state after a change', () async {
     final emissions = <String>[];
-    final subscription = repository.watch().listen((settings) => emissions.add(settings.themeMode.name));
+    final subscription = repository.watch().listen(
+      (settings) => emissions.add(settings.themeMode.name),
+    );
 
     await pumpEventQueue();
     await repository.updateThemeMode(ThemePreference.dark);

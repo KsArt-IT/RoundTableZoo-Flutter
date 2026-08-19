@@ -9,7 +9,10 @@ import 'package:roundtablezoo/gen/app_localizations.dart';
 /// fire while the app isn't running.
 Future<({String title, String body})> reminderTexts(LocalePreference preference) async {
   final localizations = await _localizationsFor(preference);
-  return (title: localizations.reminderNotificationTitle, body: localizations.reminderNotificationBody);
+  return (
+    title: localizations.reminderNotificationTitle,
+    body: localizations.reminderNotificationBody,
+  );
 }
 
 /// Localized notification channel name/description, shown in the system

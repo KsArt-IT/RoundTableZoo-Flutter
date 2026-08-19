@@ -40,7 +40,8 @@ void main() {
     blocTest<OnboardingCubit, OnboardingState>(
       'from unknown, a flag of false emits required (C1)',
       build: () {
-        when(() => settingsRepository.load()).thenAnswer((_) async => Result.success(_settings(hasSeenOnboarding: false)));
+        when(() => settingsRepository.load())
+            .thenAnswer((_) async => Result.success(_settings(hasSeenOnboarding: false)));
         return OnboardingCubit(
           settingsRepositoryLocator: () => settingsRepository,
           initialState: const OnboardingState.unknown(),
@@ -53,7 +54,8 @@ void main() {
     blocTest<OnboardingCubit, OnboardingState>(
       'from unknown, a flag of true emits completed (C1)',
       build: () {
-        when(() => settingsRepository.load()).thenAnswer((_) async => Result.success(_settings(hasSeenOnboarding: true)));
+        when(() => settingsRepository.load())
+            .thenAnswer((_) async => Result.success(_settings(hasSeenOnboarding: true)));
         return OnboardingCubit(
           settingsRepositoryLocator: () => settingsRepository,
           initialState: const OnboardingState.unknown(),
@@ -66,7 +68,8 @@ void main() {
     blocTest<OnboardingCubit, OnboardingState>(
       'a Result.failure from a registered repository emits required, not unknown (C8, FR-001a)',
       build: () {
-        when(() => settingsRepository.load()).thenAnswer((_) async => const Result.failure(_writeFailure));
+        when(() => settingsRepository.load())
+            .thenAnswer((_) async => const Result.failure(_writeFailure));
         return OnboardingCubit(
           settingsRepositoryLocator: () => settingsRepository,
           initialState: const OnboardingState.unknown(),
@@ -103,7 +106,8 @@ void main() {
     blocTest<OnboardingCubit, OnboardingState>(
       'required -> submitting -> completed on a successful write',
       build: () {
-        when(() => settingsRepository.markOnboardingSeen()).thenAnswer((_) async => Result.success(_settings(hasSeenOnboarding: true)));
+        when(() => settingsRepository.markOnboardingSeen())
+            .thenAnswer((_) async => Result.success(_settings(hasSeenOnboarding: true)));
         return OnboardingCubit(
           settingsRepositoryLocator: () => settingsRepository,
           initialState: const OnboardingState.required(),
@@ -116,7 +120,8 @@ void main() {
     blocTest<OnboardingCubit, OnboardingState>(
       'reaches completed even when the write fails (C2, FR-006)',
       build: () {
-        when(() => settingsRepository.markOnboardingSeen()).thenAnswer((_) async => const Result.failure(_writeFailure));
+        when(() => settingsRepository.markOnboardingSeen())
+            .thenAnswer((_) async => const Result.failure(_writeFailure));
         return OnboardingCubit(
           settingsRepositoryLocator: () => settingsRepository,
           initialState: const OnboardingState.required(),
@@ -161,7 +166,8 @@ void main() {
     blocTest<OnboardingCubit, OnboardingState>(
       'resolve() does not roll completed back to required (C4)',
       build: () {
-        when(() => settingsRepository.load()).thenAnswer((_) async => Result.success(_settings(hasSeenOnboarding: false)));
+        when(() => settingsRepository.load())
+            .thenAnswer((_) async => Result.success(_settings(hasSeenOnboarding: false)));
         return OnboardingCubit(
           settingsRepositoryLocator: () => settingsRepository,
           initialState: const OnboardingState.completed(),
@@ -175,7 +181,8 @@ void main() {
     blocTest<OnboardingCubit, OnboardingState>(
       'a write that never responds still reaches completed after writeTimeout (C7, FR-005b, SC-003)',
       build: () {
-        when(() => settingsRepository.markOnboardingSeen()).thenAnswer((_) => Completer<Result<UserSettings>>().future);
+        when(() => settingsRepository.markOnboardingSeen())
+            .thenAnswer((_) => Completer<Result<UserSettings>>().future);
         return OnboardingCubit(
           settingsRepositoryLocator: () => settingsRepository,
           initialState: const OnboardingState.required(),
@@ -187,7 +194,8 @@ void main() {
     );
 
     test('does not emit after the cubit is closed', () async {
-      when(() => settingsRepository.markOnboardingSeen()).thenAnswer((_) async => Result.success(_settings(hasSeenOnboarding: true)));
+      when(() => settingsRepository.markOnboardingSeen())
+          .thenAnswer((_) async => Result.success(_settings(hasSeenOnboarding: true)));
       final cubit = OnboardingCubit(
         settingsRepositoryLocator: () => settingsRepository,
         initialState: const OnboardingState.required(),

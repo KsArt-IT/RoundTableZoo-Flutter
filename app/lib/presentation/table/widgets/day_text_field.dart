@@ -54,12 +54,15 @@ class _DayTextFieldState extends State<DayTextField> {
       maxLines: 4,
       minLines: 2,
       inputFormatters: [LengthLimitingTextInputFormatter(AppConstants.maxDayTextLength)],
-      buildCounter:
-          (context, {required currentLength, required isFocused, required maxLength}) => Text(
+      buildCounter: (context, {required currentLength, required isFocused, required maxLength}) =>
+          Text(
             l10n.tableDayTextCounter(currentLength, maxLength ?? AppConstants.maxDayTextLength),
             style: Theme.of(context).textTheme.bodySmall,
           ),
-      decoration: InputDecoration(hintText: l10n.tableDayTextPlaceholder, border: const OutlineInputBorder()),
+      decoration: InputDecoration(
+        hintText: l10n.tableDayTextPlaceholder,
+        border: const OutlineInputBorder(),
+      ),
     );
   }
 }
