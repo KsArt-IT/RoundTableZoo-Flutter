@@ -53,10 +53,13 @@ dependencies:
   app_settings: ^9.0.0
   flutter_dotenv: ^6.0.1
   crypto: ^3.0.7
+  share_plus: ^13.3.0
   # Animations
   lottie: 3.5.1
+  # Network
   dio: ^5.11.0
-  share_plus: ^13.3.0
+  # Graph
+  fl_chart: ^1.2.0
 
 dev_dependencies:
   flutter_test:

@@ -31,3 +31,13 @@ extension DayEntryCompanionMapper on DayEntry {
     updatedAt: updatedAt,
   );
 }
+
+/// Maps one row of `DiaryLocalDataSource.moodProjection()` — the chart's
+/// `moodScore` half is built here; the day (`DayResolver` + `dayStartHour`)
+/// is computed by the repository, same split as `DiaryDayEntry` (research.md
+/// R4, R15).
+extension MoodProjectionRowMapper on ({DateTime occurredAt, int moodScore}) {
+  MoodScore toMoodScoreValue() => MoodScore.create(moodScore).valueOrGet(
+    () => throw StateError('day_entries.moodScore=$moodScore violates its CHECK constraint'),
+  );
+}

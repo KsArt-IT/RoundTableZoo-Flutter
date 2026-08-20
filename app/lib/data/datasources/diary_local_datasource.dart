@@ -52,4 +52,51 @@ class DiaryLocalDataSource {
       ..orderBy([(row) => OrderingTerm.asc(row.createdAt)]);
     return query.get();
   }
+
+  /// Keyset page for the Diary list — `occurredAt < beforeUtc` (or
+  /// unfiltered when `beforeUtc` is `null`), newest first, at most [limit]
+  /// rows. Uses `idx_day_entries_occurred_at` (contracts/diary-repository.md
+  /// §1).
+  Future<List<DayEntryRow>> entriesBefore(DateTime? beforeUtc, int limit) {
+    final query = _db.select(_db.dayEntries);
+    if (beforeUtc != null) {
+      query.where((row) => row.occurredAt.isSmallerThanValue(beforeUtc));
+    }
+    query
+      ..orderBy([
+        (row) => OrderingTerm.desc(row.occurredAt),
+        (row) => OrderingTerm.desc(row.id),
+      ])
+      ..limit(limit);
+    return query.get();
+  }
+
+  /// The `(occurredAt, moodScore)` projection over the whole table, used
+  /// for the mood chart — `dayText` is never read (research.md R3).
+  Future<List<({DateTime occurredAt, int moodScore})>> moodProjection() async {
+    final query = _db.selectOnly(_db.dayEntries)
+      ..addColumns([_db.dayEntries.occurredAt, _db.dayEntries.moodScore])
+      ..orderBy([OrderingTerm.desc(_db.dayEntries.occurredAt)]);
+    final rows = await query.get();
+    return rows
+        .map(
+          (row) => (
+            occurredAt: row.read(_db.dayEntries.occurredAt)!,
+            moodScore: row.read(_db.dayEntries.moodScore)!,
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  /// Reactions for several entries in one query, grouped by `dayEntryId` —
+  /// avoids the N+1 pattern `reactionsForEntry` would produce per day
+  /// (contracts/diary-repository.md §3, research.md R11). Entries with no
+  /// reactions are absent from the result.
+  Future<List<CharacterReactionRow>> reactionsForEntryIds(List<int> ids) {
+    if (ids.isEmpty) return Future.value(const []);
+    final query = _db.select(_db.characterReactions)
+      ..where((row) => row.dayEntryId.isIn(ids))
+      ..orderBy([(row) => OrderingTerm.asc(row.createdAt)]);
+    return query.get();
+  }
 }

@@ -203,5 +203,8 @@ void _useFakeShareService() {
   }
   final shareService = MockShareService();
   when(() => shareService.shareText(any())).thenAnswer((_) async {});
+  when(
+    () => shareService.shareCsv(any(), fileName: any(named: 'fileName')),
+  ).thenAnswer((_) async {});
   getIt.registerLazySingleton<ShareService>(() => shareService);
 }

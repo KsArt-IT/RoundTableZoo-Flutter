@@ -4,6 +4,8 @@ import 'package:roundtablezoo/core/utils/install_id_generator.dart';
 import 'package:roundtablezoo/domain/entities/character_reaction.dart';
 import 'package:roundtablezoo/domain/entities/day_entry.dart';
 import 'package:roundtablezoo/domain/entities/day_key.dart';
+import 'package:roundtablezoo/domain/entities/diary_page.dart';
+import 'package:roundtablezoo/domain/entities/mood_chart_point.dart';
 import 'package:roundtablezoo/domain/entities/user_settings.dart';
 import 'package:roundtablezoo/domain/repositories/diary_repository.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
@@ -102,6 +104,18 @@ class UnavailableDiaryRepository implements DiaryRepository {
   @override
   Future<Result<List<CharacterReaction>>> reactionsFor(int dayEntryId) async =>
       const Result.success([]);
+
+  @override
+  Future<Result<DiaryPage>> entriesPage({DateTime? beforeOccurredAt, required int limit}) async =>
+      _storageReadOnly;
+
+  @override
+  Future<Result<List<MoodChartPoint>>> moodHistory() async => _storageReadOnly;
+
+  @override
+  Future<Result<Map<int, List<CharacterReaction>>>> reactionsForEntries(
+    List<int> dayEntryIds,
+  ) async => _storageReadOnly;
 
   @override
   Stream<void> watchEntriesChanged() => const Stream.empty();

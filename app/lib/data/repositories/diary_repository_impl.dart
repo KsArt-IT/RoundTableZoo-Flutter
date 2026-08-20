@@ -11,6 +11,9 @@ import 'package:roundtablezoo/data/mappers/day_entry_mapper.dart';
 import 'package:roundtablezoo/domain/entities/character_reaction.dart';
 import 'package:roundtablezoo/domain/entities/day_entry.dart';
 import 'package:roundtablezoo/domain/entities/day_key.dart';
+import 'package:roundtablezoo/domain/entities/diary_day_entry.dart';
+import 'package:roundtablezoo/domain/entities/diary_page.dart';
+import 'package:roundtablezoo/domain/entities/mood_chart_point.dart';
 import 'package:roundtablezoo/domain/repositories/diary_repository.dart';
 import 'package:roundtablezoo/domain/services/day_resolver.dart';
 import 'package:roundtablezoo/domain/value_objects/mood_score.dart';
@@ -122,6 +125,81 @@ class DiaryRepositoryImpl with SafeCallMixin implements DiaryRepository {
   Future<Result<List<CharacterReaction>>> reactionsFor(int dayEntryId) => safeCall(() async {
     final rows = await _dataSource.reactionsForEntry(dayEntryId);
     return rows.map((row) => row.toEntity()).toList();
+  });
+
+  @override
+  Future<Result<DiaryPage>> entriesPage({DateTime? beforeOccurredAt, required int limit}) =>
+      safeCall(() async {
+        if (limit <= 0) {
+          throw const ValidationFailure('entriesPage: limit must be > 0');
+        }
+
+        final rows = await _dataSource.entriesBefore(beforeOccurredAt, limit);
+        if (rows.isEmpty) {
+          return const DiaryPage(days: [], hasMore: false, nextCursor: null);
+        }
+
+        final settingsRow = await _settingsDataSource.loadOrCreate();
+        final days = <DiaryDayEntry>[];
+        DayKey? lastKey;
+        for (final row in rows) {
+          final entry = row.toEntity();
+          final key = _dayResolver.resolve(
+            entry.occurredAt,
+            zone: _clock.location,
+            dayStartHour: settingsRow.dayStartHour,
+          );
+          // Rows are sorted `occurredAt DESC, id DESC` — the first row of a
+          // day is its latest, the one FR-006 designates as "the" entry.
+          if (key == lastKey) continue;
+          days.add(DiaryDayEntry(day: key, entry: entry));
+          lastKey = key;
+        }
+
+        // Only the repository sees the row count before day-collapsing —
+        // `rows.length == limit` means the datasource may still have more
+        // (research.md R2).
+        final hasMore = rows.length == limit;
+        final nextCursor = _boundsFor(days.last.day, settingsRow).startUtc;
+        return DiaryPage(days: days, hasMore: hasMore, nextCursor: nextCursor);
+      });
+
+  @override
+  Future<Result<List<MoodChartPoint>>> moodHistory() => safeCall(() async {
+    final projection = await _dataSource.moodProjection(); // occurredAt DESC
+    if (projection.isEmpty) return const <MoodChartPoint>[];
+
+    final settingsRow = await _settingsDataSource.loadOrCreate();
+    final points = <MoodChartPoint>[];
+    DayKey? lastKey;
+    for (final row in projection) {
+      final key = _dayResolver.resolve(
+        row.occurredAt.toUtc(),
+        zone: _clock.location,
+        dayStartHour: settingsRow.dayStartHour,
+      );
+      // Descending order — the first row of a day is its latest (FR-006).
+      if (key == lastKey) continue;
+      points.add(MoodChartPoint(day: key, moodScore: row.toMoodScoreValue()));
+      lastKey = key;
+    }
+    // The chart reads left to right — ascending day.
+    return points.reversed.toList(growable: false);
+  });
+
+  @override
+  Future<Result<Map<int, List<CharacterReaction>>>> reactionsForEntries(
+    List<int> dayEntryIds,
+  ) => safeCall(() async {
+    if (dayEntryIds.isEmpty) return const <int, List<CharacterReaction>>{};
+
+    final rows = await _dataSource.reactionsForEntryIds(dayEntryIds);
+    final byEntry = <int, List<CharacterReaction>>{};
+    for (final row in rows) {
+      final reaction = row.toEntity();
+      (byEntry[reaction.dayEntryId] ??= []).add(reaction);
+    }
+    return byEntry;
   });
 
   @override

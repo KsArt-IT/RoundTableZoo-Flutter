@@ -33,4 +33,39 @@ abstract final class AppConstants {
 
   /// Maximum number of characters seated at the table at once (FR-010a).
   static const int maxCharactersAtTable = 6;
+
+  /// Diary list — number of days per `entriesPage` request (FR-004, SC-008).
+  static const int diaryPageSize = 30;
+
+  /// Diary list — how far from the end of the shown list loadMore() starts
+  /// (research.md R19): less than half a page remaining.
+  static const int diaryPrefetchThreshold = diaryPageSize ~/ 2;
+
+  /// Diary CSV export — page size for the internal `entriesPage` walk, to
+  /// bound peak memory and avoid N+1 reaction queries (research.md R11).
+  static const int diaryExportBatchSize = 200;
+
+  /// Diary — debounce before reacting to `watchEntriesChanged` (FR-009,
+  /// research.md R12).
+  static const Duration diaryRefreshDebounce = Duration(milliseconds: 300);
+
+  /// Diary chart — visible-range upper bound (inclusive) for daily-point
+  /// granularity (FR-010a, research.md R5).
+  static const int diaryChartDailyMaxDays = 90;
+
+  /// Diary chart — visible-range upper bound (inclusive) for weekly-point
+  /// granularity; beyond this, monthly (FR-010a, research.md R5).
+  static const int diaryChartWeeklyMaxDays = 731;
+
+  /// Diary chart — maximum horizontal zoom scale (FR-010b, research.md R6).
+  static const double diaryChartMaxScale = 12.0;
+
+  /// Diary chart — initial visible window in days, right edge pinned to the
+  /// most recent day (FR-010, research.md R18).
+  static const int diaryChartInitialDays = 30;
+
+  /// Diary chart — fixed value axis bounds, independent of data spread
+  /// (SC-007, research.md R18).
+  static const double diaryChartMinValue = 1.0;
+  static const double diaryChartMaxValue = 5.0;
 }

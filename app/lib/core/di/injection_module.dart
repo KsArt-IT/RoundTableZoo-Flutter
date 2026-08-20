@@ -16,8 +16,10 @@ import 'package:roundtablezoo/domain/repositories/diary_repository.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
 import 'package:roundtablezoo/domain/services/day_resolver.dart';
 import 'package:roundtablezoo/domain/services/reminder_planner.dart';
+import 'package:roundtablezoo/domain/usecases/export_diary_to_csv.dart';
 import 'package:roundtablezoo/presentation/app_settings/cubit/app_settings_cubit.dart';
 import 'package:roundtablezoo/presentation/app_settings/cubit/current_day_cubit.dart';
+import 'package:roundtablezoo/presentation/diary/cubit/diary_cubit.dart';
 import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_cubit.dart';
 import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_state.dart';
 import 'package:roundtablezoo/presentation/settings/cubit/settings_cubit.dart';
@@ -94,6 +96,33 @@ abstract class InjectionModule {
   @lazySingleton
   ReminderPlanner reminderPlanner(DayResolver dayResolver) =>
       ReminderPlanner(dayResolver: dayResolver);
+
+  /// `DiaryRepository` is only resolved from `getIt` the first time this
+  /// is actually built, by which point `StorageDiSwitch` has registered it
+  /// (same lazy-resolution reasoning as [currentDayCubit]).
+  @lazySingleton
+  ExportDiaryToCsv exportDiaryToCsv(DiaryRepository diaryRepository) =>
+      ExportDiaryToCsv(repository: diaryRepository);
+
+  /// Screen-scoped `factory` (not `@lazySingleton`) — a fresh instance per
+  /// visit to `/diary` (research.md R14). `DiaryRepository` is only
+  /// resolved from `getIt` the first time this is actually built, by which
+  /// point `StorageDiSwitch` has registered it (same lazy-resolution
+  /// reasoning as [currentDayCubit]).
+  @injectable
+  DiaryCubit diaryCubit(
+    DiaryRepository diaryRepository,
+    CharacterCatalog characterCatalog,
+    ExportDiaryToCsv exportDiaryToCsv,
+    ShareService shareService,
+    AppClock clock,
+  ) => DiaryCubit(
+    diaryRepository: diaryRepository,
+    characterCatalog: characterCatalog,
+    exportDiaryToCsv: exportDiaryToCsv,
+    shareService: shareService,
+    clock: clock,
+  );
 
   /// Stateless wrapper over `share_plus` — no runtime dependencies
   /// (research.md R3).

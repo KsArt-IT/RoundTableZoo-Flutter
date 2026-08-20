@@ -4,7 +4,7 @@ import 'package:roundtablezoo/core/di/injection.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
 import 'package:roundtablezoo/domain/value_objects/locale_preference.dart';
 import 'package:roundtablezoo/domain/value_objects/theme_preference.dart';
-import 'package:roundtablezoo/presentation/diary/diary_placeholder_page.dart';
+import 'package:roundtablezoo/presentation/diary/diary_page.dart';
 import 'package:roundtablezoo/presentation/settings/settings_page.dart';
 import 'package:roundtablezoo/presentation/table/table_page.dart';
 
@@ -48,7 +48,7 @@ void main() {
 
     await tester.tap(find.widgetWithText(NavigationDestination, _ukDiary));
     await tester.pumpAndSettle();
-    expect(_bodyText(DiaryPlaceholderPage, _ukDiary), findsOneWidget);
+    expect(find.byType(DiaryPage), findsOneWidget);
 
     await tester.tap(find.widgetWithText(NavigationDestination, _ukSettings));
     await tester.pumpAndSettle();

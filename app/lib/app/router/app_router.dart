@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:roundtablezoo/app/router/app_routes.dart';
 import 'package:roundtablezoo/app/shell/shell_page.dart';
-import 'package:roundtablezoo/presentation/diary/diary_placeholder_page.dart';
+import 'package:roundtablezoo/presentation/diary/diary_page.dart';
 import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_cubit.dart';
 import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_state.dart';
 import 'package:roundtablezoo/presentation/onboarding/onboarding_page.dart';
@@ -76,7 +76,7 @@ GoRouter buildAppRouter({
             GoRoute(
               path: AppRoutes.diaryPath,
               name: AppRoutes.diaryName,
-              builder: (context, state) => const DiaryPlaceholderPage(),
+              builder: (context, state) => const DiaryPage(),
             ),
           ],
         ),

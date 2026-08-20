@@ -319,5 +319,49 @@
   "@tableShareAction": {
     "description": "Table screen — speaking bubble share action, both the long-press affordance and its named semantics action (FR-030)"
   },
+  "diaryEmptyTitle": "Записей ещё нет",
+  "@diaryEmptyTitle": {
+    "description": "Diary screen — empty history state, title (FR-007)"
+  },
+  "diaryEmptyHint": "Отметьте настроение на Столе — история появится здесь",
+  "@diaryEmptyHint": {
+    "description": "Diary screen — empty history state, hint pointing to the Table screen (FR-007)"
+  },
+  "diaryNoMoreDays": "Дальше дней нет",
+  "@diaryNoMoreDays": {
+    "description": "Diary screen — non-emphatic footer line marking the end of the list (FR-004c, research.md R19)"
+  },
+  "diaryRetryAction": "Повторить",
+  "@diaryRetryAction": {
+    "description": "Diary screen — retry action on the error banner and on a failed page load (FR-008a)"
+  },
+  "diaryPageLoadError": "Не удалось загрузить ещё",
+  "@diaryPageLoadError": {
+    "description": "Diary screen — footer line when loadMore() fails, list stays as-is (FR-008a, research.md R19)"
+  },
+  "diaryUnavailableMessage": "Хранилище недоступно для чтения",
+  "@diaryUnavailableMessage": {
+    "description": "Diary screen — read-only storage mode message, distinct from the empty-history message (FR-029, research.md R13)"
+  },
+  "diaryNoReactions": "Реплик не было",
+  "@diaryNoReactions": {
+    "description": "Diary screen — expanded day card, no character reactions saved for that day (FR-018)"
+  },
+  "diaryExportAction": "Экспортировать историю",
+  "@diaryExportAction": {
+    "description": "Diary screen — CSV export button label and its Semantics label (FR-020, FR-030)"
+  },
+  "diaryExportUnavailableHint": "История пуста",
+  "@diaryExportUnavailableHint": {
+    "description": "Diary screen — Semantics hint on the disabled export button (FR-024, FR-030, research.md R19)"
+  },
+  "diaryDayExpandedLabel": "Раскрыто",
+  "@diaryDayExpandedLabel": {
+    "description": "Diary screen — day card Semantics label suffix when expanded (FR-014, FR-030)"
+  },
+  "diaryDayCollapsedLabel": "Свёрнуто",
+  "@diaryDayCollapsedLabel": {
+    "description": "Diary screen — day card Semantics label suffix when collapsed (FR-014, FR-030)"
+  },
   "end": "---"
 }

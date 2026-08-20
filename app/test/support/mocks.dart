@@ -7,6 +7,7 @@ import 'package:roundtablezoo/data/datasources/character_catalog.dart';
 import 'package:roundtablezoo/domain/repositories/ai_reaction_repository.dart';
 import 'package:roundtablezoo/domain/repositories/diary_repository.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
+import 'package:roundtablezoo/domain/usecases/export_diary_to_csv.dart';
 
 /// Shared mocktail doubles for tests.
 class MockAppClock extends Mock implements AppClock {}
@@ -28,3 +29,8 @@ class MockAiReactionRepository extends Mock implements AiReactionRepository {}
 class MockAiProxyClient extends Mock implements AiProxyClient {}
 
 class MockShareService extends Mock implements ShareService {}
+
+/// `ExportDiaryToCsv` isn't behind an interface (it's a single-method
+/// usecase, same reasoning as `CharacterCatalog`), so this subclasses it
+/// directly rather than `implements` an abstraction.
+class MockExportDiaryToCsv extends Mock implements ExportDiaryToCsv {}

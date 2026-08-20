@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
-import 'package:roundtablezoo/presentation/diary/diary_placeholder_page.dart';
+import 'package:roundtablezoo/presentation/diary/diary_page.dart';
 import 'package:roundtablezoo/presentation/settings/settings_page.dart';
 import 'package:roundtablezoo/presentation/table/table_page.dart';
 
@@ -27,7 +27,7 @@ void main() {
     // `TablePage` has no title of its own — the round table fills the
     // screen instead (it's the only content the shell shows here).
     expect(find.byType(TablePage), findsOneWidget);
-    expect(find.byType(DiaryPlaceholderPage), findsNothing);
+    expect(find.byType(DiaryPage), findsNothing);
     expect(find.byType(SettingsPage), findsNothing);
 
     await disposeTestAppRoot(tester);
@@ -41,7 +41,7 @@ void main() {
 
     await tester.tap(find.widgetWithText(NavigationDestination, l10n.sectionDiary));
     await tester.pumpAndSettle();
-    expect(_bodyText(DiaryPlaceholderPage, l10n.sectionDiary), findsOneWidget);
+    expect(find.byType(DiaryPage), findsOneWidget);
 
     await tester.tap(find.widgetWithText(NavigationDestination, l10n.sectionSettings));
     await tester.pumpAndSettle();
