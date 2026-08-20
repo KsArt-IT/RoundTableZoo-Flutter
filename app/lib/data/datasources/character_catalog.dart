@@ -80,6 +80,13 @@ class CharacterCatalog with SafeCallMixin {
     return Character(
       id: id,
       name: name,
+      // Optional and unvalidated beyond its type: an empty string is
+      // indistinguishable from absent for rendering purposes, and both
+      // fall through to the first-letter avatar.
+      emoji: switch (json['emoji']) {
+        final String value when value.isNotEmpty => value,
+        _ => null,
+      },
       colorHex: _parseColorHex(colorHex, id),
       fallbackReply: fallbackReply,
       maxReplyLength: maxReplyLength,

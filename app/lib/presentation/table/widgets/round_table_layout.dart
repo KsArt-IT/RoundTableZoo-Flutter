@@ -44,7 +44,10 @@ class RoundTableLayout extends StatelessWidget {
   /// older, still-visible one from a neighboring seat.
   final String? activeCharacterId;
 
-  static const _seatSize = AppConstants.minTapTargetDp * 1.5;
+  /// The seat's footprint, not the drawn avatar — it includes the halo
+  /// ring the tap ripple needs (`AppConstants.characterSeatDp`). Seats are
+  /// spaced and bubbles anchored by this larger box.
+  static const _seatSize = AppConstants.characterSeatDp;
 
   @override
   Widget build(BuildContext context) {

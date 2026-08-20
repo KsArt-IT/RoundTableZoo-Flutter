@@ -11,6 +11,12 @@ abstract class Character with _$Character {
     required String id,
     required String name,
 
+    /// Shown inside the static avatar instead of the name's first letter
+    /// when present — a zero-asset stand-in until real character art
+    /// exists (`contracts/character-config.md` §5). Optional: absent falls
+    /// back to the letter, so an incomplete roster still renders.
+    String? emoji,
+
     /// ARGB, parsed from the asset's `#RRGGBB` string.
     required int colorHex,
     required String fallbackReply,

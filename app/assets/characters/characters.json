@@ -1,6 +1,7 @@
 [
   {
     "id": "cat",
+    "emoji": "🐱",
     "name": "Кот",
     "colorHex": "#8A7CA8",
     "fallbackReply": "Мр-р. Слов нет — но я тебя услышал.",
@@ -8,6 +9,7 @@
   },
   {
     "id": "dog",
+    "emoji": "🐶",
     "name": "Пёс",
     "colorHex": "#D98C4A",
     "fallbackReply": "Гав! Я всё равно рад, что ты рассказал.",
@@ -15,6 +17,7 @@
   },
   {
     "id": "crocodile",
+    "emoji": "🐊",
     "name": "Крокодил",
     "colorHex": "#5C8A5C",
     "fallbackReply": "Хм. Слов пока нет, но я не отвернулся.",
@@ -22,6 +25,7 @@
   },
   {
     "id": "hippo",
+    "emoji": "🦛",
     "name": "Бегемот",
     "colorHex": "#6E8FAE",
     "fallbackReply": "Дай мне минутку подумать... но я рядом.",

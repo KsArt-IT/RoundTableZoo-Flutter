@@ -6,6 +6,7 @@ const _validJson = '''
 [
   {
     "id": "cat",
+    "emoji": "🐱",
     "name": "Кот",
     "colorHex": "#8A7CA8",
     "idleAnimation": "assets/lottie/cat_idle.json",
@@ -15,6 +16,7 @@ const _validJson = '''
   },
   {
     "id": "dog",
+    "emoji": "",
     "name": "Пёс",
     "colorHex": "#C08A4A",
     "fallbackReply": "Гав!",
@@ -36,9 +38,32 @@ void main() {
     expect(characters.first.name, 'Кот');
     expect(characters.first.colorHex, 0xFF8A7CA8);
     expect(characters.first.idleAnimation, 'assets/lottie/cat_idle.json');
+    expect(characters.first.emoji, '🐱');
     // Unknown fields are silently ignored, and missing optional animation
     // fields don't fail parsing.
     expect(characters.last.idleAnimation, isNull);
+    // An empty `emoji` is normalized to null rather than reaching the
+    // avatar as a blank glyph — it must fall back to the name's letter.
+    expect(characters.last.emoji, isNull);
+  });
+
+  test('load() treats a missing "emoji" as absent, not as an error', () async {
+    const json = '''
+[
+  {
+    "id": "hippo",
+    "name": "Бегемот",
+    "colorHex": "#6E8FAE",
+    "fallbackReply": "Хм.",
+    "maxReplyLength": 220
+  }
+]
+''';
+
+    final result = await _catalogWith(json).load();
+
+    expect(result.isSuccess, isTrue);
+    expect(result.valueOrNull!.single.emoji, isNull);
   });
 
   test('load() caches the parsed result across calls', () async {

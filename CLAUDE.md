@@ -27,7 +27,7 @@ Flutter, Android + iOS в коде, **публикуется пока тольк
 | `specs/003-onboarding` | Экран онбординга, `hasSeenOnboarding` |
 | `specs/004-table-screen` | Экран «Стол»: раскладка по кругу, 4 состояния персонажа, баблы, AI-вызов |
 | `specs/005-diary-screen` | Дневник: пагинация, график `fl_chart`, экспорт CSV |
-| `specs/006-table-surface-render` | Поверхность стола (эллипс с градиентом) — **спека есть, код нет** |
+| `specs/006-table-surface-render` | Поверхность стола: `tableSurfaceRect` + `TableSurfacePainter` внутри `RoundTableLayout`. Код готов, открыта только T007 — ручной прогон `quickstart.md` на устройстве |
 
 **Перед началом любой задачи по фиче** — прочитай
 [project/process/lessons-learned.md](project/process/lessons-learned.md) целиком (он короткий).

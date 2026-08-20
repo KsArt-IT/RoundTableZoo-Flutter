@@ -34,6 +34,19 @@ abstract final class AppConstants {
   /// Maximum number of characters seated at the table at once (FR-010a).
   static const int maxCharactersAtTable = 6;
 
+  /// Diameter of a character's drawn disc at the table.
+  static const double characterAvatarDp = minTapTargetDp * 1.5;
+
+  /// Clear ring left around that disc inside the seat. The tap ripple is
+  /// painted *under* the avatar, so without this margin it would be the
+  /// same size as the disc and stay hidden behind it.
+  static const double characterSeatHaloDp = 8;
+
+  /// A seat's full footprint — what `RoundTableLayout` positions and what
+  /// receives the tap. Larger than the drawn avatar by the halo ring on
+  /// every side.
+  static const double characterSeatDp = characterAvatarDp + characterSeatHaloDp * 2;
+
   /// Diary list — number of days per `entriesPage` request (FR-004, SC-008).
   static const int diaryPageSize = 30;
 
