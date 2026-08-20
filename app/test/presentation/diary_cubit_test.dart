@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:roundtablezoo/core/errors/app_failure.dart';
 import 'package:roundtablezoo/core/errors/result.dart';
-import 'package:roundtablezoo/domain/entities/character.dart';
 import 'package:roundtablezoo/domain/entities/character_reaction.dart';
 import 'package:roundtablezoo/domain/entities/day_entry.dart';
 import 'package:roundtablezoo/domain/entities/day_key.dart';

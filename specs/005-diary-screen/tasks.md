@@ -291,3 +291,10 @@ Task: "diary_error_view.dart"
   есть в `app/test/support/mocks.dart`
 - Схема БД не меняется, `schemaVersion` не поднимается, миграции не пишутся
 - `[P]` = разные файлы без зависимостей; коммит после каждой задачи или логической группы
+
+---
+
+## Phase 8: Convergence
+
+- [X] T063 Обновить `specs/005-diary-screen/contracts/diary-cubit.md` §1 (добавить `required AppClock clock` в сигнатуру конструктора `DiaryCubit`) и §3 (исправить формулировку про источник времени — имя CSV-файла собирает сам `DiaryCubit` в `export()`, а не `ExportDiaryToCsv`), синхронизировав с `contracts/csv-export.md` §1 и фактической реализацией `app/lib/presentation/diary/cubit/diary_cubit.dart` (contracts/diary-cubit.md, contracts/csv-export.md) (contradicts)
+- [X] T064 Удалить неиспользуемый импорт `package:roundtablezoo/domain/entities/character.dart` из `app/test/presentation/diary_cubit_test.dart:8`, найденный `flutter analyze` (Constitution VI) (unrequested)

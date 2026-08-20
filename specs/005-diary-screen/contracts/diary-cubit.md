@@ -13,6 +13,7 @@ DiaryCubit({
   required CharacterCatalog characterCatalog,
   required ExportDiaryToCsv exportDiaryToCsv,
   required ShareService shareService,
+  required AppClock clock,
 });
 ```
 
@@ -61,8 +62,9 @@ DiaryCubit({
   никогда → пустой `loaded` (FR-029).
 - Cubit не читает `CharacterReaction.tone`/`intensity` ни для списка, ни для графика (FR-011,
   SC-007).
-- Текущее время берётся только из `AppClock` внутри `ExportDiaryToCsv` (имя файла); сам Cubit
-  `DateTime.now()` не вызывает (принцип IV).
+- Текущее время берётся только из `AppClock` — сам **Cubit** (не `ExportDiaryToCsv`) читает его в
+  `export()`, чтобы собрать имя CSV-файла (`contracts/csv-export.md` §1); нигде в фиче не
+  вызывается `DateTime.now()` напрямую (принцип IV).
 
 ## 4. Тесты (`test/presentation/diary_cubit_test.dart`, `bloc_test`, `mocktail`)
 
