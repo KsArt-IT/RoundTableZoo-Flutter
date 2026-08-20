@@ -34,7 +34,7 @@ Cubit, ни состояния.
 
 **Purpose**: константы, нужные и реализации, и тестам
 
-- [ ] T001 Добавить 4 константы поверхности стола в `app/lib/core/constants/app_constants.dart`:
+- [X] T001 Добавить 4 константы поверхности стола в `app/lib/core/constants/app_constants.dart`:
       `tableSurfaceFlattenRatio` (`0.78`), `tableSurfaceShadowOffsetY` (`6.0`),
       `tableSurfaceShadowBlurSigma` (`12.0`), `tableSurfaceShadowOpacity` (`0.35`)
       (data-model.md §4)
@@ -57,7 +57,7 @@ Cubit, ни состояния.
 
 > Пишутся до реализации и должны падать до неё
 
-- [ ] T002 [P] [US1] Написать юнит-тесты чистой функции `tableSurfaceRect(...)` в
+- [X] T002 [P] [US1] Написать юнит-тесты чистой функции `tableSurfaceRect(...)` в
       `app/test/presentation/table_surface_geometry_test.dart`: вертикальная полуось равна
       `radius`; горизонтальная — `radius / AppConstants.tableSurfaceFlattenRatio`, когда это не
       превышает `size.width / 2`; клэмп к `size.width / 2` на узком экране; результат
@@ -67,7 +67,7 @@ Cubit, ни состояния.
       (FR-010: стол не мигает при выборе настроения/вводе текста/получении реплики — ни одно из
       этих действий не меняет ни центр, ни радиус, ни тему); `true`, когда любое из трёх
       отличается (research.md R5)
-- [ ] T003 [P] [US1] Написать widget-тест в `app/test/widget/table_surface_render_test.dart`:
+- [X] T003 [P] [US1] Написать widget-тест в `app/test/widget/table_surface_render_test.dart`:
       `RoundTableLayout` рисует `CustomPaint` с `TableSurfacePainter` без исключений при 1 и при
       `AppConstants.maxCharactersAtTable` персонажах; `ExcludeSemantics` присутствует и не
       добавляет объявляемых узлов — существующий набор гайдлайнов доступности экрана «Стол» не
@@ -75,7 +75,7 @@ Cubit, ни состояния.
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] Создать `app/lib/presentation/table/widgets/table_surface_painter.dart`:
+- [X] T004 [US1] Создать `app/lib/presentation/table/widgets/table_surface_painter.dart`:
       чистая функция `tableSurfaceRect({required Offset center, required double radius,
       required Size bounds})` (research.md R1; должна удовлетворять T002) и класс
       `TableSurfacePainter extends CustomPainter` — тень: размытый овал того же `Path`, смещённый
@@ -86,7 +86,7 @@ Cubit, ни состояния.
       colorScheme.primaryContainer]).createShader(rect)` (research.md R4); `shouldRepaint`
       сравнивает `center`/`radius`/использованные цвета со старым делегатом (research.md R5)
       (зависит от T001)
-- [ ] T005 [US1] Подключить `TableSurfacePainter` в
+- [X] T005 [US1] Подключить `TableSurfacePainter` в
       `app/lib/presentation/table/widgets/round_table_layout.dart`: первым (нижним) элементом
       уже существующего `Stack` добавить `ExcludeSemantics(child: CustomPaint(painter:
       TableSurfacePainter(center: center, radius: radius, colorScheme:
@@ -102,13 +102,13 @@ Cubit, ни состояния.
 
 **Purpose**: гейты завершения задачи
 
-- [ ] T006 [P] Прогнать `flutter analyze` в `app/` без ошибок и `flutter test` полностью зелёным
+- [X] T006 [P] Прогнать `flutter analyze` в `app/` без ошибок и `flutter test` полностью зелёным
       (конституция §Рабочий процесс п.5 — задача с падающими тестами не считается выполненной)
 - [ ] T007 Пройти сценарии A–E из `specs/006-table-surface-render/quickstart.md` на реальном
       среднем Android-устройстве: число персонажей (1 и максимум), ресайз/поворот, смена темы,
       взаимодействие и TalkBack/VoiceOver, частота кадров простаивающих анимаций (SC-001..SC-004,
       FR-009)
-- [ ] T008 Дописать в `project/process/lessons-learned.md` реальные грабли этой фазы, если они
+- [X] T008 Дописать в `project/process/lessons-learned.md` реальные грабли этой фазы, если они
       были (только то, что действительно потребовало переписывания, — гипотетические уроки туда
       не пишутся)
 

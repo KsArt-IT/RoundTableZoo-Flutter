@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:roundtablezoo/core/constants/app_constants.dart';
+import 'package:roundtablezoo/presentation/table/widgets/table_surface_painter.dart';
 
 /// One character's avatar plus its optional speaking bubble.
 class RoundTableSeat {
@@ -101,7 +102,23 @@ class RoundTableLayout extends StatelessWidget {
           ...bubbles.where((entry) => entry.key == activeCharacterId),
         ];
 
-        return Stack(children: [...avatars, for (final entry in orderedBubbles) entry.value]);
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: ExcludeSemantics(
+                child: CustomPaint(
+                  painter: TableSurfacePainter(
+                    center: center,
+                    radius: radius,
+                    colorScheme: Theme.of(context).colorScheme,
+                  ),
+                ),
+              ),
+            ),
+            ...avatars,
+            for (final entry in orderedBubbles) entry.value,
+          ],
+        );
       },
     );
   }

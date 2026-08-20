@@ -68,4 +68,25 @@ abstract final class AppConstants {
   /// (SC-007, research.md R18).
   static const double diaryChartMinValue = 1.0;
   static const double diaryChartMaxValue = 5.0;
+
+  /// Table surface — how much wider than tall the oval is: horizontal
+  /// semi-axis = `radius / tableSurfaceFlattenRatio` (FR-003, research.md R1).
+  static const double tableSurfaceFlattenRatio = 0.78;
+
+  /// Table surface — upper bound on the oval's width, as a fraction of the
+  /// available bounds' width, so the surface never spans edge-to-edge
+  /// (FR-003, Edge Cases: "stays within the allotted area").
+  static const double tableSurfaceMaxWidthFraction = 0.85;
+
+  /// Table surface — vertical offset of the blurred shadow oval beneath the
+  /// gradient fill (FR-002, research.md R3).
+  static const double tableSurfaceShadowOffsetY = 6.0;
+
+  /// Table surface — blur sigma of the shadow's `MaskFilter` (FR-002,
+  /// research.md R3).
+  static const double tableSurfaceShadowBlurSigma = 12.0;
+
+  /// Table surface — opacity applied to `colorScheme.shadow` for the
+  /// shadow fill (FR-002, research.md R3).
+  static const double tableSurfaceShadowOpacity = 0.35;
 }
