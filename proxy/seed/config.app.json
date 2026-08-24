@@ -1,0 +1,6 @@
+{
+  "aiEnabled": true,
+  "models": ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite"],
+  "dailyCapOverride": 400,
+  "perDeviceCapOverride": 15
+}
