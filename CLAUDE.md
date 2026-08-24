@@ -10,6 +10,7 @@ Flutter, Android + iOS в коде, **публикуется пока тольк
 | Папка | Что там |
 |---|---|
 | `app/` | **Сам Flutter-проект** — `lib/`, `test/`, `pubspec.yaml`. Все команды (`flutter`, `dart run build_runner`) запускать отсюда, не из корня. |
+| `proxy/` | Служба-посредник к Gemini на Cloudflare Workers (TypeScript) — единственное место, где живёт ключ Gemini. Команды `npm`, `wrangler` запускать отсюда, не из корня. |
 | `project/` | Продуктовая и архитектурная документация (`prd/`, `architecture/`, `process/`). **В git не хранится** (`.gitignore`), живёт только локально. |
 | `specs/` | Спеки по фичам в формате spec-kit: `spec.md` → `plan.md` → `tasks.md` + `contracts/`. Нумерация = порядок реализации. |
 | `.specify/`, `.claude/skills/speckit-*` | Инструментарий spec-kit (шаблоны, скрипты, скиллы `/speckit-*`). |
@@ -28,6 +29,7 @@ Flutter, Android + iOS в коде, **публикуется пока тольк
 | `specs/004-table-screen` | Экран «Стол»: раскладка по кругу, 4 состояния персонажа, баблы, AI-вызов |
 | `specs/005-diary-screen` | Дневник: пагинация, график `fl_chart`, экспорт CSV |
 | `specs/006-table-surface-render` | Поверхность стола: `tableSurfaceRect` + `TableSurfacePainter` внутри `RoundTableLayout`. Код готов, открыта только T007 — ручной прогон `quickstart.md` на устройстве |
+| `specs/007-ai-proxy` | AI-прокси `proxy/` на Cloudflare Workers: ключ Gemini на сервере, Play Integrity, суточные лимиты, kill switch, ротация якорей промпта. Клиент получает настоящие реплики через `POST /react` |
 
 **Перед началом любой задачи по фиче** — прочитай
 [project/process/lessons-learned.md](project/process/lessons-learned.md) целиком (он короткий).

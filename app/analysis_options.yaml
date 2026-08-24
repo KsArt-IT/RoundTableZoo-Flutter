@@ -107,7 +107,6 @@ linter:
     - avoid_field_initializers_in_const_classes # Не використовувати field initializers in const classes
     - avoid_implementing_value_types # Не використовувати implementing value types
     - avoid_positional_boolean_parameters # Не використовувати positional boolean parameters
-    - avoid_private_typedef_functions # Не використовувати private typedef functions
     - avoid_redundant_argument_values # Не використовувати redundant argument values
     - avoid_returning_this # Не використовувати returning this
     - cascade_invocations # Не використовувати cascade invocations

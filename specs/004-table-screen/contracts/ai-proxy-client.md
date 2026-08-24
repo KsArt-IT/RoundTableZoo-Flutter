@@ -29,19 +29,31 @@ Content-Type: application/json
 
 ## 2. Запрос
 
+**Обновлено фазой 007** (`specs/007-ai-proxy/research.md` R20): добавлены `moodScore` и `attempt`,
+опционально — `integrityToken`.
+
 ```json
 {
   "installId": "32 hex-символа из user_settings.installId",
   "characterId": "hippo",
-  "dayText": "Текст пользователя о своём дне"
+  "moodScore": 2,
+  "dayText": "Текст пользователя о своём дне",
+  "attempt": 0,
+  "integrityToken": "<токен Play Integrity, только Android — research.md R14>"
 }
 ```
 
-- `integrityToken` из §4 контракта прокси **в этой фазе не отправляется** — добавляется вместе с
-  прокси, который умеет его проверять.
+- `moodScore` — оценка настроения 1–5, та же, что сохранена в `DayEntry` (`TableCubit.setMood`).
+  Модель на неё реагирует; без неё реплика теряет половину контекста (`specs/007-ai-proxy/contracts/react-api.md` §1).
+- `attempt` — число уже полученных сегодня **настоящих** реплик этого персонажа
+  (`TableCubit._attempts`, research.md R20/R21); фолбэк-реплики счётчик не увеличивают. Служба
+  выбирает по нему образ для сравнения — это конструктивно закрывает FR-018 фазы 004 (повторный тап
+  MUST давать новый вариант ответа).
+- `integrityToken` — из `IntegrityTokenProvider` (`specs/007-ai-proxy/contracts/integrity-token-provider.md`);
+  отсутствует в теле, если провайдер вернул `null` (не-Android, или платформенный сбой).
 - `dayText` уходит ровно в том виде, в каком сохранён (уже нормализован `Validators.dayText`).
-- Ничего сверх этих трёх полей клиент не шлёт: `moodScore`, дневник и история реплик устройство
-  не покидают (принцип V).
+- Дневник и история реплик устройство не покидают (принцип V) — уходят только перечисленные выше
+  поля.
 
 ## 3. Успешный ответ
 
@@ -68,10 +80,16 @@ Content-Type: application/json
 
 ## 4. Отказы → `AiProxyFailure`
 
+**Обновлено фазой 007** (research.md R12): `rateLimited` разделён на `rateLimitedDevice`/
+`rateLimitedGlobal` по полю `scope` тела `429`-ответа (`specs/007-ai-proxy/contracts/react-api.md` §4),
+добавлен `integrityRejected` для `403`.
+
 | Ситуация | Код `AiProxyFailure` | Что видит пользователь |
 |---|---|---|
 | `DioExceptionType.connectionError`, `connectionTimeout`, отсутствие сети | `network` | сообщение «нет сети» рядом со столом, слот возвращается в прежнее состояние |
-| HTTP `429` | `rateLimited` | «лимит на сегодня» (текст отличен от сетевого) |
+| HTTP `403` | `integrityRejected` | «AI недоступен на этом устройстве» — не «лимит» и не заготовленная реплика |
+| HTTP `429`, тело `{"scope": "device"}` или без разбираемого `scope` | `rateLimitedDevice` | «лимит на сегодня» (личный) |
+| HTTP `429`, тело `{"scope": "global"}` | `rateLimitedGlobal` | «сервис перегружен» — не то же сообщение, что личный лимит |
 | HTTP `503` | `aiDisabled` | «AI временно недоступен» |
 | HTTP `422`, невалидный JSON, нарушение правил §3 | `invalidResponse` | заготовленная реплика персонажа в бабле, `isFallback: true` |
 | `receiveTimeout` / общий таймаут 15 с | `timeout` | то же, что `invalidResponse` (FR-027b) |
@@ -89,6 +107,11 @@ Content-Type: application/json
 
 ## 5. Интерфейсы
 
+**Обновлено фазой 007** (research.md R13/R20): оба метода получили `moodScore` и `attempt`;
+`AiProxyClient` дополнительно зависит от `IntegrityTokenProvider` и сам кладёт `integrityToken` в
+тело — `AiReactionRepositoryImpl` о подтверждении подлинности по-прежнему не знает ничего
+(принцип I).
+
 ```dart
 // core/network/ai_proxy_client.dart
 abstract interface class AiProxyClient {
@@ -97,6 +120,8 @@ abstract interface class AiProxyClient {
     required String installId,
     required String characterId,
     required String dayText,
+    required int moodScore,
+    required int attempt,
   });
 }
 
@@ -107,12 +132,14 @@ abstract interface class AiReactionRepository {
     required String characterId,
     required String dayText,
     required int dayEntryId,
+    required int moodScore,
+    required int attempt,
   });
 }
 ```
 
 `AiReactionRepository` живёт в `domain/repositories/`, реализация — в `data/repositories/`;
-`AiReactionDto` — в `data/models/` с `@JsonSerializable`.
+`AiReactionDto` — в `data/models/` с `@JsonSerializable` (форма ответа не меняется фазой 007).
 
 ## 6. Заглушка (`StubAiProxyClient`)
 
