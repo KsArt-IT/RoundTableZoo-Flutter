@@ -158,11 +158,17 @@ class CharacterAvatar extends StatelessWidget {
         border: Border.all(color: color, width: _emojiRingWidth),
       ),
       alignment: Alignment.center,
-      child: Text(
-        emoji,
-        // Scales with the seat instead of a fixed point size, so the glyph
-        // keeps its proportion if `minTapTargetDp` ever changes.
-        style: TextStyle(fontSize: size * _emojiSizeRatio),
+      // `Text` auto-generates a semantics node carrying the glyph as its
+      // label, which the outer `Semantics` merges into its own — leaking
+      // the unpronounceable emoji into the announced label. It's decorative
+      // (state is already conveyed by the label text), so exclude it.
+      child: ExcludeSemantics(
+        child: Text(
+          emoji,
+          // Scales with the seat instead of a fixed point size, so the glyph
+          // keeps its proportion if `minTapTargetDp` ever changes.
+          style: TextStyle(fontSize: size * _emojiSizeRatio),
+        ),
       ),
     );
   }

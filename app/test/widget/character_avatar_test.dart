@@ -102,7 +102,6 @@ void main() {
     tester,
   ) async {
     final handle = tester.ensureSemantics();
-    addTearDown(handle.dispose);
 
     await tester.pumpWidget(
       _wrapped(state: CharacterVisualState.idle, character: _staticCharacter),
@@ -113,6 +112,8 @@ void main() {
     final semantics = tester.getSemantics(find.byType(CharacterAvatar));
     expect(semantics.label, startsWith('Кот, '));
     expect(semantics.label, isNot(contains('🐱')));
+
+    handle.dispose();
   });
 
   testWidgets('the tap ripple has its own Material inside the seat', (tester) async {
