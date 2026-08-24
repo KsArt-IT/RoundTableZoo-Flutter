@@ -20,7 +20,7 @@ class StubAiProxyClient implements AiProxyClient {
 
   static void clearFailure() => _queuedFailure = null;
 
-  static const _replyTemplates = <String, String Function(String)>{
+  static const _replyTemplates = <String, String Function(String, int)>{
     'cat': _catReply,
     'dog': _dogReply,
     'crocodile': _crocodileReply,
@@ -34,19 +34,41 @@ class StubAiProxyClient implements AiProxyClient {
     'hippo': 0.6,
   };
 
-  static String _catReply(String text) => 'Мр-р... "$text"? Как скажешь.';
+  // One anchor phrase per attempt, cycling like the real service's
+  // `anchors[(dayOfYear + attempt) % anchors.length]` (research.md R15) —
+  // enough for the stub to remain useful for eyeballing rotation locally
+  // (FR-018 of phase 004) without a real proxy.
+  static const _anchorsByAttempt = <String>[
+    'как утренний туман',
+    'как след на песке',
+    'как круги по воде',
+    'как ветер в траве',
+    'как тень от облака',
+    'как эхо в горах',
+  ];
 
-  static String _dogReply(String text) => 'Гав-гав! Про "$text" — звучит здорово!';
+  static String _catReply(String text, int attempt) =>
+      'Мр-р... "$text"? Как скажешь, ${_anchorFor(attempt)}.';
 
-  static String _crocodileReply(String text) => 'Хм. "$text"... я подумаю об этом.';
+  static String _dogReply(String text, int attempt) =>
+      'Гав-гав! Про "$text" — звучит здорово, ${_anchorFor(attempt)}!';
 
-  static String _hippoReply(String text) => 'Ох, "$text" — понимаю, бывает тяжело.';
+  static String _crocodileReply(String text, int attempt) =>
+      'Хм. "$text"... я подумаю об этом, ${_anchorFor(attempt)}.';
+
+  static String _hippoReply(String text, int attempt) =>
+      'Ох, "$text" — понимаю, бывает тяжело, ${_anchorFor(attempt)}.';
+
+  static String _anchorFor(int attempt) =>
+      _anchorsByAttempt[attempt.abs() % _anchorsByAttempt.length];
 
   @override
   Future<AiReactionDto> react({
     required String installId,
     required String characterId,
     required String dayText,
+    required int moodScore,
+    required int attempt,
   }) async {
     // Keeps the waiting state visible in manual QA (FR-016) instead of
     // resolving instantly.
@@ -60,11 +82,11 @@ class StubAiProxyClient implements AiProxyClient {
 
     final template = _replyTemplates[characterId];
     final reply = template != null
-        ? template(_firstWords(dayText))
+        ? template(_firstWords(dayText), attempt)
         // Any character outside the MVP roster still gets a reply that
         // visibly differs from the four above (SC-003a doesn't apply
         // beyond them, but nothing here should look broken either).
-        : '[$characterId] Слышал: "${_firstWords(dayText)}"';
+        : '[$characterId] Слышал: "${_firstWords(dayText)}", ${_anchorFor(attempt)}';
 
     return AiReactionDto(
       character: characterId,

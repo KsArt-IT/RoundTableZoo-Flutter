@@ -132,7 +132,21 @@ class AiProxyFailure extends AppFailure {
   const AiProxyFailure(String? message, {String? code}) : super(message ?? '', code);
 
   static const network = 'network';
-  static const rateLimited = 'rate_limited';
+
+  /// Own per-installId daily cap exceeded (`429` + `scope: "device"`,
+  /// contracts/react-api.md §4) — "you personally asked enough today".
+  static const rateLimitedDevice = 'rate_limited_device';
+
+  /// Provider-wide daily cap exceeded on every model in the list (`429` +
+  /// `scope: "global"`) — "the service overall is overloaded today", not the
+  /// caller's own fault (research.md R12/R19).
+  static const rateLimitedGlobal = 'rate_limited_global';
+
+  /// `403 integrity_failed` — Play Integrity verdict didn't pass, or no
+  /// token in a production deployment (research.md R12). Must surface as an
+  /// explanation, never silently degrade to a canned reply.
+  static const integrityRejected = 'integrity_rejected';
+
   static const aiDisabled = 'ai_disabled';
   static const invalidResponse = 'invalid_response';
   static const timeout = 'timeout';
@@ -140,8 +154,10 @@ class AiProxyFailure extends AppFailure {
   @override
   String localizedMessage(AppLocalizations locale) => switch (code) {
     network => locale.tableAiNetworkError,
-    rateLimited => locale.tableAiRateLimitedError,
+    rateLimitedDevice => locale.tableAiRateLimitedError,
+    rateLimitedGlobal => locale.tableAiRateLimitedGlobalError,
     aiDisabled => locale.tableAiDisabledError,
+    integrityRejected => locale.tableAiUnavailableError,
     timeout || invalidResponse => locale.tableAiInvalidResponseError,
     _ => message,
   };

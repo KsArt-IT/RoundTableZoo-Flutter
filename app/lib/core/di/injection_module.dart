@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:roundtablezoo/core/app_clock/app_clock.dart';
 import 'package:roundtablezoo/core/app_clock/system_app_clock.dart';
 import 'package:roundtablezoo/core/bootstrap/storage_mode.dart';
 import 'package:roundtablezoo/core/di/injection.dart';
+import 'package:roundtablezoo/core/integrity/integrity_token_provider.dart';
+import 'package:roundtablezoo/core/integrity/play_integrity_token_provider.dart';
 import 'package:roundtablezoo/core/network/ai_proxy_client.dart';
 import 'package:roundtablezoo/core/network/ai_proxy_config.dart';
 import 'package:roundtablezoo/core/network/stub_ai_proxy_client.dart';
@@ -50,12 +53,24 @@ abstract class InjectionModule {
   @lazySingleton
   CharacterCatalog get characterCatalog => CharacterCatalog();
 
+  /// Android gets the real Play Integrity channel; every other platform
+  /// gets the always-`null` stand-in (research.md R14) — this app builds
+  /// for iOS but only publishes on Android, so AI there degrades to an
+  /// honest `integrityRejected` rather than a fake token.
+  @lazySingleton
+  IntegrityTokenProvider get integrityTokenProvider =>
+      defaultTargetPlatform == TargetPlatform.android
+      ? PlayIntegrityTokenProvider()
+      : const UnsupportedIntegrityTokenProvider();
+
   /// Real client when a proxy address is configured, the deterministic
   /// stub otherwise (research.md R2, R14) — never both, never chosen by
   /// anything downstream.
   @lazySingleton
-  AiProxyClient get aiProxyClient =>
-      AiProxyConfig.isConfigured ? DioAiProxyClient() : StubAiProxyClient();
+  AiProxyClient aiProxyClient(IntegrityTokenProvider integrityTokenProvider) =>
+      AiProxyConfig.isConfigured
+      ? DioAiProxyClient(integrityTokenProvider: integrityTokenProvider)
+      : StubAiProxyClient();
 
   /// `SettingsRepository` is only resolved from `getIt` the first time this
   /// is actually built, by which point `StorageDiSwitch` has registered it

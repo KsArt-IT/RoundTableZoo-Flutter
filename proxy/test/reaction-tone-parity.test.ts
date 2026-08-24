@@ -14,7 +14,7 @@ describe("REACTION_TONES совпадает с ReactionTone клиента (T067
       throw new Error("Не найдено тело enum ReactionTone в reaction_tone.dart");
     }
 
-    const valuesSection = enumBody.split(";")[0];
+    const valuesSection = enumBody.split(";")[0] ?? "";
     const dartValues = valuesSection
       .split(",")
       .map((entry) => entry.trim())

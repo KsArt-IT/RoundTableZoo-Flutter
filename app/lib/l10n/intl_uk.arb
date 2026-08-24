@@ -211,6 +211,10 @@
   "@settingsSoundHint": {
     "description": "SettingsPage — sound toggle hint (FR-016c)"
   },
+  "settingsAiDisclosureTitle": "Про AI-репліки",
+  "@settingsAiDisclosureTitle": {
+    "description": "SettingsPage — AI disclosure section title; body text reuses onboardingAiDisclosure verbatim (FR-021, specs/007-ai-proxy)"
+  },
   "reminderNotificationTitle": "Звірі за столом",
   "@reminderNotificationTitle": {
     "description": "Reminder notification title — neutral wording (FR-016a)"
@@ -293,11 +297,19 @@
   },
   "tableAiRateLimitedError": "Ліміт запитів на сьогодні вичерпано",
   "@tableAiRateLimitedError": {
-    "description": "AiProxyFailure.rateLimited — inline message next to the character (FR-025)"
+    "description": "AiProxyFailure.rateLimitedDevice — inline message next to the character (FR-025)"
+  },
+  "tableAiRateLimitedGlobalError": "Сервіс зараз перевантажений — спробуйте пізніше",
+  "@tableAiRateLimitedGlobalError": {
+    "description": "AiProxyFailure.rateLimitedGlobal — inline message next to the character; distinct from the personal daily limit (FR-023, research.md R12/R19)"
   },
   "tableAiDisabledError": "AI тимчасово недоступний",
   "@tableAiDisabledError": {
     "description": "AiProxyFailure.aiDisabled — inline message next to the character (FR-026)"
+  },
+  "tableAiUnavailableError": "AI зараз недоступний на цьому пристрої",
+  "@tableAiUnavailableError": {
+    "description": "AiProxyFailure.integrityRejected — inline message next to the character; no mention of integrity checks, service addresses or provider status codes (FR-023, research.md R12)"
   },
   "tableAiInvalidResponseError": "Не вдалося розібрати відповідь",
   "@tableAiInvalidResponseError": {

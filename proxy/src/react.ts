@@ -1,10 +1,11 @@
 // Обработчик POST /react — порядок шагов contracts/react-api.md §2.
 
 import { readAppConfig, readPromptsConfig } from "./config";
-import { dayKey } from "./day";
+import { dayKey, secondsUntilNextUtcDay } from "./day";
 import { callGeminiOnce } from "./gemini";
 import { verifyIntegrity } from "./integrity";
 import { incrementDeviceCount, incrementGlobalCount } from "./limits";
+import { selectModel } from "./models";
 import { buildPrompt } from "./prompt";
 import type { Env, FailureCode, ReactResponse } from "./types";
 import { validateReactRequest } from "./validate";
@@ -20,11 +21,6 @@ function errorResponse(
     status,
     headers: { "content-type": "application/json" },
   });
-}
-
-function secondsUntilNextUtcDay(now: Date): number {
-  const nextMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
-  return Math.round((nextMidnight - now.getTime()) / 1000);
 }
 
 function isDevBypassActive(env: Env): boolean {
@@ -88,41 +84,38 @@ export async function handleReact(request: Request, env: Env): Promise<Response>
 
   let anyModelHadCapacity = false;
   let outcome: ReactResponse | null = null;
+  let remainingModels = appConfig.models;
 
-  for (const model of appConfig.models) {
-    let globalCount: number;
+  while (remainingModels.length > 0) {
+    let selection: Awaited<ReturnType<typeof selectModel>>;
     try {
-      globalCount = await incrementGlobalCount(env, day, model);
+      selection = await selectModel(remainingModels, appConfig.dailyCapOverride, (model) =>
+        incrementGlobalCount(env, day, model),
+      );
     } catch {
       return errorResponse(500, "internal");
     }
-    if (globalCount > appConfig.dailyCapOverride) continue; // модель исчерпана, пробуем следующую
+    if (!selection.ok) break; // ни у одной оставшейся модели нет квоты
     anyModelHadCapacity = true;
+    const model = selection.model;
+    const callGemini = () =>
+      callGeminiOnce(env, model, systemPrompt, req.moodScore, req.dayText, maxReplyLength);
 
-    let result = await callGeminiOnce(
-      env,
-      model,
-      systemPrompt,
-      req.moodScore,
-      req.dayText,
-      maxReplyLength,
-    );
+    let result = await callGemini();
 
     if (result.kind === "rate_limited") {
       await sleep(GEMINI_RATE_LIMIT_RETRY_DELAY_MS);
-      result = await callGeminiOnce(env, model, systemPrompt, req.moodScore, req.dayText, maxReplyLength);
+      result = await callGemini();
     }
-    if (result.kind === "rate_limited") continue; // выбитый RPM — следующая модель (R19)
+    if (result.kind === "rate_limited") {
+      // выбитый RPM провайдера — следующая модель (R19), уже опробованные
+      // (включая эту) из списка кандидатов больше не выбираются
+      remainingModels = remainingModels.slice(remainingModels.indexOf(model) + 1);
+      continue;
+    }
 
     if (result.kind === "invalid") {
-      const retry = await callGeminiOnce(
-        env,
-        model,
-        systemPrompt,
-        req.moodScore,
-        req.dayText,
-        maxReplyLength,
-      );
+      const retry = await callGemini();
       if (retry.kind !== "ok") return errorResponse(422, "invalid_ai_response");
       outcome = { character: req.characterId, ...retry.value };
       break;

@@ -266,8 +266,8 @@ void main() {
   );
 
   testWidgets(
-    'network/rateLimited/aiDisabled show three distinct inline errors; mood scale stays usable '
-    '(US4, FR-024–FR-026, FR-028)',
+    'network/rateLimitedDevice/rateLimitedGlobal/aiDisabled/integrityRejected show distinct '
+    'inline errors; mood scale stays usable (US4, FR-023–FR-026, FR-028)',
     (tester) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(buildTestAppRoot());
@@ -282,10 +282,18 @@ void main() {
       final failuresAndTexts = [
         (const AiProxyFailure(null, code: AiProxyFailure.network), l10n.tableAiNetworkError),
         (
-          const AiProxyFailure(null, code: AiProxyFailure.rateLimited),
+          const AiProxyFailure(null, code: AiProxyFailure.rateLimitedDevice),
           l10n.tableAiRateLimitedError,
         ),
+        (
+          const AiProxyFailure(null, code: AiProxyFailure.rateLimitedGlobal),
+          l10n.tableAiRateLimitedGlobalError,
+        ),
         (const AiProxyFailure(null, code: AiProxyFailure.aiDisabled), l10n.tableAiDisabledError),
+        (
+          const AiProxyFailure(null, code: AiProxyFailure.integrityRejected),
+          l10n.tableAiUnavailableError,
+        ),
       ];
 
       // Alternates between two mood values across iterations, so each
@@ -316,6 +324,31 @@ void main() {
       }
 
       handle.dispose();
+      await disposeTestAppRoot(tester);
+    },
+  );
+
+  testWidgets(
+    'invalidResponse shows the canned reply marked as such, never raw error text (FR-024)',
+    (tester) async {
+      await tester.pumpWidget(buildTestAppRoot());
+      await tester.pumpAndSettle();
+
+      final l10n = await _renderedLocalizations(tester);
+      await tester.tap(find.bySemanticsLabel(l10n.moodScaleGood));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'привет мир');
+      await tester.pump();
+
+      StubAiProxyClient.enqueueFailure(
+        const AiProxyFailure(null, code: AiProxyFailure.invalidResponse),
+      );
+      await tester.tap(_idleSeats(l10n).first);
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.tableReplyFallbackLabel), findsOneWidget);
+      expect(find.text(l10n.tableAiInvalidResponseError), findsNothing);
+
       await disposeTestAppRoot(tester);
     },
   );

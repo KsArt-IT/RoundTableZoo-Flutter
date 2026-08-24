@@ -52,4 +52,7 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    // Play Integrity Standard API — backs `IntegrityChannel.kt`
+    // (specs/007-ai-proxy/research.md R3).
+    implementation("com.google.android.play:integrity:1.4.0")
 }

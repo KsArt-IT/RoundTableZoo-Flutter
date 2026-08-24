@@ -59,6 +59,14 @@ class TableCubit extends Cubit<TableState> {
   /// this response is stale and must not `emit` or persist (FR-020).
   final Map<String, int> _generation = {};
 
+  /// Real (non-fallback) replies already received today, per character
+  /// (research.md R20) — the value sent as `attempt` so the service can
+  /// rotate its anchor image. Populated on [load] from the same reactions
+  /// already read for restore, bumped only after a genuine AI response
+  /// (never a fallback one — research.md R21, so a service outage doesn't
+  /// skip an anchor the user never actually saw).
+  final Map<String, int> _attempts = {};
+
   final StreamController<AppFailure> _failures = StreamController<AppFailure>.broadcast();
 
   /// One-off signals: a failed `setMood`/text save, a blocked
@@ -75,6 +83,7 @@ class TableCubit extends Cubit<TableState> {
   Future<void> load(DayKey dayKey) async {
     emit(const TableState.loading());
     _generation.clear();
+    _attempts.clear();
 
     final entryResult = await _diaryRepository.entryForDay(dayKey);
     if (isClosed) return;
@@ -112,6 +121,12 @@ class TableCubit extends Cubit<TableState> {
       final latestByCharacter = <String, CharacterReaction>{};
       for (final reaction in reactions) {
         latestByCharacter[reaction.characterId] = reaction;
+        // Only real replies advance the anchor-rotation counter
+        // (research.md R21) — a saved fallback still restores into its
+        // slot above, it just doesn't count as an "attempt".
+        if (!reaction.isFallback) {
+          _attempts[reaction.characterId] = (_attempts[reaction.characterId] ?? 0) + 1;
+        }
       }
       for (final reactionEntry in latestByCharacter.entries) {
         if (slots.containsKey(reactionEntry.key)) {
@@ -287,12 +302,20 @@ class TableCubit extends Cubit<TableState> {
       characterId: characterId,
       dayText: dayText,
       dayEntryId: entryId,
+      moodScore: moodScore.value,
+      attempt: _attempts[characterId] ?? 0,
     );
     if (isClosed) return;
     if (_generation[characterId] != generation) return;
 
     await result.match(
-      success: (reaction) => _persistReaction(characterId, reaction),
+      success: (reaction) {
+        // Bumped here, not inside `_persistReaction` — that method is also
+        // reached from the fallback path below, which must not advance the
+        // counter (research.md R21).
+        _attempts[characterId] = (_attempts[characterId] ?? 0) + 1;
+        return _persistReaction(characterId, reaction);
+      },
       failure: (failure) =>
           _handleReactionFailure(characterId, failure, previousSlot, entryId: entryId),
     );

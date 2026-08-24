@@ -11,18 +11,17 @@ import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_state.dar
 /// `SettingsRepository` becomes available.
 class OnboardingCubit extends Cubit<OnboardingState> {
   OnboardingCubit({
-    required SettingsRepository Function() settingsRepositoryLocator,
+    required this._settingsRepositoryLocator,
     required OnboardingState initialState,
-    this.writeTimeout = defaultWriteTimeout,
-  }) : _settingsRepositoryLocator = settingsRepositoryLocator,
-       super(initialState);
+    this._writeTimeout = defaultWriteTimeout,
+  }) : super(initialState);
 
   final SettingsRepository Function() _settingsRepositoryLocator;
 
   /// Upper bound on how long `complete()` waits for the write (FR-005b,
   /// SC-003). A constructor parameter, not a constant — a test would
   /// otherwise really wait 3 seconds on every `flutter test` run.
-  final Duration writeTimeout;
+  final Duration _writeTimeout;
 
   static const Duration defaultWriteTimeout = Duration(seconds: 3);
 
@@ -58,7 +57,7 @@ class OnboardingCubit extends Cubit<OnboardingState> {
   }
 
   /// Confirms onboarding: waits for `markOnboardingSeen()` no longer than
-  /// [writeTimeout] and moves to `completed` regardless of the outcome
+  /// [_writeTimeout] and moves to `completed` regardless of the outcome
   /// (FR-005, FR-005b, FR-006). No-op in `submitting`/`completed`
   /// (FR-005a).
   Future<void> complete() async {
@@ -68,7 +67,7 @@ class OnboardingCubit extends Cubit<OnboardingState> {
 
     final repository = _settingsRepositoryLocator();
     try {
-      final result = await repository.markOnboardingSeen().timeout(writeTimeout);
+      final result = await repository.markOnboardingSeen().timeout(_writeTimeout);
       if (result.isFailure) {
         logger.w('markOnboardingSeen() failed: ${result.errorOrNull}');
       }

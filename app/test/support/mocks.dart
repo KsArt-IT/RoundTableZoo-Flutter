@@ -1,5 +1,6 @@
 import 'package:mocktail/mocktail.dart';
 import 'package:roundtablezoo/core/app_clock/app_clock.dart';
+import 'package:roundtablezoo/core/integrity/integrity_token_provider.dart';
 import 'package:roundtablezoo/core/network/ai_proxy_client.dart';
 import 'package:roundtablezoo/core/notifications/notification_scheduler.dart';
 import 'package:roundtablezoo/core/sharing/share_service.dart';
@@ -27,6 +28,8 @@ class MockCharacterCatalog extends Mock implements CharacterCatalog {}
 class MockAiReactionRepository extends Mock implements AiReactionRepository {}
 
 class MockAiProxyClient extends Mock implements AiProxyClient {}
+
+class MockIntegrityTokenProvider extends Mock implements IntegrityTokenProvider {}
 
 class MockShareService extends Mock implements ShareService {}
 

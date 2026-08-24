@@ -211,6 +211,10 @@
   "@settingsSoundHint": {
     "description": "SettingsPage — sound toggle hint (FR-016c)"
   },
+  "settingsAiDisclosureTitle": "About AI replies",
+  "@settingsAiDisclosureTitle": {
+    "description": "SettingsPage — AI disclosure section title; body text reuses onboardingAiDisclosure verbatim (FR-021, specs/007-ai-proxy)"
+  },
   "reminderNotificationTitle": "Animals at the table",
   "@reminderNotificationTitle": {
     "description": "Reminder notification title — neutral wording (FR-016a)"
@@ -293,11 +297,19 @@
   },
   "tableAiRateLimitedError": "Today's request limit is reached",
   "@tableAiRateLimitedError": {
-    "description": "AiProxyFailure.rateLimited — inline message next to the character (FR-025)"
+    "description": "AiProxyFailure.rateLimitedDevice — inline message next to the character (FR-025)"
+  },
+  "tableAiRateLimitedGlobalError": "The service is overloaded right now — try again later",
+  "@tableAiRateLimitedGlobalError": {
+    "description": "AiProxyFailure.rateLimitedGlobal — inline message next to the character; distinct from the personal daily limit (FR-023, research.md R12/R19)"
   },
   "tableAiDisabledError": "AI is temporarily unavailable",
   "@tableAiDisabledError": {
     "description": "AiProxyFailure.aiDisabled — inline message next to the character (FR-026)"
+  },
+  "tableAiUnavailableError": "AI is unavailable on this device right now",
+  "@tableAiUnavailableError": {
+    "description": "AiProxyFailure.integrityRejected — inline message next to the character; no mention of integrity checks, service addresses or provider status codes (FR-023, research.md R12)"
   },
   "tableAiInvalidResponseError": "Couldn't parse the reply",
   "@tableAiInvalidResponseError": {

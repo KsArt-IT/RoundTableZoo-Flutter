@@ -33,6 +33,8 @@ class AiReactionRepositoryImpl implements AiReactionRepository {
     required String characterId,
     required String dayText,
     required int dayEntryId,
+    required int moodScore,
+    required int attempt,
   }) async {
     final settingsResult = await _settingsRepository.load();
     final installId = settingsResult.valueOrNull?.installId;
@@ -47,6 +49,8 @@ class AiReactionRepositoryImpl implements AiReactionRepository {
         installId: installId,
         characterId: characterId,
         dayText: dayText,
+        moodScore: moodScore,
+        attempt: attempt,
       );
       return _parse(dto, characterId: characterId, dayEntryId: dayEntryId);
     } on AiProxyFailure catch (failure) {
@@ -108,7 +112,8 @@ class AiReactionRepositoryImpl implements AiReactionRepository {
         return AiProxyFailure.timeout;
       case DioExceptionType.badResponse:
         return switch (error.response?.statusCode) {
-          429 => AiProxyFailure.rateLimited,
+          403 => AiProxyFailure.integrityRejected,
+          429 => _rateLimitCodeFor(error),
           503 => AiProxyFailure.aiDisabled,
           _ => AiProxyFailure.invalidResponse,
         };
@@ -118,6 +123,18 @@ class AiReactionRepositoryImpl implements AiReactionRepository {
       case DioExceptionType.transformTimeout:
         return AiProxyFailure.invalidResponse;
     }
+  }
+
+  /// `429` splits into two distinct codes by the response body's `scope`
+  /// field (contracts/react-api.md §4): `"device"` is the caller's own
+  /// daily cap, `"global"` is every model's provider-wide cap exhausted. A
+  /// missing or unparsable `scope` reads as `rateLimitedDevice` — the more
+  /// forgiving interpretation, and it asks nothing of the user beyond
+  /// waiting (research.md R12).
+  String _rateLimitCodeFor(DioException error) {
+    final data = error.response?.data;
+    final scope = data is Map ? data['scope'] : null;
+    return scope == 'global' ? AiProxyFailure.rateLimitedGlobal : AiProxyFailure.rateLimitedDevice;
   }
 
   /// FR-034b: only the failure code and `characterId` — never `dayText`,

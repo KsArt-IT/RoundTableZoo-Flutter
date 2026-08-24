@@ -194,6 +194,8 @@ void main() {
             characterId: any(named: 'characterId'),
             dayText: any(named: 'dayText'),
             dayEntryId: any(named: 'dayEntryId'),
+            moodScore: any(named: 'moodScore'),
+            attempt: any(named: 'attempt'),
           ),
         );
       },
@@ -476,6 +478,8 @@ void main() {
           characterId: 'cat',
           dayText: 'today was fine',
           dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
         ),
       ).thenAnswer((_) async => Result.success(_reaction(id: 9)));
       when(() => diaryRepository.addReaction(any()))
@@ -499,6 +503,8 @@ void main() {
           characterId: 'cat',
           dayText: 'today was fine',
           dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
         ),
       ).thenAnswer((_) async => Result.success(_reaction()));
       when(
@@ -525,6 +531,8 @@ void main() {
             characterId: 'cat',
             dayText: 'today was fine',
             dayEntryId: 1,
+            moodScore: any(named: 'moodScore'),
+            attempt: any(named: 'attempt'),
           ),
         ).thenAnswer(
           (_) async =>
@@ -553,6 +561,8 @@ void main() {
           characterId: 'cat',
           dayText: 'today was fine',
           dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
         ),
       ).thenAnswer(
         (_) async => const Result.failure(AiProxyFailure(null, code: AiProxyFailure.timeout)),
@@ -578,6 +588,8 @@ void main() {
           characterId: 'cat',
           dayText: 'today was fine',
           dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
         ),
       ).thenAnswer(
         (_) async => const Result.failure(AiProxyFailure(null, code: AiProxyFailure.network)),
@@ -600,9 +612,11 @@ void main() {
           characterId: 'cat',
           dayText: 'today was fine',
           dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
         ),
       ).thenAnswer(
-        (_) async => const Result.failure(AiProxyFailure(null, code: AiProxyFailure.rateLimited)),
+        (_) async => const Result.failure(AiProxyFailure(null, code: AiProxyFailure.rateLimitedDevice)),
       );
 
       final cubit = build();
@@ -613,7 +627,7 @@ void main() {
       expect((cubit.state as TableLoaded).data.slots['cat'], const CharacterSlot.idle());
       expect(
         await failureFuture,
-        isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.rateLimited),
+        isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.rateLimitedDevice),
       );
       verifyNever(() => diaryRepository.addReaction(any()));
       await cubit.close();
@@ -625,6 +639,8 @@ void main() {
           characterId: 'cat',
           dayText: 'today was fine',
           dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
         ),
       ).thenAnswer(
         (_) async => const Result.failure(AiProxyFailure(null, code: AiProxyFailure.aiDisabled)),
@@ -658,6 +674,8 @@ void main() {
             characterId: 'cat',
             dayText: 'today was fine',
             dayEntryId: 1,
+            moodScore: any(named: 'moodScore'),
+            attempt: any(named: 'attempt'),
           ),
         ).thenAnswer((_) async {
           callCount++;
@@ -698,6 +716,8 @@ void main() {
           characterId: any(named: 'characterId'),
           dayText: any(named: 'dayText'),
           dayEntryId: any(named: 'dayEntryId'),
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
         ),
       );
       await cubit.close();
@@ -722,6 +742,8 @@ void main() {
           characterId: any(named: 'characterId'),
           dayText: any(named: 'dayText'),
           dayEntryId: any(named: 'dayEntryId'),
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
         ),
       );
       await cubit.close();
@@ -742,6 +764,8 @@ void main() {
           characterId: any(named: 'characterId'),
           dayText: any(named: 'dayText'),
           dayEntryId: any(named: 'dayEntryId'),
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
         ),
       );
       await cubit.close();
@@ -770,6 +794,8 @@ void main() {
             characterId: 'cat',
             dayText: 'today was fine',
             dayEntryId: 1,
+            moodScore: any(named: 'moodScore'),
+            attempt: any(named: 'attempt'),
           ),
         ).thenAnswer((_) {
           callCount++;
@@ -813,6 +839,8 @@ void main() {
           characterId: 'cat',
           dayText: 'today was fine',
           dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
         ),
       ).thenAnswer((_) => catCompleter.future);
       when(
@@ -820,6 +848,8 @@ void main() {
           characterId: 'dog',
           dayText: 'today was fine',
           dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
         ),
       ).thenAnswer((_) => dogCompleter.future);
 
@@ -848,6 +878,8 @@ void main() {
           characterId: 'cat',
           dayText: 'today was fine',
           dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
         ),
       ).thenAnswer((_) => completer.future);
 
@@ -873,6 +905,8 @@ void main() {
             characterId: 'cat',
             dayText: 'today was fine',
             dayEntryId: 1,
+            moodScore: any(named: 'moodScore'),
+            attempt: any(named: 'attempt'),
           ),
         ).thenAnswer((_) async => Result.success(_reaction(id: ++replyId)));
 
@@ -897,6 +931,8 @@ void main() {
             characterId: 'cat',
             dayText: any(named: 'dayText'),
             dayEntryId: 1,
+            moodScore: any(named: 'moodScore'),
+            attempt: any(named: 'attempt'),
           ),
         ).thenAnswer((_) async => Result.success(_reaction(id: 1)));
         when(
@@ -1004,5 +1040,190 @@ void main() {
       await cubit.close();
       await settingsController.close();
     });
+  });
+
+  group('attempt counter (research.md R20, R21)', () {
+    setUp(() {
+      when(
+        () => diaryRepository.entryForDay(_dayKey),
+      ).thenAnswer((_) async => Result.success(_entry(dayText: 'today was fine')));
+      when(() => diaryRepository.addReaction(any())).thenAnswer(
+        (invocation) async =>
+            Result.success(invocation.positionalArguments.first as CharacterReaction),
+      );
+    });
+
+    test('the first request of the day sends attempt: 0', () async {
+      when(
+        () => aiReactionRepository.requestReaction(
+          characterId: 'cat',
+          dayText: 'today was fine',
+          dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: 0,
+        ),
+      ).thenAnswer((_) async => Result.success(_reaction(id: 1)));
+
+      final cubit = build();
+      await cubit.load(_dayKey);
+      await cubit.requestReaction('cat');
+
+      verify(
+        () => aiReactionRepository.requestReaction(
+          characterId: 'cat',
+          dayText: 'today was fine',
+          dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: 0,
+        ),
+      ).called(1);
+      await cubit.close();
+    });
+
+    test('a real AI response bumps attempt for the next request of the same character', () async {
+      var call = 0;
+      when(
+        () => aiReactionRepository.requestReaction(
+          characterId: 'cat',
+          dayText: 'today was fine',
+          dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
+        ),
+      ).thenAnswer((_) async => Result.success(_reaction(id: ++call)));
+
+      final cubit = build();
+      await cubit.load(_dayKey);
+      await cubit.requestReaction('cat');
+      await cubit.requestReaction('cat');
+
+      verify(
+        () => aiReactionRepository.requestReaction(
+          characterId: 'cat',
+          dayText: 'today was fine',
+          dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: 1,
+        ),
+      ).called(1);
+      await cubit.close();
+    });
+
+    test('a fallback reply does not bump attempt — the next request repeats it', () async {
+      when(
+        () => aiReactionRepository.requestReaction(
+          characterId: 'cat',
+          dayText: 'today was fine',
+          dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: 0,
+        ),
+      ).thenAnswer(
+        (_) async => const Result.failure(AiProxyFailure(null, code: AiProxyFailure.timeout)),
+      );
+
+      final cubit = build();
+      await cubit.load(_dayKey);
+      await cubit.requestReaction('cat');
+      await cubit.requestReaction('cat');
+
+      verify(
+        () => aiReactionRepository.requestReaction(
+          characterId: 'cat',
+          dayText: 'today was fine',
+          dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: 0,
+        ),
+      ).called(2);
+      await cubit.close();
+    });
+
+    test('restores the counter on load from today\'s already-saved real reactions', () async {
+      when(
+        () => diaryRepository.entryForDay(_dayKey),
+      ).thenAnswer((_) async => Result.success(_entry(id: 1, dayText: 'today was fine')));
+      when(() => diaryRepository.reactionsFor(1)).thenAnswer(
+        (_) async => Result.success([
+          _reaction(id: 1, characterId: 'cat'),
+          _reaction(id: 2, characterId: 'cat', isFallback: true),
+          _reaction(id: 3, characterId: 'cat'),
+        ]),
+      );
+      when(
+        () => aiReactionRepository.requestReaction(
+          characterId: 'cat',
+          dayText: 'today was fine',
+          dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: 2,
+        ),
+      ).thenAnswer((_) async => Result.success(_reaction(id: 4)));
+
+      final cubit = build();
+      await cubit.load(_dayKey);
+      await cubit.requestReaction('cat');
+
+      // Two real reactions were restored (the fallback one doesn't count,
+      // R21) — the next request must continue at attempt 2, not 1 or 3.
+      verify(
+        () => aiReactionRepository.requestReaction(
+          characterId: 'cat',
+          dayText: 'today was fine',
+          dayEntryId: 1,
+          moodScore: any(named: 'moodScore'),
+          attempt: 2,
+        ),
+      ).called(1);
+      await cubit.close();
+    });
+  });
+
+  group('per-character failure isolation (US3, FR-026)', () {
+    test(
+      'a failure on one character leaves an unrelated idle character untouched',
+      () async {
+        when(
+          () => characterCatalog.load(),
+        ).thenAnswer((_) async => Result.success([_character('cat'), _character('dog')]));
+        when(
+          () => settingsRepository.load(),
+        ).thenAnswer((_) async => Result.success(_settings(enabled: const ['cat', 'dog'])));
+        when(
+          () => diaryRepository.entryForDay(_dayKey),
+        ).thenAnswer((_) async => Result.success(_entry(dayText: 'today was fine')));
+        when(
+          () => aiReactionRepository.requestReaction(
+            characterId: 'cat',
+            dayText: 'today was fine',
+            dayEntryId: 1,
+            moodScore: any(named: 'moodScore'),
+            attempt: any(named: 'attempt'),
+          ),
+        ).thenAnswer(
+          (_) async => const Result.failure(AiProxyFailure(null, code: AiProxyFailure.network)),
+        );
+
+        final cubit = build();
+        await cubit.load(_dayKey);
+        await cubit.requestReaction('cat');
+
+        final state = cubit.state as TableLoaded;
+        expect(state.data.slots['cat'], const CharacterSlot.idle());
+        // The character never tapped stays idle too — one seat's failure
+        // must not ripple into a sibling seat's state.
+        expect(state.data.slots['dog'], const CharacterSlot.idle());
+        verifyNever(
+          () => aiReactionRepository.requestReaction(
+            characterId: 'dog',
+            dayText: any(named: 'dayText'),
+            dayEntryId: any(named: 'dayEntryId'),
+            moodScore: any(named: 'moodScore'),
+            attempt: any(named: 'attempt'),
+          ),
+        );
+        await cubit.close();
+      },
+    );
   });
 }

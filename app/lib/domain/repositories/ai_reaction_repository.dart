@@ -13,5 +13,7 @@ abstract interface class AiReactionRepository {
     required String characterId,
     required String dayText,
     required int dayEntryId,
+    required int moodScore,
+    required int attempt,
   });
 }

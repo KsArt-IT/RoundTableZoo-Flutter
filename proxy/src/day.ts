@@ -18,3 +18,9 @@ export function dayOfYear(now: Date): number {
 export function cleanupThreshold(now: Date, daysToKeep = 7): string {
   return dayKey(new Date(now.getTime() - daysToKeep * MS_PER_DAY));
 }
+
+/** Секунд до следующей полуночи UTC — для `retryAfterSeconds` при `429` (contracts/react-api.md §4). */
+export function secondsUntilNextUtcDay(now: Date): number {
+  const nextMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
+  return Math.round((nextMidnight - now.getTime()) / 1000);
+}

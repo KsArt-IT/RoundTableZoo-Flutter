@@ -11,6 +11,7 @@ import 'package:roundtablezoo/domain/value_objects/theme_preference.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
 import 'package:roundtablezoo/presentation/settings/cubit/settings_cubit.dart';
 import 'package:roundtablezoo/presentation/settings/cubit/settings_state.dart';
+import 'package:roundtablezoo/presentation/settings/widgets/ai_disclosure_section.dart';
 import 'package:roundtablezoo/presentation/settings/widgets/language_section.dart';
 import 'package:roundtablezoo/presentation/settings/widgets/reminder_section.dart';
 import 'package:roundtablezoo/presentation/settings/widgets/sound_section.dart';
@@ -106,6 +107,8 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
                     enabled: settings?.soundEnabled ?? true,
                     controlsEnabled: controlsEnabled,
                   ),
+                  const Divider(height: 1),
+                  const AiDisclosureSection(),
                 ],
               ),
             ),

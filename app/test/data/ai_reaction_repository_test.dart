@@ -31,13 +31,18 @@ const _settings = UserSettings(
   dayStartHour: DayStartHour.defaultValue,
 );
 
-DioException _dioError({required DioExceptionType type, int? statusCode}) => DioException(
-  requestOptions: _requestOptions,
-  type: type,
-  response: statusCode == null
-      ? null
-      : Response(requestOptions: _requestOptions, statusCode: statusCode),
-);
+DioException _dioError({required DioExceptionType type, int? statusCode, String? scope}) =>
+    DioException(
+      requestOptions: _requestOptions,
+      type: type,
+      response: statusCode == null
+          ? null
+          : Response(
+              requestOptions: _requestOptions,
+              statusCode: statusCode,
+              data: scope == null ? null : {'error': 'rate_limited', 'scope': scope},
+            ),
+    );
 
 void main() {
   late MockAiProxyClient client;
@@ -66,9 +71,17 @@ void main() {
         installId: any(named: 'installId'),
         characterId: any(named: 'characterId'),
         dayText: any(named: 'dayText'),
+        moodScore: any(named: 'moodScore'),
+        attempt: any(named: 'attempt'),
       ),
     ).thenAnswer((_) async => dto);
-    return repository.requestReaction(characterId: 'cat', dayText: 'hi', dayEntryId: 1);
+    return repository.requestReaction(
+      characterId: 'cat',
+      dayText: 'hi',
+      dayEntryId: 1,
+      moodScore: 3,
+      attempt: 0,
+    );
   }
 
   group('successful response parsing (contract §3)', () {
@@ -150,23 +163,57 @@ void main() {
           installId: any(named: 'installId'),
           characterId: any(named: 'characterId'),
           dayText: any(named: 'dayText'),
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
         ),
       ).thenThrow(error);
       final result = await repository.requestReaction(
         characterId: 'cat',
         dayText: 'hi',
         dayEntryId: 1,
+        moodScore: 3,
+        attempt: 0,
       );
       return result.errorOrNull;
     }
 
-    test('429 maps to rateLimited', () async {
+    test('429 with no parseable scope maps to rateLimitedDevice (forgiving default)', () async {
       final failure = await _failureFor(
         _dioError(type: DioExceptionType.badResponse, statusCode: 429),
       );
       expect(
         failure,
-        isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.rateLimited),
+        isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.rateLimitedDevice),
+      );
+    });
+
+    test('429 with scope: device maps to rateLimitedDevice', () async {
+      final failure = await _failureFor(
+        _dioError(type: DioExceptionType.badResponse, statusCode: 429, scope: 'device'),
+      );
+      expect(
+        failure,
+        isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.rateLimitedDevice),
+      );
+    });
+
+    test('429 with scope: global maps to rateLimitedGlobal (research.md R12/R19)', () async {
+      final failure = await _failureFor(
+        _dioError(type: DioExceptionType.badResponse, statusCode: 429, scope: 'global'),
+      );
+      expect(
+        failure,
+        isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.rateLimitedGlobal),
+      );
+    });
+
+    test('403 maps to integrityRejected', () async {
+      final failure = await _failureFor(
+        _dioError(type: DioExceptionType.badResponse, statusCode: 403),
+      );
+      expect(
+        failure,
+        isA<AiProxyFailure>().having((f) => f.code, 'code', AiProxyFailure.integrityRejected),
       );
     });
 
@@ -221,12 +268,16 @@ void main() {
           installId: any(named: 'installId'),
           characterId: any(named: 'characterId'),
           dayText: any(named: 'dayText'),
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
         ),
       ).thenThrow(TimeoutException('too slow'));
       final result = await repository.requestReaction(
         characterId: 'cat',
         dayText: 'hi',
         dayEntryId: 1,
+        moodScore: 3,
+        attempt: 0,
       );
       expect(
         result.errorOrNull,
@@ -246,6 +297,8 @@ void main() {
           installId: any(named: 'installId'),
           characterId: any(named: 'characterId'),
           dayText: any(named: 'dayText'),
+          moodScore: any(named: 'moodScore'),
+          attempt: any(named: 'attempt'),
         ),
       ).thenThrow(_dioError(type: DioExceptionType.connectionError));
 
@@ -253,6 +306,8 @@ void main() {
         characterId: 'cat',
         dayText: 'secret diary text',
         dayEntryId: 1,
+        moodScore: 3,
+        attempt: 0,
       );
       final failure = result.errorOrNull! as AiProxyFailure;
       expect(failure.message, isNot(contains('secret diary text')));
