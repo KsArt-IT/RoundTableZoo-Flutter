@@ -5,6 +5,15 @@ import 'package:roundtablezoo/domain/entities/user_settings.dart';
 
 part 'settings_state.freezed.dart';
 
+/// Why the voicing sound toggle is enabled/disabled (`data-model.md` §6).
+/// `screenReaderActive` outranks `noVoiceForLanguage` — it names the
+/// cause the user actually understands.
+enum VoiceAvailability {
+  available,
+  noVoiceForLanguage,
+  screenReaderActive;
+}
+
 @freezed
 sealed class SettingsState with _$SettingsState {
   /// Before the first `SettingsRepository.watch()` emission — the screen
@@ -15,6 +24,7 @@ sealed class SettingsState with _$SettingsState {
   const factory SettingsState.loaded({
     required UserSettings settings,
     required NotificationPermissionStatus permission,
+    @Default(VoiceAvailability.available) VoiceAvailability voiceAvailability,
   }) = SettingsLoaded;
 
   /// `watch()` failed. The screen stays usable; the error goes out as a

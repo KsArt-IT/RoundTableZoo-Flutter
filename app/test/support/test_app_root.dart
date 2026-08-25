@@ -12,6 +12,9 @@ import 'package:roundtablezoo/core/errors/result.dart';
 import 'package:roundtablezoo/core/notifications/notification_permission_status.dart';
 import 'package:roundtablezoo/core/notifications/notification_scheduler.dart';
 import 'package:roundtablezoo/core/sharing/share_service.dart';
+import 'package:roundtablezoo/core/speech/silent_mode_probe.dart';
+import 'package:roundtablezoo/core/speech/speech_synthesizer.dart';
+import 'package:roundtablezoo/domain/value_objects/character_voice.dart';
 import 'package:roundtablezoo/data/datasources/drift/app_database.dart';
 import 'package:roundtablezoo/domain/entities/day_key.dart';
 import 'package:roundtablezoo/domain/entities/reminder_occurrence.dart';
@@ -84,6 +87,8 @@ Widget buildTestAppRoot({
   }
   _useFakeNotificationScheduler();
   _useFakeShareService();
+  _useFakeSpeechSynthesizer();
+  _useFakeSilentModeProbe();
 
   final database = AppDatabase(NativeDatabase.memory());
   final resolvedInitialState = initialState ?? StorageRecoveryState.recovered(database: database);
@@ -207,4 +212,37 @@ void _useFakeShareService() {
     () => shareService.shareCsv(any(), fileName: any(named: 'fileName')),
   ).thenAnswer((_) async {});
   getIt.registerLazySingleton<ShareService>(() => shareService);
+}
+
+/// `FlutterTtsSpeechSynthesizer`'s real implementation talks to the
+/// `flutter_tts` platform channel, which has no responder under
+/// `flutter test` — any widget test that reaches `/table` or `/settings`
+/// would otherwise throw `MissingPluginException`
+/// (`project/process/lessons-learned.md`). Same freshening reasoning as
+/// `_useFakeNotificationScheduler`. Defaults to "voice available" —
+/// individual tests override `isAvailableFor` for the unavailable case.
+void _useFakeSpeechSynthesizer() {
+  registerFallbackValue(
+    const SpeechRequest(text: '', languageTag: 'ru', voice: CharacterVoice.neutral),
+  );
+  if (getIt.isRegistered<SpeechSynthesizer>()) {
+    unawaited(Future.value(getIt.unregister<SpeechSynthesizer>()));
+  }
+  final synthesizer = MockSpeechSynthesizer();
+  when(() => synthesizer.initialize()).thenAnswer((_) async => const Result.success(null));
+  when(
+    () => synthesizer.isAvailableFor(any()),
+  ).thenAnswer((_) async => const Result.success(true));
+  when(() => synthesizer.speak(any())).thenAnswer((_) async => const Result.success(null));
+  when(() => synthesizer.stop()).thenAnswer((_) async => const Result.success(null));
+  getIt.registerLazySingleton<SpeechSynthesizer>(() => synthesizer);
+}
+
+void _useFakeSilentModeProbe() {
+  if (getIt.isRegistered<SilentModeProbe>()) {
+    unawaited(Future.value(getIt.unregister<SilentModeProbe>()));
+  }
+  final probe = MockSilentModeProbe();
+  when(() => probe.isSilent()).thenAnswer((_) async => false);
+  getIt.registerLazySingleton<SilentModeProbe>(() => probe);
 }

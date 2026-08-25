@@ -13,6 +13,7 @@ import 'package:roundtablezoo/domain/entities/character_reaction.dart';
 import 'package:roundtablezoo/domain/entities/day_entry.dart';
 import 'package:roundtablezoo/domain/entities/day_key.dart';
 import 'package:roundtablezoo/domain/entities/user_settings.dart';
+import 'package:roundtablezoo/domain/value_objects/character_voice.dart';
 import 'package:roundtablezoo/domain/value_objects/day_start_hour.dart';
 import 'package:roundtablezoo/domain/value_objects/locale_preference.dart';
 import 'package:roundtablezoo/domain/value_objects/mood_score.dart';
@@ -56,6 +57,7 @@ Character _character(String id, {String fallbackReply = 'fallback'}) => Characte
   colorHex: 0xFF000000,
   fallbackReply: fallbackReply,
   maxReplyLength: 200,
+  voice: CharacterVoice.neutral,
 );
 
 const _characters = [
@@ -65,6 +67,7 @@ const _characters = [
     colorHex: 0xFF000000,
     fallbackReply: 'Мяу',
     maxReplyLength: 200,
+    voice: CharacterVoice.neutral,
   ),
 ];
 

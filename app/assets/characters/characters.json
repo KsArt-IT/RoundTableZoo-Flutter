@@ -5,7 +5,8 @@
     "name": "Кот",
     "colorHex": "#8A7CA8",
     "fallbackReply": "Мр-р. Слов нет — но я тебя услышал.",
-    "maxReplyLength": 220
+    "maxReplyLength": 220,
+    "voice": { "pitch": 1.50, "rate": 0.62 }
   },
   {
     "id": "dog",
@@ -13,7 +14,8 @@
     "name": "Пёс",
     "colorHex": "#D98C4A",
     "fallbackReply": "Гав! Я всё равно рад, что ты рассказал.",
-    "maxReplyLength": 220
+    "maxReplyLength": 220,
+    "voice": { "pitch": 1.15, "rate": 0.56 }
   },
   {
     "id": "crocodile",
@@ -21,7 +23,8 @@
     "name": "Крокодил",
     "colorHex": "#5C8A5C",
     "fallbackReply": "Хм. Слов пока нет, но я не отвернулся.",
-    "maxReplyLength": 220
+    "maxReplyLength": 220,
+    "voice": { "pitch": 0.85, "rate": 0.46 }
   },
   {
     "id": "hippo",
@@ -29,6 +32,7 @@
     "name": "Бегемот",
     "colorHex": "#6E8FAE",
     "fallbackReply": "Дай мне минутку подумать... но я рядом.",
-    "maxReplyLength": 220
+    "maxReplyLength": 220,
+    "voice": { "pitch": 0.70, "rate": 0.40 }
   }
 ]

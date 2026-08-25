@@ -60,6 +60,8 @@ dependencies:
   dio: ^5.11.0
   # Graph
   fl_chart: ^1.2.0
+  # Text-to-speech
+  flutter_tts: ^4.2.5
 
 dev_dependencies:
   flutter_test:

@@ -7,6 +7,8 @@ import 'package:roundtablezoo/core/constants/mood_scale.dart';
 import 'package:roundtablezoo/core/di/injection.dart';
 import 'package:roundtablezoo/core/errors/app_failure.dart';
 import 'package:roundtablezoo/core/sharing/share_service.dart';
+import 'package:roundtablezoo/core/speech/speech_synthesizer.dart';
+import 'package:roundtablezoo/core/speech/voice_availability.dart';
 import 'package:roundtablezoo/domain/entities/character.dart';
 import 'package:roundtablezoo/domain/entities/day_key.dart';
 import 'package:roundtablezoo/domain/value_objects/mood_score.dart';
@@ -15,6 +17,8 @@ import 'package:roundtablezoo/presentation/app_settings/cubit/current_day_cubit.
 import 'package:roundtablezoo/presentation/app_settings/cubit/current_day_state.dart';
 import 'package:roundtablezoo/presentation/table/cubit/table_cubit.dart';
 import 'package:roundtablezoo/presentation/table/cubit/table_state.dart';
+import 'package:roundtablezoo/presentation/table/cubit/table_voice_cubit.dart';
+import 'package:roundtablezoo/presentation/table/cubit/table_voice_state.dart';
 import 'package:roundtablezoo/presentation/table/widgets/character_avatar.dart';
 import 'package:roundtablezoo/presentation/table/widgets/day_text_field.dart';
 import 'package:roundtablezoo/presentation/table/widgets/mood_scale_row.dart';
@@ -64,9 +68,11 @@ class TablePage extends StatefulWidget {
 
 class _TablePageState extends State<TablePage> with WidgetsBindingObserver {
   late final TableCubit _cubit = getIt<TableCubit>();
+  late final TableVoiceCubit _voiceCubit = getIt<TableVoiceCubit>();
   late final ShareService _shareService = getIt<ShareService>();
   StreamSubscription<AppFailure>? _failureSubscription;
   AppFailure? _inlineFailure;
+  String? _lastVoiceLanguageTag;
 
   @override
   void initState() {
@@ -77,6 +83,29 @@ class _TablePageState extends State<TablePage> with WidgetsBindingObserver {
       setState(() => _inlineFailure = failure);
     });
     unawaited(_cubit.load(_currentDayKey));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // FR-014: recomputed on every dependency change, so TalkBack/VoiceOver
+    // toggling on the fly is reflected without leaving this screen.
+    _voiceCubit.onScreenReaderChanged(active: MediaQuery.accessibleNavigationOf(context));
+
+    // FR-002/FR-012: re-checked only when the interface language actually
+    // changes — `isAvailableFor` is an async platform call, not something
+    // to repeat on every unrelated rebuild.
+    final languageTag = Localizations.localeOf(context).toLanguageTag();
+    if (languageTag != _lastVoiceLanguageTag) {
+      _lastVoiceLanguageTag = languageTag;
+      unawaited(_refreshVoiceAvailability(languageTag));
+    }
+  }
+
+  Future<void> _refreshVoiceAvailability(String languageTag) async {
+    final available = await resolveVoiceAvailability(getIt<SpeechSynthesizer>(), languageTag);
+    if (!mounted) return;
+    _voiceCubit.onVoiceAvailabilityChanged(available: available);
   }
 
   /// `CurrentDayCubit` resolves synchronously on construction (its own
@@ -92,6 +121,12 @@ class _TablePageState extends State<TablePage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // research.md R10 — a backgrounded app must not lose an unsaved edit.
     if (state == AppLifecycleState.paused) unawaited(_cubit.flushDayText());
+    // FR-011, research.md R11: `inactive` covers an incoming call, which
+    // often doesn't reach `paused` at all. Nothing resumes on return —
+    // `stopAll()` is a hard reset, not a pause (V10).
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      unawaited(_voiceCubit.stopAll());
+    }
   }
 
   @override
@@ -99,6 +134,7 @@ class _TablePageState extends State<TablePage> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_failureSubscription?.cancel());
     unawaited(_cubit.close());
+    unawaited(_voiceCubit.close());
     super.dispose();
   }
 
@@ -106,8 +142,11 @@ class _TablePageState extends State<TablePage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return BlocProvider.value(
-      value: _cubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _cubit),
+        BlocProvider.value(value: _voiceCubit),
+      ],
       child: BlocListener<CurrentDayCubit, CurrentDayState>(
         // research.md R13 — the day tracked elsewhere (midnight/dayStartHour
         // tick) moved on while this screen stayed open; flush the outgoing
@@ -291,33 +330,52 @@ class _RoundTableState extends State<_RoundTable> {
   @override
   void didUpdateWidget(covariant _RoundTable oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final languageTag = Localizations.localeOf(context).toLanguageTag();
     for (final character in widget.characters) {
       final slot = widget.slots[character.id];
       final oldSlot = oldWidget.slots[character.id];
       if (slot is CharacterSlotSpoken && !slot.restored && oldSlot is! CharacterSlotSpoken) {
         _revealing[character.id] = true;
+        // FR-001, research.md R9: queued the same moment the reveal
+        // animation starts, not on `onRevealed` — no waiting for the
+        // "typing" effect to finish.
+        context.read<TableVoiceCubit>().enqueue(
+          characterId: character.id,
+          text: slot.reaction.reply,
+          voice: character.voice,
+          languageTag: languageTag,
+        );
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // `select`, not `watch` — this subtree only cares about who's
+    // speaking, not `queueLength` (which changes on every `enqueue`/pop
+    // without affecting any seat's visual state).
+    final speakingCharacterId = context.select<TableVoiceCubit, String?>(
+      (cubit) => cubit.state.speakingCharacterId,
+    );
     return RoundTableLayout(
       activeCharacterId: _activeCharacterId,
       seats: [
-        for (final (index, character) in widget.characters.indexed) _seatFor(character, index),
+        for (final (index, character) in widget.characters.indexed)
+          _seatFor(character, index, speakingCharacterId),
       ],
     );
   }
 
-  RoundTableSeat _seatFor(Character character, int index) {
+  RoundTableSeat _seatFor(Character character, int index, String? speakingCharacterId) {
     final slot = widget.slots[character.id] ?? const CharacterSlot.idle();
     final isRevealing = _revealing[character.id] ?? (slot is CharacterSlotSpoken && !slot.restored);
     final visualState = switch (slot) {
       CharacterSlotIdle() => CharacterVisualState.idle,
       CharacterSlotLoading() => CharacterVisualState.waiting,
       CharacterSlotSpoken() =>
-        isRevealing ? CharacterVisualState.speaking : CharacterVisualState.answered,
+        isRevealing || character.id == speakingCharacterId
+            ? CharacterVisualState.speaking
+            : CharacterVisualState.answered,
     };
 
     final avatarOrder = TableTraversalOrder.avatar(index);
@@ -335,6 +393,10 @@ class _RoundTableState extends State<_RoundTable> {
             onTap: widget.canTap
                 ? () {
                     setState(() => _activeCharacterId = character.id);
+                    // FR-010, research.md R12: a tap starts a new
+                    // reaction cycle — stop whatever is still speaking
+                    // from the previous one first.
+                    unawaited(context.read<TableVoiceCubit>().stopAll());
                     widget.onCharacterTap(character.id);
                   }
                 : null,

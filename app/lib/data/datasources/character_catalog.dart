@@ -4,6 +4,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:roundtablezoo/core/errors/result.dart';
 import 'package:roundtablezoo/core/errors/safe_call_mixin.dart';
 import 'package:roundtablezoo/domain/entities/character.dart';
+import 'package:roundtablezoo/domain/value_objects/character_voice.dart';
 
 /// Loads and caches `assets/characters/characters.json`
 /// (`specs/004-table-screen/contracts/character-config.md`). Parsed once per
@@ -90,8 +91,23 @@ class CharacterCatalog with SafeCallMixin {
       colorHex: _parseColorHex(colorHex, id),
       fallbackReply: fallbackReply,
       maxReplyLength: maxReplyLength,
+      voice: _parseVoice(json['voice']),
       idleAnimation: json['idleAnimation'] as String?,
       talkAnimation: json['talkAnimation'] as String?,
+    );
+  }
+
+  // Absent, non-object, or partially broken `voice` degrades to
+  // `CharacterVoice.neutral` rather than failing the whole catalog load —
+  // same leniency as `emoji` (`contracts/character-voice-config.md` §1).
+  CharacterVoice _parseVoice(Object? value) {
+    if (value is! Map<String, dynamic>) return CharacterVoice.neutral;
+
+    final pitch = value['pitch'];
+    final rate = value['rate'];
+    return CharacterVoice(
+      pitch: pitch is num ? pitch.toDouble().clamp(0.5, 2.0) : CharacterVoice.neutral.pitch,
+      rate: rate is num ? rate.toDouble().clamp(0.0, 1.0) : CharacterVoice.neutral.rate,
     );
   }
 

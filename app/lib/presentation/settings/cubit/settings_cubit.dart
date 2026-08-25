@@ -1,15 +1,20 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:roundtablezoo/core/errors/app_failure.dart';
 import 'package:roundtablezoo/core/errors/result.dart';
 import 'package:roundtablezoo/core/notifications/notification_permission_status.dart';
 import 'package:roundtablezoo/core/notifications/notification_scheduler.dart';
+import 'package:roundtablezoo/core/speech/speech_synthesizer.dart';
+import 'package:roundtablezoo/core/speech/voice_availability.dart';
+import 'package:roundtablezoo/core/utils/locale_resolution.dart';
 import 'package:roundtablezoo/domain/entities/user_settings.dart';
 import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
 import 'package:roundtablezoo/domain/value_objects/locale_preference.dart';
 import 'package:roundtablezoo/domain/value_objects/reminder_time.dart';
 import 'package:roundtablezoo/domain/value_objects/theme_preference.dart';
+import 'package:roundtablezoo/gen/app_localizations.dart';
 import 'package:roundtablezoo/presentation/settings/cubit/settings_state.dart';
 
 /// Screen-scoped — a fresh instance per `/settings` visit, registered as an
@@ -20,15 +25,33 @@ class SettingsCubit extends Cubit<SettingsState> {
   SettingsCubit({
     required SettingsRepository settingsRepository,
     required NotificationScheduler notificationScheduler,
+    required SpeechSynthesizer speechSynthesizer,
   }) : _settingsRepository = settingsRepository,
        _notificationScheduler = notificationScheduler,
+       _speechSynthesizer = speechSynthesizer,
        super(const SettingsState.loading()) {
     _subscription = _settingsRepository.watch().listen(_onSettings, onError: _onError);
   }
 
   final SettingsRepository _settingsRepository;
   final NotificationScheduler _notificationScheduler;
+  final SpeechSynthesizer _speechSynthesizer;
   late final StreamSubscription<UserSettings> _subscription;
+
+  /// FR-014: pushed from `SettingsPage` (`MediaQuery.accessibleNavigationOf`)
+  /// — the Cubit itself stays Flutter-binding-free (research.md R8).
+  bool _screenReaderActive = false;
+
+  /// Result of the last `resolveVoiceAvailability` check — `true` until
+  /// the first check resolves, so the toggle doesn't flash disabled on
+  /// every screen open.
+  bool _engineHasVoice = true;
+
+  /// Language the last availability check ran for — lets `_onSettings`
+  /// skip re-probing the (async, platform-channel) engine on every
+  /// unrelated settings write (theme, reminder time, sound toggle itself),
+  /// same reasoning as `TablePage`'s own language-tag cache.
+  String? _lastCheckedLanguageTag;
 
   /// One-off setter-failure signal (FR-003): the settings row didn't
   /// change on failure, so `watch()` stays silent and `state` keeps its
@@ -52,7 +75,57 @@ class SettingsCubit extends Cubit<SettingsState> {
     final revision = ++_settingsRevision;
     final permission = await _notificationScheduler.permissionStatus();
     if (isClosed || revision != _settingsRevision) return;
-    emit(SettingsState.loaded(settings: settings, permission: permission));
+    emit(
+      SettingsState.loaded(
+        settings: settings,
+        permission: permission,
+        voiceAvailability: _voiceAvailability,
+      ),
+    );
+    final languageTag = _languageTagFor(settings.locale);
+    if (languageTag != _lastCheckedLanguageTag) {
+      _lastCheckedLanguageTag = languageTag;
+      unawaited(_refreshEngineVoiceAvailability(languageTag, revision));
+    }
+  }
+
+  /// T021's shared availability function, fed the language the settings
+  /// screen currently resolves to — the same source of truth `TablePage`
+  /// uses, just without a `BuildContext` (`resolveDeviceLocale`, same
+  /// pattern as `reminder_texts.dart`).
+  Future<void> _refreshEngineVoiceAvailability(String languageTag, int revision) async {
+    final available = await resolveVoiceAvailability(_speechSynthesizer, languageTag);
+    if (isClosed || revision != _settingsRevision) return;
+    _engineHasVoice = available;
+    _emitVoiceAvailability();
+  }
+
+  /// FR-013a: never touches `settings.soundEnabled` — only the emitted
+  /// `voiceAvailability` reason changes.
+  void onScreenReaderChanged({required bool active}) {
+    if (_screenReaderActive == active) return;
+    _screenReaderActive = active;
+    _emitVoiceAvailability();
+  }
+
+  VoiceAvailability get _voiceAvailability {
+    if (_screenReaderActive) return VoiceAvailability.screenReaderActive;
+    return _engineHasVoice ? VoiceAvailability.available : VoiceAvailability.noVoiceForLanguage;
+  }
+
+  void _emitVoiceAvailability() {
+    if (isClosed) return;
+    final current = state;
+    if (current is SettingsLoaded) {
+      emit(current.copyWith(voiceAvailability: _voiceAvailability));
+    }
+  }
+
+  String _languageTagFor(LocalePreference locale) {
+    final resolved = locale == LocalePreference.system
+        ? resolveDeviceLocale(PlatformDispatcher.instance.locale, AppLocalizations.supportedLocales)
+        : Locale(locale.name);
+    return resolved.toLanguageTag();
   }
 
   void _onError(Object error) {

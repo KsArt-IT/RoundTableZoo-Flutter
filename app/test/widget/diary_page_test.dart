@@ -1,13 +1,16 @@
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:roundtablezoo/core/di/injection.dart';
+import 'package:roundtablezoo/core/speech/speech_synthesizer.dart';
 import 'package:roundtablezoo/data/datasources/drift/app_database.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
 import 'package:roundtablezoo/presentation/diary/widgets/diary_day_card.dart';
 import 'package:roundtablezoo/presentation/diary/widgets/diary_empty_view.dart';
 import 'package:roundtablezoo/presentation/diary/widgets/diary_reactions_list.dart';
 
+import '../support/mocks.dart';
 import '../support/test_app_root.dart';
 
 Future<AppLocalizations> _renderedLocalizations(WidgetTester tester) => AppLocalizations.delegate
@@ -204,4 +207,31 @@ void main() {
 
     await disposeTestAppRoot(tester);
   });
+
+  testWidgets(
+    'no reply is ever voiced from the Diary screen, on open or expansion (008, FR-017)',
+    (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final widget = buildTestAppRoot();
+      final entryId = await _insertEntry(DateTime.utc(2026, 1, 1), 4);
+      await _insertReaction(entryId, characterId: 'cat', reply: 'мур-мур');
+
+      await tester.pumpWidget(widget);
+      await tester.pumpAndSettle();
+      await _openDiary(tester);
+
+      await tester.tap(find.byType(DiaryDayCard));
+      await tester.pumpAndSettle();
+      await tester.fling(find.byType(DiaryDayCard).first, const Offset(0, -300), 300);
+      await tester.pumpAndSettle();
+
+      verifyNever(() => (getIt<SpeechSynthesizer>() as MockSpeechSynthesizer).speak(any()));
+
+      await disposeTestAppRoot(tester);
+    },
+  );
 }

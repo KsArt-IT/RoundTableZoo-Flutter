@@ -11,5 +11,9 @@ class MainActivity : FlutterActivity() {
             flutterEngine.dartExecutor.binaryMessenger,
             "life.studyway.roundtablezoo/integrity",
         ).setMethodCallHandler(IntegrityChannel(applicationContext))
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "life.studyway.roundtablezoo/audio",
+        ).setMethodCallHandler(AudioModeChannel(applicationContext))
     }
 }

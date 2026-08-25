@@ -31,6 +31,7 @@ const _settings = UserSettings(
 void main() {
   late MockSettingsRepository settingsRepository;
   late MockNotificationScheduler notificationScheduler;
+  late MockSpeechSynthesizer speechSynthesizer;
 
   setUpAll(() {
     registerFallbackValue(ThemePreference.system);
@@ -39,15 +40,20 @@ void main() {
   setUp(() {
     settingsRepository = MockSettingsRepository();
     notificationScheduler = MockNotificationScheduler();
+    speechSynthesizer = MockSpeechSynthesizer();
     when(() => settingsRepository.watch()).thenAnswer((_) => Stream.value(_settings));
     when(
       () => notificationScheduler.permissionStatus(),
     ).thenAnswer((_) async => NotificationPermissionStatus.unknown);
+    when(
+      () => speechSynthesizer.isAvailableFor(any()),
+    ).thenAnswer((_) async => const Result.success(true));
   });
 
   SettingsCubit build() => SettingsCubit(
     settingsRepository: settingsRepository,
     notificationScheduler: notificationScheduler,
+    speechSynthesizer: speechSynthesizer,
   );
 
   test('a fresh install defaults to reminder disabled at 20:00', () async {

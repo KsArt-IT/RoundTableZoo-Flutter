@@ -211,6 +211,14 @@
   "@settingsSoundHint": {
     "description": "SettingsPage — sound toggle hint (FR-016c)"
   },
+  "settingsSoundUnavailableHint": "Немає рушія синтезу мовлення або голосу для цієї мови",
+  "@settingsSoundUnavailableHint": {
+    "description": "SettingsPage — sound toggle disabled reason: no TTS engine/voice (FR-013)"
+  },
+  "settingsSoundScreenReaderHint": "Репліки читає скрінрідер",
+  "@settingsSoundScreenReaderHint": {
+    "description": "SettingsPage — sound toggle disabled reason: screen reader active (FR-013, FR-014)"
+  },
   "settingsAiDisclosureTitle": "Про AI-репліки",
   "@settingsAiDisclosureTitle": {
     "description": "SettingsPage — AI disclosure section title; body text reuses onboardingAiDisclosure verbatim (FR-021, specs/007-ai-proxy)"

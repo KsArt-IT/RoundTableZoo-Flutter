@@ -58,6 +58,14 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // FR-014: recomputed on every dependency change, so TalkBack/VoiceOver
+    // toggling on the fly is reflected without leaving this screen.
+    _cubit.onScreenReaderChanged(active: MediaQuery.accessibleNavigationOf(context));
+  }
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) unawaited(_cubit.refreshPermissionStatus());
   }
@@ -106,6 +114,7 @@ class _SettingsPageState extends State<SettingsPage> with WidgetsBindingObserver
                   SoundSection(
                     enabled: settings?.soundEnabled ?? true,
                     controlsEnabled: controlsEnabled,
+                    voiceAvailability: loaded?.voiceAvailability ?? VoiceAvailability.available,
                   ),
                   const Divider(height: 1),
                   const AiDisclosureSection(),

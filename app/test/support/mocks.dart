@@ -4,6 +4,8 @@ import 'package:roundtablezoo/core/integrity/integrity_token_provider.dart';
 import 'package:roundtablezoo/core/network/ai_proxy_client.dart';
 import 'package:roundtablezoo/core/notifications/notification_scheduler.dart';
 import 'package:roundtablezoo/core/sharing/share_service.dart';
+import 'package:roundtablezoo/core/speech/silent_mode_probe.dart';
+import 'package:roundtablezoo/core/speech/speech_synthesizer.dart';
 import 'package:roundtablezoo/data/datasources/character_catalog.dart';
 import 'package:roundtablezoo/domain/repositories/ai_reaction_repository.dart';
 import 'package:roundtablezoo/domain/repositories/diary_repository.dart';
@@ -18,6 +20,10 @@ class MockDiaryRepository extends Mock implements DiaryRepository {}
 class MockSettingsRepository extends Mock implements SettingsRepository {}
 
 class MockNotificationScheduler extends Mock implements NotificationScheduler {}
+
+class MockSpeechSynthesizer extends Mock implements SpeechSynthesizer {}
+
+class MockSilentModeProbe extends Mock implements SilentModeProbe {}
 
 /// `CharacterCatalog` isn't behind an interface (data-model.md §2 — no
 /// runtime dependencies, plain class), so this subclasses it directly

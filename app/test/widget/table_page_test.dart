@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -5,10 +6,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:roundtablezoo/core/di/injection.dart';
 import 'package:roundtablezoo/core/errors/app_failure.dart';
+import 'package:roundtablezoo/core/errors/result.dart';
 import 'package:roundtablezoo/core/network/stub_ai_proxy_client.dart';
 import 'package:roundtablezoo/core/sharing/share_service.dart';
+import 'package:roundtablezoo/core/speech/speech_synthesizer.dart';
+import 'package:roundtablezoo/domain/entities/character_reaction.dart';
 import 'package:roundtablezoo/domain/repositories/diary_repository.dart';
 import 'package:roundtablezoo/domain/value_objects/mood_score.dart';
+import 'package:roundtablezoo/domain/value_objects/reaction_tone.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
 import 'package:roundtablezoo/presentation/storage_recovery/cubit/storage_recovery_state.dart';
 import 'package:roundtablezoo/presentation/table/widgets/speaking_bubble.dart';
@@ -348,6 +353,115 @@ void main() {
 
       expect(find.text(l10n.tableReplyFallbackLabel), findsOneWidget);
       expect(find.text(l10n.tableAiInvalidResponseError), findsNothing);
+
+      await disposeTestAppRoot(tester);
+    },
+  );
+
+  testWidgets('a newly-shown reply is enqueued for voicing (008, FR-001)', (tester) async {
+    await tester.pumpWidget(buildTestAppRoot());
+    await tester.pumpAndSettle();
+
+    final l10n = await _renderedLocalizations(tester);
+    await tester.tap(find.bySemanticsLabel(l10n.moodScaleGood));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'привет мир');
+    await tester.pump();
+
+    await tester.tap(_idleSeats(l10n).first);
+    await tester.pumpAndSettle();
+
+    verify(() => (getIt<SpeechSynthesizer>() as MockSpeechSynthesizer).speak(any())).called(1);
+
+    await disposeTestAppRoot(tester);
+  });
+
+  testWidgets(
+    'a reply restored from storage is never enqueued for voicing (008, research.md R9)',
+    (tester) async {
+      final entry = await getIt<DiaryRepository>().saveTodayEntry(moodScore: _mood(4));
+      await getIt<DiaryRepository>().addReaction(
+        CharacterReaction(
+          dayEntryId: entry.valueOrNull!.id!,
+          characterId: 'cat',
+          tone: ReactionTone.neutral,
+          reply: 'уже сохранённая реплика',
+          intensity: 0.5,
+          isFallback: false,
+          createdAt: DateTime.now(),
+        ),
+      );
+
+      await tester.pumpWidget(buildTestAppRoot());
+      await tester.pumpAndSettle();
+
+      verifyNever(() => (getIt<SpeechSynthesizer>() as MockSpeechSynthesizer).speak(any()));
+
+      await disposeTestAppRoot(tester);
+    },
+  );
+
+  testWidgets('leaving the table screen stops the voice (008, FR-009)', (tester) async {
+    await tester.pumpWidget(buildTestAppRoot());
+    await tester.pumpAndSettle();
+
+    final l10n = await _renderedLocalizations(tester);
+    await tester.tap(find.bySemanticsLabel(l10n.moodScaleGood));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'привет мир');
+    await tester.pump();
+
+    await tester.tap(_idleSeats(l10n).first);
+    await tester.pumpAndSettle();
+
+    // Disposing the screen (`TablePage.dispose`) must close `TableVoiceCubit`,
+    // which stops the engine as part of `stopAll()`.
+    await disposeTestAppRoot(tester);
+
+    verify(() => (getIt<SpeechSynthesizer>() as MockSpeechSynthesizer).stop()).called(greaterThan(0));
+  });
+
+  testWidgets(
+    'tapping a second character while the first is still speaking stops that voice (008, FR-010)',
+    (tester) async {
+      final widget = buildTestAppRoot();
+      final synthesizer = getIt<SpeechSynthesizer>() as MockSpeechSynthesizer;
+      Completer<Result<void>>? pendingSpeak;
+      when(() => synthesizer.speak(any())).thenAnswer((_) {
+        final completer = Completer<Result<void>>();
+        pendingSpeak = completer;
+        return completer.future;
+      });
+      when(() => synthesizer.stop()).thenAnswer((_) async {
+        // Mirrors the real plugin: a `stop()`-interrupted utterance
+        // completes its `speak()` future just as successfully
+        // (`contracts/speech-synthesizer.md` §1).
+        pendingSpeak?.complete(const Result.success(null));
+        return const Result.success(null);
+      });
+
+      await tester.pumpWidget(widget);
+      await tester.pumpAndSettle();
+
+      final l10n = await _renderedLocalizations(tester);
+      await tester.tap(find.bySemanticsLabel(l10n.moodScaleGood));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'привет мир');
+      await tester.pump();
+
+      await tester.tap(_idleSeats(l10n).first);
+      await tester.pumpAndSettle();
+
+      // A second, different character is tapped while the first reply is
+      // still (indefinitely) speaking — this must stop it (FR-010) rather
+      // than let both overlap. Verified once, cumulatively, at the end —
+      // an intermediate `verify(...).called(n)` would itself consume
+      // that portion of mocktail's invocation log.
+      await tester.tap(_idleSeats(l10n).first);
+      await tester.pumpAndSettle();
+
+      verify(() => synthesizer.stop()).called(greaterThan(0));
+      verify(() => synthesizer.speak(any())).called(2);
 
       await disposeTestAppRoot(tester);
     },

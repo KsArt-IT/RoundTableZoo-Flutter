@@ -43,6 +43,18 @@ void main() {
     expect(result.valueOrNull?.dayStartHour.value, 6);
   });
 
+  test('updateSoundEnabled persists across a fresh repository instance (FR-007)', () async {
+    final result = await repository.updateSoundEnabled(value: false);
+    expect(result.isSuccess, isTrue);
+    expect(result.valueOrNull?.soundEnabled, isFalse);
+
+    // A fresh repository over the same database — stands in for a
+    // restarted app: the toggle survives without any new storage.
+    final reopened = SettingsRepositoryImpl(dataSource: SettingsLocalDataSource(db));
+    final reloaded = await reopened.load();
+    expect(reloaded.valueOrNull?.soundEnabled, isFalse);
+  });
+
   test('watch() emits an updated state after a change', () async {
     final emissions = <String>[];
     final subscription = repository.watch().listen(

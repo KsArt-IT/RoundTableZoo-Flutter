@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:roundtablezoo/core/bootstrap/debug_failure_injector.dart';
+import 'package:roundtablezoo/core/di/injection.dart';
 import 'package:roundtablezoo/core/errors/app_failure.dart';
+import 'package:roundtablezoo/core/errors/result.dart';
+import 'package:roundtablezoo/core/speech/speech_synthesizer.dart';
+import 'package:roundtablezoo/domain/repositories/settings_repository.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
 import 'package:roundtablezoo/presentation/settings/settings_page.dart';
 
+import '../support/mocks.dart';
 import '../support/test_app_root.dart';
 
 Future<AppLocalizations> _renderedLocalizations(WidgetTester tester) => AppLocalizations.delegate
@@ -80,4 +86,59 @@ void main() {
     handle.dispose();
     await disposeTestAppRoot(tester);
   });
+
+  testWidgets('no voice for the language: sound toggle disabled with an explanation (008, FR-013)', (
+    tester,
+  ) async {
+    final widget = buildTestAppRoot();
+    when(
+      () => (getIt<SpeechSynthesizer>() as MockSpeechSynthesizer).isAvailableFor(any()),
+    ).thenAnswer((_) async => const Result.success(false));
+
+    await tester.pumpWidget(widget);
+    await tester.pumpAndSettle();
+    final l10n = await _renderedLocalizations(tester);
+    await tester.tap(find.widgetWithText(NavigationDestination, l10n.sectionSettings));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(find.widgetWithText(SwitchListTile, l10n.settingsSound), 200);
+    final tile = tester.widget<SwitchListTile>(
+      find.widgetWithText(SwitchListTile, l10n.settingsSound),
+    );
+    expect(tile.onChanged, isNull);
+    expect(find.text(l10n.settingsSoundUnavailableHint), findsOneWidget);
+
+    final settings = await getIt<SettingsRepository>().load();
+    expect(settings.valueOrNull!.soundEnabled, isTrue);
+
+    await disposeTestAppRoot(tester);
+  });
+
+  testWidgets(
+    'screen reader active: sound toggle disabled with an explanation (008, FR-013, FR-014)',
+    (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(
+        accessibleNavigation: true,
+      );
+      addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+
+      await _openSettings(tester);
+      final l10n = await _renderedLocalizations(tester);
+
+      await tester.scrollUntilVisible(
+        find.widgetWithText(SwitchListTile, l10n.settingsSound),
+        200,
+      );
+      final tile = tester.widget<SwitchListTile>(
+        find.widgetWithText(SwitchListTile, l10n.settingsSound),
+      );
+      expect(tile.onChanged, isNull);
+      expect(find.text(l10n.settingsSoundScreenReaderHint), findsOneWidget);
+
+      final settings = await getIt<SettingsRepository>().load();
+      expect(settings.valueOrNull!.soundEnabled, isTrue);
+
+      await disposeTestAppRoot(tester);
+    },
+  );
 }

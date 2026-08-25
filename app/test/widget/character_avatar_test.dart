@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lottie/lottie.dart';
 import 'package:roundtablezoo/core/constants/app_constants.dart';
 import 'package:roundtablezoo/domain/entities/character.dart';
+import 'package:roundtablezoo/domain/value_objects/character_voice.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
 import 'package:roundtablezoo/presentation/table/widgets/character_avatar.dart';
 
@@ -12,6 +13,7 @@ const _character = Character(
   colorHex: 0xFF8A7CA8,
   fallbackReply: 'Мр-р.',
   maxReplyLength: 220,
+  voice: CharacterVoice.neutral,
   idleAnimation: 'assets/lottie/cat_idle.json',
   talkAnimation: 'assets/lottie/cat_talk.json',
 );
@@ -25,6 +27,7 @@ const _staticCharacter = Character(
   colorHex: 0xFF8A7CA8,
   fallbackReply: 'Мр-р.',
   maxReplyLength: 220,
+  voice: CharacterVoice.neutral,
 );
 
 /// Same seat with no emoji — the pre-existing first-letter branch.
@@ -34,6 +37,7 @@ const _letterCharacter = Character(
   colorHex: 0xFF8A7CA8,
   fallbackReply: 'Мр-р.',
   maxReplyLength: 220,
+  voice: CharacterVoice.neutral,
 );
 
 Widget _wrapped({

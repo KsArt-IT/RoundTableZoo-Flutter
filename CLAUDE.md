@@ -30,6 +30,7 @@ Flutter, Android + iOS в коде, **публикуется пока тольк
 | `specs/005-diary-screen` | Дневник: пагинация, график `fl_chart`, экспорт CSV |
 | `specs/006-table-surface-render` | Поверхность стола: `tableSurfaceRect` + `TableSurfacePainter` внутри `RoundTableLayout`. Код готов, открыта только T007 — ручной прогон `quickstart.md` на устройстве |
 | `specs/007-ai-proxy` | AI-прокси `proxy/` на Cloudflare Workers: ключ Gemini на сервере, Play Integrity, суточные лимиты, kill switch, ротация якорей промпта. Клиент получает настоящие реплики через `POST /react` |
+| `specs/008-character-voice-tts` | Озвучка реплик персонажей через `flutter_tts` (полностью офлайн): `core/speech/` (`SpeechSynthesizer`, `SilentModeProbe`), `TableVoiceCubit` (очередь, стоп-условия), тембр персонажа в `characters.json` (`CharacterVoice`), управление тумблером в Настройках |
 
 **Перед началом любой задачи по фиче** — прочитай
 [project/process/lessons-learned.md](project/process/lessons-learned.md) целиком (он короткий).

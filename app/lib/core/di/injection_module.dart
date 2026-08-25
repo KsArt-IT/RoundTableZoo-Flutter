@@ -12,6 +12,9 @@ import 'package:roundtablezoo/core/network/stub_ai_proxy_client.dart';
 import 'package:roundtablezoo/core/notifications/notification_scheduler.dart';
 import 'package:roundtablezoo/core/notifications/reminder_coordinator.dart';
 import 'package:roundtablezoo/core/sharing/share_service.dart';
+import 'package:roundtablezoo/core/speech/android_silent_mode_probe.dart';
+import 'package:roundtablezoo/core/speech/silent_mode_probe.dart';
+import 'package:roundtablezoo/core/speech/speech_synthesizer.dart';
 import 'package:roundtablezoo/data/datasources/character_catalog.dart';
 import 'package:roundtablezoo/data/repositories/ai_reaction_repository_impl.dart';
 import 'package:roundtablezoo/domain/repositories/ai_reaction_repository.dart';
@@ -27,6 +30,7 @@ import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_cubit.dar
 import 'package:roundtablezoo/presentation/onboarding/cubit/onboarding_state.dart';
 import 'package:roundtablezoo/presentation/settings/cubit/settings_cubit.dart';
 import 'package:roundtablezoo/presentation/table/cubit/table_cubit.dart';
+import 'package:roundtablezoo/presentation/table/cubit/table_voice_cubit.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 /// Instantiation for classes that either come from third-party packages
@@ -108,6 +112,21 @@ abstract class InjectionModule {
     storageMode: storageMode,
   );
 
+  /// Screen-scoped `factory` (not `@lazySingleton`) — a fresh instance per
+  /// visit to `/table`, same reasoning as [tableCubit]. `SettingsRepository`
+  /// is only resolved from `getIt` the first time this is actually built,
+  /// by which point `StorageDiSwitch` has registered it.
+  @injectable
+  TableVoiceCubit tableVoiceCubit(
+    SpeechSynthesizer synthesizer,
+    SilentModeProbe silentModeProbe,
+    SettingsRepository settingsRepository,
+  ) => TableVoiceCubit(
+    synthesizer: synthesizer,
+    silentModeProbe: silentModeProbe,
+    settingsRepository: settingsRepository,
+  );
+
   @lazySingleton
   ReminderPlanner reminderPlanner(DayResolver dayResolver) =>
       ReminderPlanner(dayResolver: dayResolver);
@@ -143,6 +162,15 @@ abstract class InjectionModule {
   /// (research.md R3).
   @lazySingleton
   ShareService get shareService => const SharePlusShareService();
+
+  /// Android reads ringer mode/media volume through its own channel; every
+  /// other platform relies on iOS's `ambient` audio category instead and
+  /// never needs to ask (`contracts/speech-synthesizer.md` §2), same
+  /// per-platform pattern as [integrityTokenProvider].
+  @lazySingleton
+  SilentModeProbe get silentModeProbe => defaultTargetPlatform == TargetPlatform.android
+      ? AndroidSilentModeProbe()
+      : const NoSilentModeProbe();
 
   /// A `LazySingleton` factory, not a getter: the `SettingsRepository`
   /// parameter is only resolved from `getIt` the first time this cubit is
@@ -184,9 +212,11 @@ abstract class InjectionModule {
   SettingsCubit settingsCubit(
     SettingsRepository settingsRepository,
     NotificationScheduler notificationScheduler,
+    SpeechSynthesizer speechSynthesizer,
   ) => SettingsCubit(
     settingsRepository: settingsRepository,
     notificationScheduler: notificationScheduler,
+    speechSynthesizer: speechSynthesizer,
   );
 
   /// Same lazy-resolution reasoning as [currentDayCubit]: `SettingsRepository`

@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:roundtablezoo/domain/value_objects/character_voice.dart';
 
 part 'character.freezed.dart';
 
@@ -21,6 +22,11 @@ abstract class Character with _$Character {
     required int colorHex,
     required String fallbackReply,
     required int maxReplyLength,
+
+    /// Speech timbre (FR-003). Optional in the JSON asset, defaults to
+    /// `CharacterVoice.neutral` — required here because every character
+    /// has *some* voice, even an unconfigured one.
+    required CharacterVoice voice,
     String? idleAnimation,
     String? talkAnimation,
   }) = _Character;
