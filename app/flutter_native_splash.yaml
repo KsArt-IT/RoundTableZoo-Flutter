@@ -1,0 +1,83 @@
+# dart run flutter_native_splash:create
+flutter_native_splash:
+  # This package generates native code to customize Flutter's default white native splash screen
+  # with background color and splash image.
+  # Steps to make this work:
+  # 1. Customize the parameters below.
+  # 2. run the following command in the terminal:
+  # dart run flutter_native_splash:create
+  # or if you place this not in pubspec.yaml and not in flutter_native_splash.yaml:
+  # dart run flutter_native_splash:create -p ../your-filepath.yaml
+  # 3. voila, done!
+
+  # NOTES:
+  # - in case you got some trouble, cleaning up flutter project might help:
+  # flutter clean ; flutter pub get
+  # - To restore Flutter's default white splash screen, run the following command in the terminal:
+  # dart run flutter_native_splash:remove
+  # or if you place this not in pubspec.yaml and not in flutter_native_splash.yaml:
+  # dart run flutter_native_splash:remove -p ../your-filepath.yaml
+
+  # IMPORTANT NOTE: These parameter do not affect the configuration of Android 12 and later, which
+  # handle splash screens differently that prior versions of Android.  Android 12 and later must be
+  # configured specifically in the android_12 section below, at the very end.
+
+  #======================================================================
+  
+  # uncomment this if you want to disable this package for specific platform:
+  android: true
+  ios: true
+  web: false
+  
+  #======================================================================
+
+  #! FOR ALL PLATFORM, except Android 12+:
+
+  # general color for all platform (except android 12+):
+  # see there only 2 lines in all parameters that marked as [required], so others
+  # remain optional. NOTE that if you specify the [required] color, then you cant 
+  # use the [required] background_image in the next section. the reverse is true.
+  # select one, they cant work together.
+  image: assets/app/splash.png
+  image_dark: assets/app/splash.png
+  color: "#FFFFFF"
+  color_dark: "#FFFFFF"
+  # platform-specific color. will override general color if active:
+  # color_android: "#42a5f5"
+  # color_dark_android: "#042a49"
+  # color_ios: "#42a5f5"
+  # color_dark_ios: "#042a49"
+  # color_web: "#42a5f5"
+  # color_dark_web: "#042a49"
+  fullscreen: true
+  #========================================================================
+
+  # what we did above won't affect Android 12 and newer at all. they have different
+  # handling concept. visit https://developer.android.com/guide/topics/ui/splash-screen
+  
+  #! ANDROID 12+ configuration:
+  android_12:
+    # Same brand color regardless of OS dark/light mode: the system splash is chosen
+    # by the OS BEFORE Flutter runs, so it can't know the user's in-app theme choice.
+    # A neutral color here avoids a jarring light/dark flip when it differs from the
+    # app's saved theme.
+    color: "#FFFFFF"
+    color_dark: "#FFFFFF"
+
+    # center-logo
+    # If this parameter is not specified, the app's launcher icon will be used instead. 
+    # Please note that the splash screen will be clipped to a circle on the center of the screen. 
+    # with background: 960×960 px (fit within circle 640px in diameter)    
+    # without background: 1152×1152 px (fit within circle 768px in diameter)
+    # ensure that the most important design elements of your image are placed within a circular area 
+    image: assets/app/splash_android_12.png
+    image_dark: assets/app/splash_android_12.png
+
+    # center-logo background color
+    icon_background_color: "#FFFFFF"
+    icon_background_color_dark: "#FFFFFF"
+
+    # branding:
+    # The branding image dimensions must be 800x320 px.
+    #branding:      assets/dart.png      
+    #branding_dark: assets/dart_dark.png
