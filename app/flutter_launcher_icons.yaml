@@ -1,0 +1,24 @@
+# dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: "ic_launcher"
+  image_path_android: assets/app/app_icon_android.png
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: assets/app/app_icon_android_foreground.png
+  adaptive_icon_foreground_inset: 16
+  adaptive_icon_monochrome: assets/app/app_icon_android_monochrome.png
+  min_sdk_android: 21
+
+  ios: true
+  image_path_ios: assets/app/app_icon_ios.png
+  image_path_ios_dark_transparent: "assets/app/app_icon_android.png"
+  image_path_ios_tinted_grayscale: "assets/app/app_icon_android.png"
+  desaturate_tinted_to_grayscale_ios: true
+  remove_alpha_ios: true
+  background_color_ios: "#ffffff"
+
+  web:
+    generate: false
+  windows:
+    generate: false
+  macos:
+    generate: false
