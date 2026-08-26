@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Имя под иконкой в лаунчере и в системном списке приложений.
+         Должно совпадать с `appTitle` из app/lib/l10n/intl_*.arb: строка
+         settingsReminderPermissionDenied просит пользователя найти приложение
+         в системных настройках именно под этим именем. -->
+    <string name="app_name">Round Table</string>
+</resources>
