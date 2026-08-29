@@ -1,0 +1,229 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:roundtablezoo/core/constants/app_constants.dart';
+import 'package:roundtablezoo/domain/entities/character.dart';
+import 'package:roundtablezoo/domain/value_objects/character_voice.dart';
+import 'package:roundtablezoo/domain/value_objects/face_shape.dart';
+import 'package:roundtablezoo/gen/app_localizations.dart';
+import 'package:roundtablezoo/presentation/table/widgets/cat_face_painter.dart';
+import 'package:roundtablezoo/presentation/table/widgets/character_avatar.dart';
+import 'package:roundtablezoo/presentation/table/widgets/talk_pose.dart';
+import 'package:roundtablezoo/presentation/table/widgets/talk_pose_driver.dart';
+
+/// The shipped cat: an emoji *and* a drawn face, so the test also pins down
+/// which of the two wins.
+const _cat = Character(
+  id: 'cat',
+  emoji: '🐱',
+  face: FaceShape.cat,
+  name: 'Кот',
+  colorHex: 0xFF8A7CA8,
+  fallbackReply: 'Мр-р.',
+  maxReplyLength: 220,
+  voice: CharacterVoice.neutral,
+);
+
+Widget _avatar({
+  required CharacterVisualState state,
+  bool disableAnimations = false,
+  double intensity = 1,
+}) => MaterialApp(
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: MediaQuery(
+    data: MediaQueryData(disableAnimations: disableAnimations),
+    child: Scaffold(
+      body: CharacterAvatar(character: _cat, state: state, onTap: null, intensity: intensity),
+    ),
+  ),
+);
+
+/// Builds a bare driver and hands back the pose stream it publishes.
+Future<ValueListenable<TalkPose>> _pumpDriver(
+  WidgetTester tester, {
+  required CharacterVisualState state,
+  bool animate = true,
+  double intensity = 1,
+}) async {
+  late ValueListenable<TalkPose> poses;
+  await tester.pumpWidget(
+    TalkPoseDriver(
+      state: state,
+      intensity: intensity,
+      seed: 3,
+      animate: animate,
+      builder: (context, pose) {
+        poses = pose;
+        return const SizedBox(width: 72, height: 72);
+      },
+    ),
+  );
+  return poses;
+}
+
+/// Brings any running ticker to a stop. `flutter_test` fails a test that
+/// ends with a live `Ticker` ("was started and is still running"), so every
+/// test that sets a seat talking has to put it back down afterwards.
+Future<void> _settleDriver(WidgetTester tester) async {
+  await _pumpDriver(tester, state: CharacterVisualState.idle, animate: false);
+  await tester.pumpAndSettle();
+}
+
+Future<List<TalkPose>> _collect(
+  WidgetTester tester,
+  ValueListenable<TalkPose> poses,
+  int frames,
+) async {
+  final seen = <TalkPose>[];
+  for (var i = 0; i < frames; i++) {
+    await tester.pump(const Duration(milliseconds: 16));
+    seen.add(poses.value);
+  }
+  return seen;
+}
+
+void main() {
+  group('CharacterAvatar with a drawn face', () {
+    testWidgets('draws the cat instead of falling back to the emoji glyph', (tester) async {
+      await tester.pumpWidget(_avatar(state: CharacterVisualState.idle));
+
+      final painters = tester
+          .widgetList<CustomPaint>(
+            find.descendant(of: find.byType(CharacterAvatar), matching: find.byType(CustomPaint)),
+          )
+          .map((paint) => paint.painter);
+
+      expect(painters.whereType<CatFacePainter>(), isNotEmpty);
+      expect(find.text('🐱'), findsNothing);
+    });
+
+    testWidgets('is laid out at the avatar\'s full size, not collapsed to nothing', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_avatar(state: CharacterVisualState.idle));
+
+      final paint = tester
+          .widgetList<CustomPaint>(
+            find.descendant(of: find.byType(CharacterAvatar), matching: find.byType(CustomPaint)),
+          )
+          .firstWhere((widget) => widget.painter is CatFacePainter);
+
+      // Regression: a childless `CustomPaint` falls back to its `size`
+      // argument, and a non-positioned `Stack` child is laid out with
+      // *loose* constraints — so without an explicit size the cat ticked
+      // away happily at Size.zero and drew nothing on screen.
+      expect(paint.size, const Size.square(AppConstants.characterAvatarDp));
+      expect(
+        tester.getSize(find.byWidget(paint)),
+        const Size.square(AppConstants.characterAvatarDp),
+      );
+    });
+
+    testWidgets('is not clipped to a circle — the tail and paws reach past it', (tester) async {
+      await tester.pumpWidget(_avatar(state: CharacterVisualState.idle));
+
+      final paint = tester
+          .widgetList<CustomPaint>(
+            find.descendant(of: find.byType(CharacterAvatar), matching: find.byType(CustomPaint)),
+          )
+          .firstWhere((widget) => widget.painter is CatFacePainter);
+
+      expect(
+        find.ancestor(of: find.byWidget(paint), matching: find.byType(ClipOval)),
+        findsNothing,
+      );
+    });
+
+    testWidgets('"reduce motion" freezes the face rather than slowing it (FR-033a)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _avatar(state: CharacterVisualState.speaking, disableAnimations: true),
+      );
+
+      final driver = tester.widget<TalkPoseDriver>(find.byType(TalkPoseDriver));
+      expect(driver.animate, isFalse);
+    });
+
+    testWidgets('passes the reply\'s own intensity down as the amplitude', (tester) async {
+      await tester.pumpWidget(_avatar(state: CharacterVisualState.speaking, intensity: 0.4));
+
+      expect(tester.widget<TalkPoseDriver>(find.byType(TalkPoseDriver)).intensity, 0.4);
+
+      // A talking seat leaves a ticker running; settle it before the test
+      // ends.
+      await tester.pumpWidget(_avatar(state: CharacterVisualState.idle));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('the drawn glyph is not announced — the label stays name plus state', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(_avatar(state: CharacterVisualState.idle));
+
+      final semantics = tester.getSemantics(find.byType(CharacterAvatar));
+      expect(semantics.label, startsWith('Кот, '));
+      expect(semantics.label, isNot(contains('🐱')));
+
+      handle.dispose();
+    });
+  });
+
+  group('TalkPoseDriver', () {
+    testWidgets('a speaking seat keeps moving', (tester) async {
+      final poses = await _pumpDriver(tester, state: CharacterVisualState.speaking);
+      // Long enough to span several syllable slots: a couple of silent
+      // ones in a row is normal speech, not a frozen face.
+      final seen = await _collect(tester, poses, 40);
+      await _settleDriver(tester);
+
+      expect(seen.toSet().length, greaterThan(1));
+      expect(seen.any((pose) => pose.mouthOpen > 0), isTrue);
+    });
+
+    testWidgets('an idle seat schedules no frames at all', (tester) async {
+      final poses = await _pumpDriver(tester, state: CharacterVisualState.idle);
+
+      // Regression guard for the whole widget suite, not just this seat: a
+      // permanently ticking avatar makes `pumpAndSettle()` time out in
+      // every test that renders the table.
+      await tester.pumpAndSettle();
+      expect(poses.value, TalkPose.still);
+    });
+
+    testWidgets('with animations disabled it holds the still pose', (tester) async {
+      final poses = await _pumpDriver(
+        tester,
+        state: CharacterVisualState.speaking,
+        animate: false,
+      );
+
+      await tester.pumpAndSettle();
+      expect(poses.value, TalkPose.still);
+    });
+
+    testWidgets('starts moving when a seat begins to speak', (tester) async {
+      final poses = await _pumpDriver(tester, state: CharacterVisualState.idle);
+      await tester.pumpAndSettle();
+
+      await _pumpDriver(tester, state: CharacterVisualState.speaking);
+      final seen = await _collect(tester, poses, 12);
+      await _settleDriver(tester);
+
+      expect(seen.toSet().length, greaterThan(1));
+    });
+
+    testWidgets('the answered reaction runs once and then stops itself', (tester) async {
+      final poses = await _pumpDriver(tester, state: CharacterVisualState.answered);
+      final during = await _collect(tester, poses, 6);
+
+      expect(during.any((pose) => pose.scale > 1), isTrue);
+
+      // Settles on its own: no loop, no timer to cancel.
+      await tester.pumpAndSettle();
+      expect(poses.value, TalkPose.still);
+    });
+  });
+}

@@ -5,6 +5,7 @@ import 'package:roundtablezoo/core/errors/result.dart';
 import 'package:roundtablezoo/core/errors/safe_call_mixin.dart';
 import 'package:roundtablezoo/domain/entities/character.dart';
 import 'package:roundtablezoo/domain/value_objects/character_voice.dart';
+import 'package:roundtablezoo/domain/value_objects/face_shape.dart';
 
 /// Loads and caches `assets/characters/characters.json`
 /// (`specs/004-table-screen/contracts/character-config.md`). Parsed once per
@@ -88,6 +89,10 @@ class CharacterCatalog with SafeCallMixin {
         final String value when value.isNotEmpty => value,
         _ => null,
       },
+      // Unknown shape names degrade to the emoji avatar rather than
+      // failing the load: a config that names a face this build doesn't
+      // draw yet is a missing drawing, not a broken roster.
+      face: FaceShape.fromConfig(json['face']),
       colorHex: _parseColorHex(colorHex, id),
       fallbackReply: fallbackReply,
       maxReplyLength: maxReplyLength,

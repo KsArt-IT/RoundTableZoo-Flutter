@@ -87,32 +87,35 @@ void main() {
     await disposeTestAppRoot(tester);
   });
 
-  testWidgets('no voice for the language: sound toggle disabled with an explanation (008, FR-013)', (
-    tester,
-  ) async {
-    final widget = buildTestAppRoot();
-    when(
-      () => (getIt<SpeechSynthesizer>() as MockSpeechSynthesizer).isAvailableFor(any()),
-    ).thenAnswer((_) async => const Result.success(false));
+  testWidgets(
+    'no voice for the language: sound toggle disabled with an explanation (008, FR-013)',
+    (
+      tester,
+    ) async {
+      final widget = buildTestAppRoot();
+      when(
+        () => (getIt<SpeechSynthesizer>() as MockSpeechSynthesizer).isAvailableFor(any()),
+      ).thenAnswer((_) async => const Result.success(false));
 
-    await tester.pumpWidget(widget);
-    await tester.pumpAndSettle();
-    final l10n = await _renderedLocalizations(tester);
-    await tester.tap(find.widgetWithText(NavigationDestination, l10n.sectionSettings));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(widget);
+      await tester.pumpAndSettle();
+      final l10n = await _renderedLocalizations(tester);
+      await tester.tap(find.widgetWithText(NavigationDestination, l10n.sectionSettings));
+      await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(find.widgetWithText(SwitchListTile, l10n.settingsSound), 200);
-    final tile = tester.widget<SwitchListTile>(
-      find.widgetWithText(SwitchListTile, l10n.settingsSound),
-    );
-    expect(tile.onChanged, isNull);
-    expect(find.text(l10n.settingsSoundUnavailableHint), findsOneWidget);
+      await tester.scrollUntilVisible(find.widgetWithText(SwitchListTile, l10n.settingsSound), 200);
+      final tile = tester.widget<SwitchListTile>(
+        find.widgetWithText(SwitchListTile, l10n.settingsSound),
+      );
+      expect(tile.onChanged, isNull);
+      expect(find.text(l10n.settingsSoundUnavailableHint), findsOneWidget);
 
-    final settings = await getIt<SettingsRepository>().load();
-    expect(settings.valueOrNull!.soundEnabled, isTrue);
+      final settings = await getIt<SettingsRepository>().load();
+      expect(settings.valueOrNull!.soundEnabled, isTrue);
 
-    await disposeTestAppRoot(tester);
-  });
+      await disposeTestAppRoot(tester);
+    },
+  );
 
   testWidgets(
     'screen reader active: sound toggle disabled with an explanation (008, FR-013, FR-014)',

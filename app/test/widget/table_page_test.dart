@@ -418,7 +418,8 @@ void main() {
     // which stops the engine as part of `stopAll()`.
     await disposeTestAppRoot(tester);
 
-    verify(() => (getIt<SpeechSynthesizer>() as MockSpeechSynthesizer).stop()).called(greaterThan(0));
+    verify(() => (getIt<SpeechSynthesizer>() as MockSpeechSynthesizer).stop())
+        .called(greaterThan(0));
   });
 
   testWidgets(

@@ -182,35 +182,41 @@ void main() {
     await cubit.close();
   });
 
-  test('onScreenReaderChanged(active: true) stops and blocks further enqueue (#6, FR-014)', () async {
-    final cubit = build();
+  test(
+    'onScreenReaderChanged(active: true) stops and blocks further enqueue (#6, FR-014)',
+    () async {
+      final cubit = build();
 
-    cubit.onScreenReaderChanged(active: true);
-    await pumpEventQueue();
-    verify(() => synthesizer.stop()).called(1);
+      cubit.onScreenReaderChanged(active: true);
+      await pumpEventQueue();
+      verify(() => synthesizer.stop()).called(1);
 
-    enqueue(cubit, 'cat');
-    await pumpEventQueue();
-    expect(cubit.state.queueLength, 0);
-    verifyNever(() => synthesizer.speak(any()));
+      enqueue(cubit, 'cat');
+      await pumpEventQueue();
+      expect(cubit.state.queueLength, 0);
+      verifyNever(() => synthesizer.speak(any()));
 
-    await cubit.close();
-  });
+      await cubit.close();
+    },
+  );
 
-  test('onVoiceAvailabilityChanged(available: false) stops and blocks further enqueue (#7, FR-012)', () async {
-    final cubit = build();
+  test(
+    'onVoiceAvailabilityChanged(available: false) stops and blocks further enqueue (#7, FR-012)',
+    () async {
+      final cubit = build();
 
-    cubit.onVoiceAvailabilityChanged(available: false);
-    await pumpEventQueue();
-    verify(() => synthesizer.stop()).called(1);
+      cubit.onVoiceAvailabilityChanged(available: false);
+      await pumpEventQueue();
+      verify(() => synthesizer.stop()).called(1);
 
-    enqueue(cubit, 'cat');
-    await pumpEventQueue();
-    expect(cubit.state.queueLength, 0);
-    verifyNever(() => synthesizer.speak(any()));
+      enqueue(cubit, 'cat');
+      await pumpEventQueue();
+      expect(cubit.state.queueLength, 0);
+      verifyNever(() => synthesizer.speak(any()));
 
-    await cubit.close();
-  });
+      await cubit.close();
+    },
+  );
 
   test('a silent device skips speak() but keeps processing the queue (#8, V4)', () async {
     when(() => silentModeProbe.isSilent()).thenAnswer((_) async => true);

@@ -1,25 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:roundtablezoo/core/constants/app_constants.dart';
+import 'package:roundtablezoo/core/constants/app_dimens.dart';
 import 'package:roundtablezoo/domain/entities/character.dart';
+import 'package:roundtablezoo/domain/value_objects/face_shape.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
+import 'package:roundtablezoo/presentation/table/widgets/cat_face_painter.dart';
+import 'package:roundtablezoo/presentation/table/widgets/character_visual_state.dart';
+import 'package:roundtablezoo/presentation/table/widgets/talk_pose_driver.dart';
 
-/// The four states a seat at the table can be in (FR-011). Distinguished
-/// by more than the idle/talk animation swap alone — `CharacterAvatar`
-/// also changes the semantics label and, for `answered`, adds a badge
-/// (FR-012: not color alone).
-enum CharacterVisualState { idle, waiting, speaking, answered }
+export 'package:roundtablezoo/presentation/table/widgets/character_visual_state.dart';
 
-/// One character's seat. Renders its Lottie animation when the asset
-/// exists, otherwise a static colored circle showing the character's
-/// `emoji` — or, failing that, the first letter of its name. Both static
-/// forms are standing branches, not placeholders for missing test fixtures
+/// One character's seat. Three renderers, in order: the character's Lottie
+/// animation when the asset exists; the vector face drawn by
+/// `CatFacePainter` when the character declares a [FaceShape]; otherwise a
+/// static colored circle showing the character's `emoji` — or, failing
+/// that, the first letter of its name. The static forms are standing
+/// branches, not placeholders for missing test fixtures
 /// (`contracts/character-config.md` §5).
+///
+/// The seat is also where `CharacterVisualState` stops being a state and
+/// becomes movement: nothing above this widget knows how a character is
+/// drawn, which is what keeps swapping the animation technique a
+/// one-widget change (`project/architecture/character-animation.md`).
 class CharacterAvatar extends StatelessWidget {
   const CharacterAvatar({
     required this.character,
     required this.state,
     required this.onTap,
+    this.intensity = 1.0,
     super.key,
   });
 
@@ -33,6 +42,11 @@ class CharacterAvatar extends StatelessWidget {
 
   final Character character;
   final CharacterVisualState state;
+
+  /// Amplitude of the speaking animation — `CharacterReaction.intensity`,
+  /// 0..1, straight from the reply this seat is voicing. Ignored by the
+  /// states that aren't speaking, and by seats without a drawn face.
+  final double intensity;
 
   /// `null` disables the tap — FR-014's precondition, decided by the
   /// caller (`TablePage`), not this widget.
@@ -84,23 +98,30 @@ class CharacterAvatar extends StatelessWidget {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    ClipOval(child: _visual(context, AppConstants.characterAvatarDp)),
+                    _visual(context, AppConstants.characterAvatarDp),
                     if (state == CharacterVisualState.waiting)
                       const Positioned(
                         bottom: 4,
                         child: SizedBox(
-                          width: 16,
-                          height: 16,
+                          width: AppDimens.iconSizeSmall,
+                          height: AppDimens.iconSizeSmall,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       ),
                     if (state == CharacterVisualState.answered)
+                      // Top corner, not bottom: the drawn animal is wider
+                      // than tall and sits centered, so the box's spare
+                      // room is the strip above and below it. Anchored at
+                      // the bottom the badge floated under the cat's paws
+                      // with nothing to belong to — up here it reads as a
+                      // marker over the character, the way a speech mark
+                      // should.
                       Positioned(
                         right: 0,
-                        bottom: 0,
+                        top: 4,
                         child: Icon(
                           Icons.chat_bubble_rounded,
-                          size: 16,
+                          size: AppDimens.iconSizeSmall,
                           color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
@@ -118,15 +139,55 @@ class CharacterAvatar extends StatelessWidget {
     final asset = state == CharacterVisualState.speaking
         ? character.talkAnimation
         : character.idleAnimation;
-    if (asset == null) return _staticAvatar(context, size);
+    if (asset == null) {
+      final face = character.face;
+      // The drawn cat lies on its side: its tail and forepaws reach past
+      // the disc the emoji avatar lives in, so it is the one branch that
+      // is *not* clipped to a circle.
+      return face == null
+          ? ClipOval(child: _staticAvatar(context, size))
+          : _drawnFace(context, size, face);
+    }
 
     // FR-033a: "reduce motion" freezes idle/talk animations too, not just
     // `SpeakingBubble`'s reveal effect — a still frame, not a moving loop.
-    return Lottie.asset(
-      asset,
-      fit: BoxFit.cover,
+    return ClipOval(
+      child: Lottie.asset(
+        asset,
+        fit: BoxFit.cover,
+        animate: !MediaQuery.disableAnimationsOf(context),
+        errorBuilder: (context, error, stackTrace) => _staticAvatar(context, size),
+      ),
+    );
+  }
+
+  Widget _drawnFace(BuildContext context, double size, FaceShape face) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return TalkPoseDriver(
+      state: state,
+      intensity: intensity,
+      // Per character, so two animals speaking at once don't share a
+      // syllable beat — `hashCode` of a `String` is stable within a run,
+      // which is all a decorrelation seed needs.
+      seed: character.id.hashCode,
+      // FR-033a: "reduce motion" is a still frame, not a slower loop.
       animate: !MediaQuery.disableAnimationsOf(context),
-      errorBuilder: (context, error, stackTrace) => _staticAvatar(context, size),
+      builder: (context, pose) => CustomPaint(
+        // A childless `CustomPaint` takes its size from this argument and
+        // otherwise collapses to `Size.zero`, because a non-positioned
+        // `Stack` child is laid out with *loose* constraints. Without it
+        // the cat is built, ticks, and paints nothing at all.
+        size: Size.square(size),
+        painter: switch (face) {
+          FaceShape.cat => CatFacePainter(
+            pose: pose,
+            color: Color(character.colorHex),
+            surface: scheme.surface,
+            ink: scheme.onSurface,
+          ),
+        },
+      ),
     );
   }
 

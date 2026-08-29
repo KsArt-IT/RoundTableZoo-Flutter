@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:roundtablezoo/core/errors/app_failure.dart';
 import 'package:roundtablezoo/data/datasources/character_catalog.dart';
+import 'package:roundtablezoo/domain/value_objects/face_shape.dart';
 
 const _validJson = '''
 [
@@ -200,4 +201,31 @@ void main() {
       expect(byId['crocodile']!.voice.rate, greaterThan(byId['hippo']!.voice.rate));
     },
   );
+
+  test('load() parses "face", and an unknown shape falls back to no drawn face', () async {
+    const json = """
+[
+  {
+    "id": "cat", "face": "cat", "name": "Кот", "colorHex": "#8A7CA8",
+    "fallbackReply": "Мр-р.", "maxReplyLength": 220
+  },
+  {
+    "id": "dog", "face": "corgi", "name": "Пёс", "colorHex": "#D98C4A",
+    "fallbackReply": "Гав!", "maxReplyLength": 220
+  },
+  {
+    "id": "hippo", "name": "Бегемот", "colorHex": "#6E8FAE",
+    "fallbackReply": "Хм.", "maxReplyLength": 220
+  }
+]
+""";
+
+    final characters = (await _catalogWith(json).load()).valueOrNull!;
+
+    expect(characters[0].face, FaceShape.cat);
+    // A shape this build cannot draw yet is a missing drawing, not a broken
+    // roster: that seat keeps the emoji avatar instead of failing the load.
+    expect(characters[1].face, isNull);
+    expect(characters[2].face, isNull);
+  });
 }

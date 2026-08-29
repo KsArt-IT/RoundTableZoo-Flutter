@@ -18,7 +18,6 @@ import 'package:roundtablezoo/presentation/app_settings/cubit/current_day_state.
 import 'package:roundtablezoo/presentation/table/cubit/table_cubit.dart';
 import 'package:roundtablezoo/presentation/table/cubit/table_state.dart';
 import 'package:roundtablezoo/presentation/table/cubit/table_voice_cubit.dart';
-import 'package:roundtablezoo/presentation/table/cubit/table_voice_state.dart';
 import 'package:roundtablezoo/presentation/table/widgets/character_avatar.dart';
 import 'package:roundtablezoo/presentation/table/widgets/day_text_field.dart';
 import 'package:roundtablezoo/presentation/table/widgets/mood_scale_row.dart';
@@ -390,6 +389,12 @@ class _RoundTableState extends State<_RoundTable> {
             key: ValueKey('avatar-${character.id}'),
             character: character,
             state: visualState,
+            // The amplitude the model chose for this very reply — the
+            // avatar shouldn't have to reach into `CharacterSlot` for it.
+            intensity: switch (slot) {
+              CharacterSlotSpoken(:final reaction) => reaction.intensity,
+              CharacterSlotIdle() || CharacterSlotLoading() => 1.0,
+            },
             onTap: widget.canTap
                 ? () {
                     setState(() => _activeCharacterId = character.id);

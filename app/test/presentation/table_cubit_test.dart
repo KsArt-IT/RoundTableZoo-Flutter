@@ -619,7 +619,8 @@ void main() {
           attempt: any(named: 'attempt'),
         ),
       ).thenAnswer(
-        (_) async => const Result.failure(AiProxyFailure(null, code: AiProxyFailure.rateLimitedDevice)),
+        (_) async =>
+            const Result.failure(AiProxyFailure(null, code: AiProxyFailure.rateLimitedDevice)),
       );
 
       final cubit = build();

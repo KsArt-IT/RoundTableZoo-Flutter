@@ -3,7 +3,7 @@
   "lang": "English",
   "appTitle": "Round Table",
   "@appTitle": {
-    "description": "Round Table ZOO"
+    "description": "App name. Must match app_name in android/app/src/main/res/values*/strings.xml and CFBundleDisplayName in ios/Runner/InfoPlist.xcstrings"
   },
   "copyright": "StudyWay.life",
   "@copyright": {

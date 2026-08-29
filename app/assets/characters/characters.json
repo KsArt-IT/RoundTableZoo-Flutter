@@ -2,6 +2,7 @@
   {
     "id": "cat",
     "emoji": "🐱",
+    "face": "cat",
     "name": "Кот",
     "colorHex": "#8A7CA8",
     "fallbackReply": "Мр-р. Слов нет — но я тебя услышал.",

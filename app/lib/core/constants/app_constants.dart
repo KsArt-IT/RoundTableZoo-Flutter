@@ -23,7 +23,7 @@ abstract final class AppConstants {
   static const Duration reminderDeliveryTolerance = Duration(minutes: 60);
 
   /// Client-side timeout for an ai-proxy reaction request (FR-027a).
-  static const Duration aiRequestTimeout = Duration(seconds: 15);
+  static const Duration aiRequestTimeout = Duration(seconds: 30);
 
   /// Debounce before autosaving the day text draft (FR-008a).
   static const Duration dayTextAutosaveDebounce = Duration(seconds: 1);
@@ -34,8 +34,19 @@ abstract final class AppConstants {
   /// Maximum number of characters seated at the table at once (FR-010a).
   static const int maxCharactersAtTable = 6;
 
-  /// Diameter of a character's drawn disc at the table.
-  static const double characterAvatarDp = minTapTargetDp * 1.5;
+  /// Diameter of a character's drawn figure at the table.
+  ///
+  /// Doubled from `minTapTargetDp * 1.5` once characters stopped being a
+  /// glyph on a disc and became a drawn animal: a cat lying on its side is
+  /// wider than tall, so it only fills about 70% of the box's height, and
+  /// at 72 dp the face was smaller than the emoji it replaced.
+  ///
+  /// This is the one number that decides how crowded the table is:
+  /// `RoundTableLayout` seats everyone on a circle of
+  /// `min(width, height) / 2 - characterSeatDp / 2 - 8`, so raising it both
+  /// grows each seat *and* shrinks the ring they stand on. Six characters
+  /// (`maxCharactersAtTable`) on a narrow phone is where it breaks first.
+  static const double characterAvatarDp = minTapTargetDp * 2.5;
 
   /// Clear ring left around that disc inside the seat. The tap ripple is
   /// painted *under* the avatar, so without this margin it would be the

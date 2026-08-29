@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:roundtablezoo/domain/value_objects/character_voice.dart';
+import 'package:roundtablezoo/domain/value_objects/face_shape.dart';
 
 part 'character.freezed.dart';
 
@@ -17,6 +18,11 @@ abstract class Character with _$Character {
     /// exists (`contracts/character-config.md` §5). Optional: absent falls
     /// back to the letter, so an incomplete roster still renders.
     String? emoji,
+
+    /// Which vector face this character is drawn with. `null` — the
+    /// character has no drawn face yet and keeps the [emoji] avatar
+    /// (`contracts/character-config.md` §5).
+    FaceShape? face,
 
     /// ARGB, parsed from the asset's `#RRGGBB` string.
     required int colorHex,
