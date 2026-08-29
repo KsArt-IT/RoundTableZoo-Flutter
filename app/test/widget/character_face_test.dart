@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -49,10 +52,23 @@ const _crocodile = Character(
   voice: CharacterVoice.neutral,
 );
 
+/// The hippo: standing, so its far legs are painted under the body.
+const _hippo = Character(
+  id: 'hippo',
+  emoji: '🦛',
+  face: FaceShape.hippo,
+  name: 'Бегемот',
+  colorHex: 0xFF6E8FAE,
+  fallbackReply: 'Дай подумать...',
+  maxReplyLength: 220,
+  voice: CharacterVoice.neutral,
+);
+
 Widget _avatar({
   required CharacterVisualState state,
   bool disableAnimations = false,
   double intensity = 1,
+  bool mirrored = false,
   Character character = _cat,
 }) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -60,7 +76,13 @@ Widget _avatar({
   home: MediaQuery(
     data: MediaQueryData(disableAnimations: disableAnimations),
     child: Scaffold(
-      body: CharacterAvatar(character: character, state: state, onTap: null, intensity: intensity),
+      body: CharacterAvatar(
+        character: character,
+        state: state,
+        onTap: null,
+        intensity: intensity,
+        mirrored: mirrored,
+      ),
     ),
   ),
 );
@@ -179,6 +201,7 @@ void main() {
       expect(await shapeOf(_cat), AnimalShape.cat);
       expect(await shapeOf(_dog), AnimalShape.dog);
       expect(await shapeOf(_crocodile), AnimalShape.crocodile);
+      expect(await shapeOf(_hippo), AnimalShape.hippo);
       // Species is geometry, not behaviour: all three differ in shape alone.
       expect(AnimalShape.cat.ears, EarStyle.pointed);
       expect(AnimalShape.dog.ears, EarStyle.floppy);
@@ -186,6 +209,11 @@ void main() {
       expect(AnimalShape.cat.whiskers, isTrue);
       expect(AnimalShape.crocodile.mouth, isNull);
       expect(AnimalShape.crocodile.jaw, isNotNull);
+      // The hippo is the only one standing, and the only one whose far legs
+      // are painted under the body rather than over it.
+      expect(AnimalShape.hippo.haunch, isNull);
+      expect(AnimalShape.hippo.legs.where((leg) => leg.behind).length, 2);
+      expect(AnimalShape.cat.legs.every((leg) => !leg.behind), isTrue);
     });
 
     testWidgets('the crocodile\'s jaw opens downward, not into its own skull', (tester) async {
@@ -201,6 +229,58 @@ void main() {
       // And the hinge is the corner where the jaws meet, not a point inside
       // the lower slab — otherwise its own back edge swings up into the skull.
       expect(jaw.hinge.dy, 63);
+    });
+
+    testWidgets('faces the way the seat asks it to', (tester) async {
+      Future<bool> mirroredOf({required bool mirrored}) async {
+        await tester.pumpWidget(
+          _avatar(state: CharacterVisualState.idle, mirrored: mirrored, character: _hippo),
+        );
+        return tester
+            .widgetList<CustomPaint>(
+              find.descendant(of: find.byType(CharacterAvatar), matching: find.byType(CustomPaint)),
+            )
+            .map((widget) => widget.painter)
+            .whereType<AnimalFacePainter>()
+            .single
+            .mirrored;
+      }
+
+      // Every shape is authored facing left; a seat on the table's left
+      // half flips it so the character doesn't turn its back on the table.
+      expect(await mirroredOf(mirrored: false), isFalse);
+      expect(await mirroredOf(mirrored: true), isTrue);
+    });
+
+    testWidgets('a mirrored seat is actually drawn flipped, not merely flagged', (tester) async {
+      // The flag reached the painter and was then ignored inside `paint()`
+      // — the character kept facing away from the table and no test noticed,
+      // because every assertion stopped at the parameter. This one paints.
+      Future<Uint8List> render({required bool mirrored}) async {
+        final pose = ValueNotifier<TalkPose>(TalkPose.still);
+        final recorder = ui.PictureRecorder();
+        AnimalFacePainter(
+          pose: pose,
+          shape: AnimalShape.hippo,
+          mirrored: mirrored,
+          color: const Color(0xFF6E8FAE),
+          surface: const Color(0xFFFFFFFF),
+          ink: const Color(0xFF000000),
+        ).paint(Canvas(recorder), const Size(158, 112));
+        final image = await recorder.endRecording().toImage(158, 112);
+        final data = await image.toByteData(format: ui.ImageByteFormat.png);
+        pose.dispose();
+        return data!.buffer.asUint8List();
+      }
+
+      late Uint8List facingLeft;
+      late Uint8List facingRight;
+      await tester.runAsync(() async {
+        facingLeft = await render(mirrored: false);
+        facingRight = await render(mirrored: true);
+      });
+
+      expect(facingRight, isNot(equals(facingLeft)));
     });
 
     testWidgets('"reduce motion" freezes the face rather than slowing it (FR-033a)', (

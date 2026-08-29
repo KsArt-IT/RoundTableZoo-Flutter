@@ -6,7 +6,8 @@
 enum FaceShape {
   cat,
   dog,
-  crocodile;
+  crocodile,
+  hippo;
 
   /// Unknown or absent values degrade to `null` (the emoji avatar) instead
   /// of failing the catalog load — same leniency as `emoji` and `voice`.

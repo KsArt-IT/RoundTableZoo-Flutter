@@ -49,6 +49,21 @@ class RoundTableLayout extends StatelessWidget {
   /// spaced and bubbles anchored by this larger box.
   static const _seatSize = AppConstants.characterSeatDp;
 
+  /// Where seat [index] of [count] sits on the circle: the first seat is at
+  /// the top and they run clockwise from there.
+  ///
+  /// Public because the seat's *contents* need it too — a drawn animal has
+  /// a facing, and which way it should look depends on where it sits.
+  static double seatAngle(int index, int count) => -math.pi / 2 + 2 * math.pi * index / count;
+
+  /// `true` when the seat sits on the left half of the table.
+  ///
+  /// The animals are all drawn facing left, which is toward the middle only
+  /// for a seat on the right-hand side. A seat on the left has to be
+  /// mirrored, or its character turns its back on the table — most glaring
+  /// when a single character is left enabled and faces off-screen.
+  static bool seatFacesRight(int index, int count) => math.cos(seatAngle(index, count)) < -0.001;
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -59,7 +74,7 @@ class RoundTableLayout extends StatelessWidget {
         final count = seats.length;
 
         final angles = <double>[
-          for (var i = 0; i < count; i++) -math.pi / 2 + 2 * math.pi * i / count,
+          for (var i = 0; i < count; i++) seatAngle(i, count),
         ];
         final tops = <double>[
           for (final angle in angles) center.dy + radius * math.sin(angle) - _seatSize / 2,

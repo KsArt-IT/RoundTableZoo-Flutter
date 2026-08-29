@@ -30,6 +30,7 @@ class CharacterAvatar extends StatelessWidget {
     required this.state,
     required this.onTap,
     this.intensity = 1.0,
+    this.mirrored = false,
     super.key,
   });
 
@@ -43,6 +44,12 @@ class CharacterAvatar extends StatelessWidget {
 
   final Character character;
   final CharacterVisualState state;
+
+  /// Flips the drawn animal horizontally, so a seat on the left half of
+  /// the table faces the middle instead of turning its back on it. Only the
+  /// drawn branch can honor this — an emoji glyph faces whichever way its
+  /// font draws it.
+  final bool mirrored;
 
   /// Amplitude of the speaking animation — `CharacterReaction.intensity`,
   /// 0..1, straight from the reply this seat is voicing. Ignored by the
@@ -185,6 +192,7 @@ class CharacterAvatar extends StatelessWidget {
         painter: AnimalFacePainter(
           pose: pose,
           shape: AnimalShape.of(face),
+          mirrored: mirrored,
           color: Color(character.colorHex),
           surface: scheme.surface,
           ink: scheme.onSurface,

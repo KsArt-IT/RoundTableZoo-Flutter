@@ -4,7 +4,7 @@ import 'package:roundtablezoo/domain/value_objects/face_shape.dart';
 /// How one animal's ears are built. Not a cosmetic flag: pointed ears are
 /// painted *behind* the head, floppy ones hang over its sides and so are
 /// painted in front of it — and a crocodile has none at all.
-enum EarStyle { pointed, floppy, none }
+enum EarStyle { pointed, floppy, round, none }
 
 /// A tail that curls upward (a cat's, at rest on its side), one that lies
 /// on the ground and sweeps (a sitting dog's), or one drawn as a filled
@@ -22,6 +22,7 @@ class AnimalPart {
     required this.tone,
     this.rotationDegrees = 0,
     this.strokeWidth = 2.4,
+    this.behind = false,
   });
 
   final Offset center;
@@ -36,6 +37,11 @@ class AnimalPart {
   final double rotationDegrees;
   final double strokeWidth;
 
+  /// Painted *under* the trunk instead of over it. On a standing animal
+  /// that is what turns the far pair of legs into the far side, rather than
+  /// two more legs standing beside the near ones.
+  final bool behind;
+
   Rect get rect => Rect.fromCenter(center: center, width: size.width, height: size.height);
 }
 
@@ -47,6 +53,7 @@ class TailShape {
     required this.width,
     this.gain = 1,
     this.length = 0,
+    this.rise = -4,
   });
 
   final TailStyle style;
@@ -59,8 +66,14 @@ class TailShape {
   /// works harder than a cat's.
   final double gain;
 
-  /// [TailStyle.taper] only: how far the wedge reaches from [from].
+  /// How far the tail reaches from [from]. [TailStyle.flat] falls back to
+  /// 32 when this is 0.
   final double length;
+
+  /// [TailStyle.flat] only: where the tip sits relative to the base.
+  /// Negative curls the tail up (a dog's), positive lets it hang down (a
+  /// hippo's stub).
+  final double rise;
 }
 
 @immutable
@@ -114,7 +127,6 @@ class AnimalShape {
     required this.headAnchor,
     required this.headScale,
     required this.torso,
-    required this.haunch,
     required this.legs,
     required this.tail,
     required this.breathAnchorY,
@@ -124,6 +136,8 @@ class AnimalShape {
     this.mouth,
     this.jaw,
     this.snout,
+    this.haunch,
+    this.nostrils = const [],
     this.skullRadius = 30,
     this.eyesY = 49,
     this.eyeBumps = false,
@@ -146,7 +160,10 @@ class AnimalShape {
   final double skullRadius;
 
   final AnimalPart torso;
-  final AnimalPart haunch;
+
+  /// A separate hip mass. `null` for an animal that is one barrel — drawing
+  /// a circle back there only broke the silhouette.
+  final AnimalPart? haunch;
 
   /// Painted back to front, over the torso: the nearest limb comes last.
   final List<AnimalPart> legs;
@@ -186,10 +203,14 @@ class AnimalShape {
   /// A drawn-out muzzle, for animals whose face isn't flat.
   final AnimalPart? snout;
 
+  /// Nostrils in head coordinates, painted over the muzzle.
+  final List<Offset> nostrils;
+
   static AnimalShape of(FaceShape face) => switch (face) {
     FaceShape.cat => cat,
     FaceShape.dog => dog,
     FaceShape.crocodile => crocodile,
+    FaceShape.hippo => hippo,
   };
 
   /// Lying on its side, tail curling up behind it.
@@ -290,6 +311,53 @@ class AnimalShape {
     eyesY: 38,
     eyeBumps: true,
     jaw: JawShape(hinge: Offset(43, 63), restDegrees: -5, swingDegrees: -28),
+    whiskers: false,
+  );
+
+  /// Standing on four legs: one barrel of a body, a muzzle that takes up
+  /// half the head, tiny round ears and a stub of a tail.
+  static const AnimalShape hippo = AnimalShape(
+    headAnchor: Offset(44, 56),
+    headScale: 0.72,
+    // One big barrel and nothing else — no haunch.
+    torso: AnimalPart(center: Offset(88, 62), size: Size(88, 58), tone: 0.62),
+    // The far pair goes under the body, so only the feet show; the hind
+    // legs stand almost at the barrel's back edge, or the belly sags
+    // between them.
+    legs: [
+      AnimalPart(
+        center: Offset(64, 86),
+        size: Size(16, 28),
+        tone: 0.46,
+        strokeWidth: 1.8,
+        behind: true,
+      ),
+      AnimalPart(
+        center: Offset(118, 86),
+        size: Size(16, 28),
+        tone: 0.46,
+        strokeWidth: 1.8,
+        behind: true,
+      ),
+      AnimalPart(center: Offset(58, 90), size: Size(19, 30), tone: 0.30, strokeWidth: 2),
+      AnimalPart(center: Offset(114, 90), size: Size(19, 30), tone: 0.30, strokeWidth: 2),
+    ],
+    tail: TailShape(
+      style: TailStyle.flat,
+      from: Offset(130, 58),
+      width: 4,
+      gain: 1.2,
+      length: 16,
+      rise: 8,
+    ),
+    breathAnchorY: 100,
+    ears: EarStyle.round,
+    nose: NoseStyle.none,
+    eyesY: 44,
+    eyeBumps: true,
+    snout: AnimalPart(center: Offset(50, 74), size: Size(48, 28), tone: 0.28, strokeWidth: 2),
+    nostrils: [Offset(42, 64), Offset(58, 64)],
+    mouth: MouthShape(y: 78, width: 11, openHeight: 7),
     whiskers: false,
   );
 }

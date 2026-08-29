@@ -22,6 +22,7 @@ class AnimalFacePainter extends CustomPainter {
   AnimalFacePainter({
     required ValueListenable<TalkPose> pose,
     required this.shape,
+    required this.mirrored,
     required this.color,
     required this.surface,
     required this.ink,
@@ -29,6 +30,11 @@ class AnimalFacePainter extends CustomPainter {
        super(repaint: pose);
 
   final AnimalShape shape;
+
+  /// Draw the animal facing right instead of left. Applied to the whole
+  /// figure, after the fit — every shape in [AnimalShape] is authored
+  /// facing left and mirrored here rather than duplicated.
+  final bool mirrored;
 
   /// The character's own color (`characters.json` → `colorHex`). Outlines
   /// use it at full strength; fills are it faded toward [surface].
@@ -66,9 +72,21 @@ class AnimalFacePainter extends CustomPainter {
       )
       ..scale(k);
 
+    if (mirrored) {
+      // Flip about the design space's own middle, after the fit: every
+      // shape is authored facing left, and a seat on the table's left half
+      // has to face the other way.
+      canvas
+        ..translate(design.width, 0)
+        ..scale(-1, 1);
+    }
+
     _paintTail(canvas, pose);
+    for (final leg in shape.legs.where((leg) => leg.behind)) {
+      _paintPart(canvas, leg);
+    }
     _paintTrunk(canvas, pose);
-    for (final leg in shape.legs) {
+    for (final leg in shape.legs.where((leg) => !leg.behind)) {
       _paintPart(canvas, leg);
     }
     _paintHead(canvas, pose);
@@ -108,8 +126,17 @@ class AnimalFacePainter extends CustomPainter {
           ..drawPath(path, _outline());
         return;
       case TailStyle.flat:
-        // Lying on the ground: it sweeps sideways, not upward.
-        path.cubicTo(x + 12, y + 3 + k * 0.3, x + 24, y + 2 + k * 0.7, x + 32, y - 4 + k * 1.1);
+        // Sweeps sideways rather than upward; `rise` decides whether the
+        // tip lifts (a dog's) or hangs (a hippo's stub).
+        final l = tail.length == 0 ? 32.0 : tail.length;
+        path.cubicTo(
+          x + l * 0.37,
+          y + 3 + k * 0.3,
+          x + l * 0.75,
+          y + 2 + k * 0.7,
+          x + l,
+          y + tail.rise + k * 1.1,
+        );
       case TailStyle.curl:
         path
           ..cubicTo(x + 18, y + 2 + k * 0.3, x + 25, y - 12 + k, x + 15, y - 22 + k * 1.3)
@@ -137,7 +164,8 @@ class AnimalFacePainter extends CustomPainter {
       ..translate(0, -shape.breathAnchorY);
 
     _paintPart(canvas, shape.torso);
-    _paintPart(canvas, shape.haunch);
+    final haunch = shape.haunch;
+    if (haunch != null) _paintPart(canvas, haunch);
     for (final spike in shape.ridge) {
       final path = _polygon([
         Offset(spike.dx - 5, spike.dy + 5),
@@ -176,9 +204,11 @@ class AnimalFacePainter extends CustomPainter {
       // The face below is written around the head's own center, (50, 54).
       ..translate(-50, -54);
 
-    // Pointed ears belong behind the skull; floppy ones hang over its sides
-    // and have to be painted after it. A crocodile has neither.
-    if (shape.ears == EarStyle.pointed) _paintEars(canvas, pose);
+    // Pointed and round ears belong behind the skull; floppy ones hang over
+    // its sides and have to be painted after it. A crocodile has neither.
+    if (shape.ears == EarStyle.pointed || shape.ears == EarStyle.round) {
+      _paintEars(canvas, pose);
+    }
     canvas
       ..drawCircle(const Offset(50, 54), shape.skullRadius, Paint()..color = _fill(0.45))
       ..drawCircle(const Offset(50, 54), shape.skullRadius, _outline(3));
@@ -186,6 +216,12 @@ class AnimalFacePainter extends CustomPainter {
 
     final snout = shape.snout;
     if (snout != null) _paintPart(canvas, snout);
+    for (final nostril in shape.nostrils) {
+      canvas.drawOval(
+        Rect.fromCenter(center: nostril, width: 6.8, height: 5.2),
+        Paint()..color = Color.lerp(color, ink, 0.35) ?? color,
+      );
+    }
 
     final jaw = shape.jaw;
     if (jaw != null) _paintJaw(canvas, pose, jaw);
@@ -247,11 +283,18 @@ class AnimalFacePainter extends CustomPainter {
   }
 
   void _paintEars(Canvas canvas, TalkPose pose) {
-    final pointed = shape.ears == EarStyle.pointed;
-    final pivotY = pointed ? 34.0 : 27.0;
+    // Each ear style swings about a different point: a pointed ear at its
+    // base, a floppy one where it hangs from, and a round one about the
+    // skull — rotating a circle about its own center shows nothing.
+    final (left, right, pivotY) = switch (shape.ears) {
+      EarStyle.pointed => (35.0, 65.0, 34.0),
+      EarStyle.floppy => (30.0, 70.0, 27.0),
+      EarStyle.round => (34.0, 66.0, 40.0),
+      EarStyle.none => (0.0, 0.0, 0.0),
+    };
 
-    _paintEar(canvas, pose, pivot: Offset(pointed ? 35 : 30, pivotY), sign: -1);
-    _paintEar(canvas, pose, pivot: Offset(pointed ? 65 : 70, pivotY), sign: 1);
+    _paintEar(canvas, pose, pivot: Offset(left, pivotY), sign: -1);
+    _paintEar(canvas, pose, pivot: Offset(right, pivotY), sign: 1);
   }
 
   void _paintEar(Canvas canvas, TalkPose pose, {required Offset pivot, required double sign}) {
@@ -273,6 +316,14 @@ class AnimalFacePainter extends CustomPainter {
         canvas
           ..drawPath(_polygon(outer), Paint()..color = color)
           ..drawPath(_polygon(inner), Paint()..color = _fill(0.18));
+      case EarStyle.round:
+        // Tiny ears peeking over the skull.
+        final center = Offset(left ? 34 : 66, 26);
+        canvas
+          ..drawCircle(center, 8, Paint()..color = _fill(0.85))
+          ..drawCircle(center, 8, _outline(2));
+      case EarStyle.none:
+        break;
       case EarStyle.floppy:
         final path = Path();
         if (left) {
@@ -402,6 +453,7 @@ class AnimalFacePainter extends CustomPainter {
   @override
   bool shouldRepaint(AnimalFacePainter oldDelegate) =>
       oldDelegate.shape != shape ||
+      oldDelegate.mirrored != mirrored ||
       oldDelegate.color != color ||
       oldDelegate.surface != surface ||
       oldDelegate.ink != ink ||

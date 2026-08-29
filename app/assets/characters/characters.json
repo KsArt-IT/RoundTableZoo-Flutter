@@ -32,6 +32,7 @@
   {
     "id": "hippo",
     "emoji": "🦛",
+    "face": "hippo",
     "name": "Бегемот",
     "colorHex": "#6E8FAE",
     "fallbackReply": "Дай мне минутку подумать... но я рядом.",

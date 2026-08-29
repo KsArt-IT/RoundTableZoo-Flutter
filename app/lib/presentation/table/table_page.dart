@@ -391,6 +391,9 @@ class _RoundTableState extends State<_RoundTable> {
             state: visualState,
             // The amplitude the model chose for this very reply — the
             // avatar shouldn't have to reach into `CharacterSlot` for it.
+            // Seats on the left half face the middle; the drawing itself
+            // is authored facing left (FR-011, `RoundTableLayout`).
+            mirrored: RoundTableLayout.seatFacesRight(index, widget.characters.length),
             intensity: switch (slot) {
               CharacterSlotSpoken(:final reaction) => reaction.intensity,
               CharacterSlotIdle() || CharacterSlotLoading() => 1.0,
