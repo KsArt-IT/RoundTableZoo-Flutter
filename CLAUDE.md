@@ -14,6 +14,7 @@ Flutter, Android + iOS в коде, **публикуется пока тольк
 | `project/` | Продуктовая и архитектурная документация (`prd/`, `architecture/`, `process/`). **В git не хранится** (`.gitignore`), живёт только локально. |
 | `specs/` | Спеки по фичам в формате spec-kit: `spec.md` → `plan.md` → `tasks.md` + `contracts/`. Нумерация = порядок реализации. |
 | `.specify/`, `.claude/skills/speckit-*` | Инструментарий spec-kit (шаблоны, скрипты, скиллы `/speckit-*`). |
+| `tools/` | Служебные скрипты. `kanban.py` собирает доску прогресса из чекбоксов `specs/*/tasks.md` в `project/kanban.html` (`python3 tools/kanban.py --open`). |
 
 `project/` и `specs/` не дублируют друг друга: `project/` отвечает на «почему так решено» и
 «как устроено приложение в целом», `specs/` — на «что именно делаем в этой фиче и какими шагами».
@@ -45,9 +46,13 @@ Flutter, Android + iOS в коде, **публикуется пока тольк
   связный домен), `presentation/` делится по экрану (`table`/`diary`/`settings`/`onboarding`).
   Обоснование — `project/architecture/architecture-brief.md`.
 - БД — Drift (локально). Миграции между версиями схемы **не нужны до первого релиза** в Store.
-- AI — Gemini API **только через backend-прокси** (Cloud Functions + Firestore + Play Integrity),
-  ключ никогда не в клиенте.
+- AI — Gemini API **только через backend-прокси** `proxy/` на **Cloudflare Workers**
+  (D1 — счётчики лимитов, KV — конфиг/kill switch и кэш OAuth-токена, Play Integrity — допуск
+  клиента). Ключ Gemini никогда не в клиенте. Cloud Functions + Firestore рассматривались и
+  **отвергнуты** (требуют плана Blaze с картой) — `project/architecture/backend-proxy.md` v0.2.
 - Уведомления — `flutter_local_notifications` как сервис в `core/`, **не WorkManager**.
+  Расписание — `AndroidScheduleMode.inexactAllowWhileIdle`, точные будильники не запрашиваем.
+- Озвучка реплик — `flutter_tts`, **полностью офлайн**, `core/speech/` + `TableVoiceCubit`.
 - Время — только через `AppClock`, никогда напрямую `DateTime.now()` в бизнес-логике.
 - График — `fl_chart`, строится по `day_entries.moodScore` (эмодзи-шкала), не по тону AI-реакций.
 **Не используем:** `dartz`, `rxdart`, `either_dart` — используем собственный `Result<T>`.
@@ -79,7 +84,8 @@ ls ~/.pub-cache/hosted/pub.dev/<package>-<версия>/
 | Обзор проекта, цели, метрики | `project/prd/00-overview.md` | — |
 | Пользовательские сценарии | `project/prd/01-user-scenarios.md` | — |
 | Экран «Стол» | `project/prd/02-requirements-table.md` | `project/architecture/architecture-full.md` (`TableCubit`), `specs/004-table-screen/` |
-| AI/персонажи/промпты | `project/prd/03-ai-integration.md` | `project/architecture/backend-proxy.md` |
+| AI/персонажи/промпты | `project/prd/03-ai-integration.md` | `project/architecture/backend-proxy.md`, `specs/007-ai-proxy/`, код прокси — `proxy/src/` |
+| Озвучка реплик (TTS) | `project/prd/03-ai-integration.md` | `specs/008-character-voice-tts/`, `app/lib/core/speech/` |
 | Дневник/график/CSV | `project/prd/04-requirements-diary.md` | `project/architecture/architecture-full.md` (fl_chart, CSV), `specs/005-diary-screen/` |
 | Настройки | `project/prd/05-requirements-settings.md` | `project/architecture/database-tables.md` (`user_settings`) |
 | Уведомления | `project/prd/06-requirements-notifications.md` | `project/architecture/architecture-full.md` (раздел «Уведомления») |
@@ -90,7 +96,8 @@ ls ~/.pub-cache/hosted/pub.dev/<package>-<версия>/
 | Раскладка папок, шаблон Cubit, DI, тесты | — | `project/architecture/architecture-brief.md` (чеклист) → `architecture-full.md` (подробно) |
 | В каком порядке всё это реализовывать | — | `project/architecture/build-order.md` |
 | Таблицы БД | — | `project/architecture/database-tables.md` |
-| Схема backend-прокси к Gemini | — | `project/architecture/backend-proxy.md` |
+| Схема backend-прокси к Gemini | — | `project/architecture/backend-proxy.md` (v0.2, Cloudflare Workers) |
+| Имя приложения и локализация ярлыка | — | раздел «Имя приложения» ниже |
 | Анимация персонажей, состояния места за столом, поверхность стола | `project/prd/02-requirements-table.md` | `project/architecture/character-animation.md` → `specs/004-table-screen/`, `specs/006-table-surface-render/` |
 | Чек-лист код-ревью (KISS/DRY/SOLID/null-safety) | — | `project/process/code-quality.md` |
 | Реальные грабли этого проекта (пополняется по ходу разработки) | — | `project/process/lessons-learned.md` |
@@ -99,14 +106,45 @@ ls ~/.pub-cache/hosted/pub.dev/<package>-<версия>/
 См. `project/architecture/architecture-brief.md` — пошагово (entity → repository → usecase → Cubit →
 route → тест), не дублирую здесь.
 
+## Имя приложения
+
+Одно имя в трёх местах, и все три обязаны совпадать:
+
+| Где | Файл |
+|---|---|
+| Внутри приложения | `app/lib/l10n/intl_{en,ru,uk}.arb` → `appTitle` — **источник правды** |
+| Ярлык Android | `app/android/app/src/main/res/values{,-ru,-uk}/strings.xml` → `app_name`, манифест ссылается `@string/app_name` |
+| Ярлык iOS | `app/ios/Runner/InfoPlist.xcstrings` → `CFBundleDisplayName` (String Catalog) |
+
+Сейчас: `Round Table` / `Круглый стол` / `Круглий стіл`.
+
+Совпадение не косметическое: строка `settingsReminderPermissionDenied` просит пользователя найти
+приложение в системных настройках именно под `appTitle` — разъедется, и подсказка начнёт врать.
+
+Две ловушки:
+- Ярлык следует **системной** локали, а не языку, выбранному в Настройках приложения. Это штатное
+  поведение; обойти можно только per-app language (Android 13+, `res/xml/locales_config.xml`).
+- В `ios/Runner.xcodeproj/project.pbxproj` в `knownRegions` должны быть `ru` и `uk` — String
+  Catalog компилируется по ним. Если их нет, локализованное имя может работать локально из
+  `DerivedData` и пропасть на чистой сборке.
+
 ## Открытые вопросы — не считать решёнными
 
 - **Чем анимировать персонажей.** `lottie: 3.5.1` подключён, ветка `Lottie.asset` в
   `CharacterAvatar` написана и покрыта тестами, но **ассетов нет ни одного** и в
-  `assets/characters/characters.json` нет полей `idleAnimation`/`talkAnimation` — приложение
-  целиком работает по статичной ветке, где движения нет вовсе. Прежде чем что-то менять здесь,
-  прочитай `project/architecture/character-animation.md` и `project/prd/09-risks-open-questions.md`
-  (вопрос 8). **Не выпиливать Lottie и не добавлять Rive без явного решения.**
+  `assets/characters/characters.json` нет полей `idleAnimation`/`talkAnimation`.
+  Выбран и реализован **вариант A — анимация кодом**, пока для одного зверя: поле `face` в
+  конфиге + `CatFacePainter` (векторная морда) + `TalkPose`/`TalkPoseDriver` («слоговая речь»:
+  рот открывается рывками в такт слогам, амплитуда = `CharacterReaction.intensity`). Кот
+  нарисован, пёс/крокодил/бегемот остаются на эмодзи-аватаре, пока им не нарисуют `FaceShape`.
+  Это не закрывает вопрос: реализацию можно заменить, граница
+  `TableCubit → CharacterVisualState → CharacterAvatar` для этого и держится.
+  **Не выпиливать Lottie и не добавлять Rive без явного решения.** Разбор —
+  `project/architecture/character-animation.md`, `project/prd/09-risks-open-questions.md`
+  (вопрос 8).
+  Ключевое ограничение, которое нельзя нарушать: **idle-место не анимируется вовсе**, и любое
+  движение обязано само останавливаться. Постоянно запланированный кадр валит
+  `pumpAndSettle()` во всех widget-тестах Стола.
 - Остальные открытые вопросы — `project/prd/09-risks-open-questions.md`.
 
 ## Уже решено, не пересматривать без явной причины
