@@ -93,6 +93,20 @@ class AnimalFacePainter extends CustomPainter {
 
     final path = Path()..moveTo(x, y);
     switch (tail.style) {
+      case TailStyle.taper:
+        // A crocodile's tail is a mass, not a line: a wedge that narrows to
+        // the tip, which a stroke of constant width cannot give.
+        final l = tail.length;
+        path
+          ..reset()
+          ..moveTo(x, y - 10)
+          ..quadraticBezierTo(x + l / 2, y - 12 + k * 0.6, x + l, y - 4 + k * 1.4)
+          ..quadraticBezierTo(x + l / 2, y + 6 + k * 0.6, x, y + 10)
+          ..close();
+        canvas
+          ..drawPath(path, Paint()..color = _fill(0.62))
+          ..drawPath(path, _outline());
+        return;
       case TailStyle.flat:
         // Lying on the ground: it sweeps sideways, not upward.
         path.cubicTo(x + 12, y + 3 + k * 0.3, x + 24, y + 2 + k * 0.7, x + 32, y - 4 + k * 1.1);
@@ -124,6 +138,16 @@ class AnimalFacePainter extends CustomPainter {
 
     _paintPart(canvas, shape.torso);
     _paintPart(canvas, shape.haunch);
+    for (final spike in shape.ridge) {
+      final path = _polygon([
+        Offset(spike.dx - 5, spike.dy + 5),
+        Offset(spike.dx, spike.dy - 5),
+        Offset(spike.dx + 5, spike.dy + 5),
+      ]);
+      canvas
+        ..drawPath(path, Paint()..color = _fill(0.62))
+        ..drawPath(path, _outline(2));
+    }
 
     canvas.restore();
   }
@@ -153,22 +177,73 @@ class AnimalFacePainter extends CustomPainter {
       ..translate(-50, -54);
 
     // Pointed ears belong behind the skull; floppy ones hang over its sides
-    // and have to be painted after it.
+    // and have to be painted after it. A crocodile has neither.
     if (shape.ears == EarStyle.pointed) _paintEars(canvas, pose);
     canvas
-      ..drawCircle(const Offset(50, 54), 30, Paint()..color = _fill(0.45))
-      ..drawCircle(const Offset(50, 54), 30, _outline(3));
+      ..drawCircle(const Offset(50, 54), shape.skullRadius, Paint()..color = _fill(0.45))
+      ..drawCircle(const Offset(50, 54), shape.skullRadius, _outline(3));
     if (shape.ears == EarStyle.floppy) _paintEars(canvas, pose);
 
     final snout = shape.snout;
     if (snout != null) _paintPart(canvas, snout);
 
+    final jaw = shape.jaw;
+    if (jaw != null) _paintJaw(canvas, pose, jaw);
+
     _paintEyes(canvas, pose);
-    _paintNose(canvas);
-    _paintMouth(canvas, pose);
+    if (shape.nose != NoseStyle.none) _paintNose(canvas);
+    if (shape.mouth != null) _paintMouth(canvas, pose);
     if (shape.whiskers) _paintWhiskers(canvas, pose);
 
     canvas.restore();
+  }
+
+  void _paintJaw(Canvas canvas, TalkPose pose, JawShape jaw) {
+    final teeth = Paint()..color = surface;
+
+    canvas
+      ..save()
+      ..translate(jaw.hinge.dx, jaw.hinge.dy)
+      // Negative degrees drop the muzzle's front edge — see [JawShape].
+      ..rotate((jaw.restDegrees + pose.mouthOpen * jaw.swingDegrees) * math.pi / 180)
+      ..translate(-jaw.hinge.dx, -jaw.hinge.dy);
+
+    final lower = Path()
+      ..moveTo(43, 63)
+      ..lineTo(3, 63)
+      ..quadraticBezierTo(-6, 63, -6, 69)
+      ..quadraticBezierTo(-6, 75, 4, 75)
+      ..lineTo(43, 75)
+      ..close();
+    canvas
+      ..drawPath(lower, Paint()..color = _fill(0.5))
+      ..drawPath(lower, _outline());
+    for (final x in const [5.0, 15.0, 25.0, 35.0]) {
+      canvas.drawPath(_polygon([Offset(x - 2.6, 63), Offset(x + 2.6, 63), Offset(x, 57.5)]), teeth);
+    }
+    canvas.restore();
+
+    // The upper jaw is part of the skull and never moves.
+    final upper = Path()
+      ..moveTo(43, 48)
+      ..lineTo(1, 48)
+      ..quadraticBezierTo(-9, 48, -9, 55)
+      ..quadraticBezierTo(-9, 62, 1, 62)
+      ..lineTo(43, 62)
+      ..close();
+    canvas
+      ..drawPath(upper, Paint()..color = _fill(0.62))
+      ..drawPath(upper, _outline());
+    for (final x in const [1.0, 11.0, 21.0, 31.0]) {
+      canvas.drawPath(_polygon([Offset(x - 2.6, 61), Offset(x + 2.6, 61), Offset(x, 67)]), teeth);
+    }
+
+    // One nostril, not two: from the side only the near one shows.
+    canvas.drawCircle(
+      const Offset(-3, 53),
+      1.6,
+      Paint()..color = Color.lerp(color, ink, 0.35) ?? color,
+    );
   }
 
   void _paintEars(Canvas canvas, TalkPose pose) {
@@ -217,6 +292,9 @@ class AnimalFacePainter extends CustomPainter {
         canvas
           ..drawPath(path, Paint()..color = _fill(0.85))
           ..drawPath(path, _outline(2));
+      case EarStyle.none:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
 
     canvas.restore();
@@ -235,14 +313,20 @@ class AnimalFacePainter extends CustomPainter {
     // A blink is the eyelid coming down, not the eye shrinking: the width
     // stays put and only the height collapses.
     final height = math.max(0.7, 5.2 * pose.eyeOpen);
+    final y = shape.eyesY;
 
     for (final cx in const [39.0, 61.0]) {
+      if (shape.eyeBumps) {
+        canvas
+          ..drawCircle(Offset(cx, y - 1), 7.5, Paint()..color = _fill(0.45))
+          ..drawCircle(Offset(cx, y - 1), 7.5, _outline(2));
+      }
       canvas.drawOval(
-        Rect.fromCenter(center: Offset(cx, 49), width: 8.4, height: height * 2),
+        Rect.fromCenter(center: Offset(cx, y), width: 8.4, height: height * 2),
         paint,
       );
       if (pose.eyeOpen > 0.5) {
-        canvas.drawCircle(Offset(cx + 1.6, 47), 1.4, Paint()..color = surface);
+        canvas.drawCircle(Offset(cx + 1.6, y - 2), 1.4, Paint()..color = surface);
       }
     }
   }
@@ -260,12 +344,14 @@ class AnimalFacePainter extends CustomPainter {
           Rect.fromCenter(center: const Offset(50, 64), width: 11, height: 8.4),
           paint,
         );
+      case NoseStyle.none:
+        break;
     }
   }
 
   void _paintMouth(Canvas canvas, TalkPose pose) {
     final open = pose.mouthOpen;
-    final spec = shape.mouth;
+    final spec = shape.mouth!;
     final mouth = Rect.fromCenter(
       center: Offset(50, spec.y),
       width: (spec.width + 1.6 * open) * 2,

@@ -37,6 +37,18 @@ const _dog = Character(
   voice: CharacterVoice.neutral,
 );
 
+/// The crocodile: no ears, no whiskers, and a mouth that is not an ellipse.
+const _crocodile = Character(
+  id: 'crocodile',
+  emoji: '🐊',
+  face: FaceShape.crocodile,
+  name: 'Крокодил',
+  colorHex: 0xFF5C8A5C,
+  fallbackReply: 'Хм.',
+  maxReplyLength: 220,
+  voice: CharacterVoice.neutral,
+);
+
 Widget _avatar({
   required CharacterVisualState state,
   bool disableAnimations = false,
@@ -166,11 +178,29 @@ void main() {
 
       expect(await shapeOf(_cat), AnimalShape.cat);
       expect(await shapeOf(_dog), AnimalShape.dog);
-      // Species is geometry, not behaviour: the two differ in shape alone.
+      expect(await shapeOf(_crocodile), AnimalShape.crocodile);
+      // Species is geometry, not behaviour: all three differ in shape alone.
       expect(AnimalShape.cat.ears, EarStyle.pointed);
       expect(AnimalShape.dog.ears, EarStyle.floppy);
+      expect(AnimalShape.crocodile.ears, EarStyle.none);
       expect(AnimalShape.cat.whiskers, isTrue);
-      expect(AnimalShape.dog.whiskers, isFalse);
+      expect(AnimalShape.crocodile.mouth, isNull);
+      expect(AnimalShape.crocodile.jaw, isNotNull);
+    });
+
+    testWidgets('the crocodile\'s jaw opens downward, not into its own skull', (tester) async {
+      final jaw = AnimalShape.crocodile.jaw!;
+
+      // Regression, and the reason `JawShape` documents its sign: the muzzle
+      // points left, so a *positive* (clockwise) rotation lifts everything
+      // left of the hinge. With the sign flipped the mouth looked like it
+      // opened inside the head — it was closing upward.
+      expect(jaw.restDegrees, isNegative);
+      expect(jaw.swingDegrees, isNegative);
+
+      // And the hinge is the corner where the jaws meet, not a point inside
+      // the lower slab — otherwise its own back edge swings up into the skull.
+      expect(jaw.hinge.dy, 63);
     });
 
     testWidgets('"reduce motion" freezes the face rather than slowing it (FR-033a)', (

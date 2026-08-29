@@ -5,7 +5,8 @@
 /// one animal at a time, and a half-drawn table must still render.
 enum FaceShape {
   cat,
-  dog;
+  dog,
+  crocodile;
 
   /// Unknown or absent values degrade to `null` (the emoji avatar) instead
   /// of failing the catalog load — same leniency as `emoji` and `voice`.

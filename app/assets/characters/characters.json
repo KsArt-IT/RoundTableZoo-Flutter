@@ -22,6 +22,7 @@
   {
     "id": "crocodile",
     "emoji": "🐊",
+    "face": "crocodile",
     "name": "Крокодил",
     "colorHex": "#5C8A5C",
     "fallbackReply": "Хм. Слов пока нет, но я не отвернулся.",
