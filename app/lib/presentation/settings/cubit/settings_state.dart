@@ -11,7 +11,7 @@ part 'settings_state.freezed.dart';
 enum VoiceAvailability {
   available,
   noVoiceForLanguage,
-  screenReaderActive;
+  screenReaderActive,
 }
 
 @freezed

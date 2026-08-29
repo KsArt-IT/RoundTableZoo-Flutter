@@ -18,18 +18,13 @@ import 'package:roundtablezoo/domain/services/reminder_planner.dart';
 /// `project/process/lessons-learned.md` (contracts/notifications.md).
 class ReminderCoordinator {
   ReminderCoordinator({
-    required AppClock clock,
-    required DayResolver dayResolver,
-    required ReminderPlanner reminderPlanner,
-    required NotificationScheduler notificationScheduler,
-    required SettingsRepository settingsRepository,
-    required DiaryRepository diaryRepository,
-  }) : _clock = clock,
-       _dayResolver = dayResolver,
-       _reminderPlanner = reminderPlanner,
-       _notificationScheduler = notificationScheduler,
-       _settingsRepository = settingsRepository,
-       _diaryRepository = diaryRepository {
+    required this._clock,
+    required this._dayResolver,
+    required this._reminderPlanner,
+    required this._notificationScheduler,
+    required this._settingsRepository,
+    required this._diaryRepository,
+  }) {
     _settingsSubscription = _settingsRepository.watch().listen((_) => unawaited(reconcile()));
     _diarySubscription = _diaryRepository.watchEntriesChanged().listen(
       (_) => unawaited(reconcile()),

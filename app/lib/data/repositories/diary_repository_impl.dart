@@ -128,7 +128,7 @@ class DiaryRepositoryImpl with SafeCallMixin implements DiaryRepository {
   });
 
   @override
-  Future<Result<DiaryPage>> entriesPage({DateTime? beforeOccurredAt, required int limit}) =>
+  Future<Result<DiaryPage>> entriesPage({required int limit, DateTime? beforeOccurredAt}) =>
       safeCall(() async {
         if (limit <= 0) {
           throw const ValidationFailure('entriesPage: limit must be > 0');
@@ -136,7 +136,7 @@ class DiaryRepositoryImpl with SafeCallMixin implements DiaryRepository {
 
         final rows = await _dataSource.entriesBefore(beforeOccurredAt, limit);
         if (rows.isEmpty) {
-          return const DiaryPage(days: [], hasMore: false, nextCursor: null);
+          return const DiaryPage(days: [], hasMore: false);
         }
 
         final settingsRow = await _settingsDataSource.loadOrCreate();

@@ -26,11 +26,13 @@ abstract final class AppBootstrap {
     try {
       await _backupExclusionChannel.invokeMethod<bool>('excludeFromBackup', path);
     } on PlatformException catch (e, st) {
-      if (!kReleaseMode)
+      if (!kReleaseMode) {
         logger.w('Failed to exclude "$path" from backup', error: e, stackTrace: st);
+      }
     } on MissingPluginException catch (e, st) {
-      if (!kReleaseMode)
+      if (!kReleaseMode) {
         logger.w('Failed to exclude "$path" from backup', error: e, stackTrace: st);
+      }
     }
   }
 

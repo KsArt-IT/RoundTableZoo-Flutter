@@ -30,6 +30,7 @@ class DioAiProxyClient implements AiProxyClient {
           dio ??
           Dio(
             BaseOptions(
+              // ignore: avoid_redundant_argument_values
               baseUrl: AiProxyConfig.baseUrl,
               connectTimeout: const Duration(seconds: 10),
               receiveTimeout: const Duration(seconds: 15),
