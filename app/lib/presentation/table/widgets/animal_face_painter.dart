@@ -1,0 +1,328 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:roundtablezoo/presentation/table/widgets/animal_shape.dart';
+import 'package:roundtablezoo/presentation/table/widgets/talk_pose.dart';
+
+/// Draws one animal — whichever [AnimalShape] it is handed — for one
+/// [TalkPose].
+///
+/// Vector, not a raster asset or a Lottie file, for the same reason the
+/// table surface is a `CustomPainter` (`specs/006-table-surface-render`): it
+/// scales to any seat size and takes its colors from the character config
+/// and the current `ColorScheme`, so it needs no light/dark variants and no
+/// licensing.
+///
+/// One painter for every animal on purpose. A cat lying on its side and a
+/// sitting dog differ only in the numbers inside [AnimalShape] — the
+/// drawing steps (trunk, legs, head, face) are the same, and so is all of
+/// the movement, which arrives already solved in [TalkPose].
+class AnimalFacePainter extends CustomPainter {
+  AnimalFacePainter({
+    required ValueListenable<TalkPose> pose,
+    required this.shape,
+    required this.color,
+    required this.surface,
+    required this.ink,
+  }) : _pose = pose,
+       super(repaint: pose);
+
+  final AnimalShape shape;
+
+  /// The character's own color (`characters.json` → `colorHex`). Outlines
+  /// use it at full strength; fills are it faded toward [surface].
+  final Color color;
+
+  /// What the seat sits on — the fills are mixed toward it so a colored
+  /// animal never turns into one flat blob.
+  final Color surface;
+
+  /// Eyes, mouth and whiskers. From the `ColorScheme`, not from the
+  /// character color, so contrast holds in both themes.
+  final Color ink;
+
+  final ValueListenable<TalkPose> _pose;
+
+  /// [TalkPose.headBob] is a fraction of the avatar's size; this turns it
+  /// into [AnimalShape.design] units.
+  static const double _bobUnits = 70;
+
+  /// [TalkPose.tailSway] in [AnimalShape.design] units.
+  static const double _swayUnits = 5.5;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final pose = _pose.value;
+    const design = AnimalShape.design;
+    final k = math.min(size.width / design.width, size.height / design.height);
+
+    canvas
+      ..save()
+      ..translate(
+        (size.width - design.width * k) / 2,
+        (size.height - design.height * k) / 2,
+      )
+      ..scale(k);
+
+    _paintTail(canvas, pose);
+    _paintTrunk(canvas, pose);
+    for (final leg in shape.legs) {
+      _paintPart(canvas, leg);
+    }
+    _paintHead(canvas, pose);
+
+    canvas.restore();
+  }
+
+  /// The character color faded toward the surface by [tone] — 1 is the
+  /// color itself, 0 is the bare surface.
+  Color _fill(double tone) => Color.lerp(surface, color, tone) ?? color;
+
+  Paint _outline([double strokeWidth = 2.4]) => Paint()
+    ..color = color
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = strokeWidth;
+
+  void _paintTail(Canvas canvas, TalkPose pose) {
+    final tail = shape.tail;
+    final k = pose.tailSway * _swayUnits;
+    final x = tail.from.dx;
+    final y = tail.from.dy;
+
+    final path = Path()..moveTo(x, y);
+    switch (tail.style) {
+      case TailStyle.flat:
+        // Lying on the ground: it sweeps sideways, not upward.
+        path.cubicTo(x + 12, y + 3 + k * 0.3, x + 24, y + 2 + k * 0.7, x + 32, y - 4 + k * 1.1);
+      case TailStyle.curl:
+        path
+          ..cubicTo(x + 18, y + 2 + k * 0.3, x + 25, y - 12 + k, x + 15, y - 22 + k * 1.3)
+          ..cubicTo(x + 10, y - 27 + k * 1.5, x + 3, y - 25 + k * 1.6, x + 2, y - 20 + k * 1.6);
+    }
+
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = tail.width
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+
+  void _paintTrunk(Canvas canvas, TalkPose pose) {
+    canvas
+      ..save()
+      // Breathing stretches the trunk about the line the animal rests on. The
+      // legs are painted outside this transform on purpose — a stretching paw
+      // is the fastest way to make a drawn animal look like rubber.
+      ..translate(0, shape.breathAnchorY)
+      ..scale(1, pose.bodyBreath)
+      ..translate(0, -shape.breathAnchorY);
+
+    _paintPart(canvas, shape.torso);
+    _paintPart(canvas, shape.haunch);
+
+    canvas.restore();
+  }
+
+  void _paintPart(Canvas canvas, AnimalPart part) {
+    canvas.save();
+    if (part.rotationDegrees != 0) {
+      canvas
+        ..translate(part.center.dx, part.center.dy)
+        ..rotate(part.rotationDegrees * math.pi / 180)
+        ..translate(-part.center.dx, -part.center.dy);
+    }
+
+    canvas
+      ..drawOval(part.rect, Paint()..color = _fill(part.tone))
+      ..drawOval(part.rect, _outline(part.strokeWidth))
+      ..restore();
+  }
+
+  void _paintHead(Canvas canvas, TalkPose pose) {
+    canvas
+      ..save()
+      ..translate(shape.headAnchor.dx, shape.headAnchor.dy + pose.headBob * _bobUnits)
+      ..rotate(pose.tiltDegrees * math.pi / 180)
+      ..scale(shape.headScale * pose.scale)
+      // The face below is written around the head's own center, (50, 54).
+      ..translate(-50, -54);
+
+    // Pointed ears belong behind the skull; floppy ones hang over its sides
+    // and have to be painted after it.
+    if (shape.ears == EarStyle.pointed) _paintEars(canvas, pose);
+    canvas
+      ..drawCircle(const Offset(50, 54), 30, Paint()..color = _fill(0.45))
+      ..drawCircle(const Offset(50, 54), 30, _outline(3));
+    if (shape.ears == EarStyle.floppy) _paintEars(canvas, pose);
+
+    final snout = shape.snout;
+    if (snout != null) _paintPart(canvas, snout);
+
+    _paintEyes(canvas, pose);
+    _paintNose(canvas);
+    _paintMouth(canvas, pose);
+    if (shape.whiskers) _paintWhiskers(canvas, pose);
+
+    canvas.restore();
+  }
+
+  void _paintEars(Canvas canvas, TalkPose pose) {
+    final pointed = shape.ears == EarStyle.pointed;
+    final pivotY = pointed ? 34.0 : 27.0;
+
+    _paintEar(canvas, pose, pivot: Offset(pointed ? 35 : 30, pivotY), sign: -1);
+    _paintEar(canvas, pose, pivot: Offset(pointed ? 65 : 70, pivotY), sign: 1);
+  }
+
+  void _paintEar(Canvas canvas, TalkPose pose, {required Offset pivot, required double sign}) {
+    canvas
+      ..save()
+      ..translate(pivot.dx, pivot.dy)
+      ..rotate(sign * pose.earTwistDegrees * math.pi / 180)
+      ..translate(-pivot.dx, -pivot.dy);
+
+    final left = sign < 0;
+    switch (shape.ears) {
+      case EarStyle.pointed:
+        final outer = left
+            ? const [Offset(29, 34), Offset(33, 13), Offset(49, 26)]
+            : const [Offset(71, 34), Offset(67, 13), Offset(51, 26)];
+        final inner = left
+            ? const [Offset(33, 32), Offset(35, 20), Offset(44, 28)]
+            : const [Offset(67, 32), Offset(65, 20), Offset(56, 28)];
+        canvas
+          ..drawPath(_polygon(outer), Paint()..color = color)
+          ..drawPath(_polygon(inner), Paint()..color = _fill(0.18));
+      case EarStyle.floppy:
+        final path = Path();
+        if (left) {
+          path
+            ..moveTo(32, 27)
+            ..cubicTo(15, 25, 11, 50, 19, 64)
+            ..cubicTo(25, 75, 38, 71, 37, 58)
+            ..cubicTo(36, 45, 38, 33, 32, 27);
+        } else {
+          path
+            ..moveTo(68, 27)
+            ..cubicTo(85, 25, 89, 50, 81, 64)
+            ..cubicTo(75, 75, 62, 71, 63, 58)
+            ..cubicTo(64, 45, 62, 33, 68, 27);
+        }
+        path.close();
+        canvas
+          ..drawPath(path, Paint()..color = _fill(0.85))
+          ..drawPath(path, _outline(2));
+    }
+
+    canvas.restore();
+  }
+
+  Path _polygon(List<Offset> points) {
+    final path = Path()..moveTo(points.first.dx, points.first.dy);
+    for (final point in points.skip(1)) {
+      path.lineTo(point.dx, point.dy);
+    }
+    return path..close();
+  }
+
+  void _paintEyes(Canvas canvas, TalkPose pose) {
+    final paint = Paint()..color = ink;
+    // A blink is the eyelid coming down, not the eye shrinking: the width
+    // stays put and only the height collapses.
+    final height = math.max(0.7, 5.2 * pose.eyeOpen);
+
+    for (final cx in const [39.0, 61.0]) {
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(cx, 49), width: 8.4, height: height * 2),
+        paint,
+      );
+      if (pose.eyeOpen > 0.5) {
+        canvas.drawCircle(Offset(cx + 1.6, 47), 1.4, Paint()..color = surface);
+      }
+    }
+  }
+
+  void _paintNose(Canvas canvas) {
+    final paint = Paint()..color = Color.lerp(color, ink, 0.35) ?? color;
+    switch (shape.nose) {
+      case NoseStyle.triangle:
+        canvas.drawPath(
+          _polygon(const [Offset(46.5, 59), Offset(53.5, 59), Offset(50, 62.5)]),
+          paint,
+        );
+      case NoseStyle.round:
+        canvas.drawOval(
+          Rect.fromCenter(center: const Offset(50, 64), width: 11, height: 8.4),
+          paint,
+        );
+    }
+  }
+
+  void _paintMouth(Canvas canvas, TalkPose pose) {
+    final open = pose.mouthOpen;
+    final spec = shape.mouth;
+    final mouth = Rect.fromCenter(
+      center: Offset(50, spec.y),
+      width: (spec.width + 1.6 * open) * 2,
+      height: (0.9 + spec.openHeight * open) * 2,
+    );
+    canvas.drawOval(mouth, Paint()..color = ink);
+
+    final tongue = math.max(0.0, (open - 0.35) * 5);
+    if (tongue <= 0) return;
+
+    canvas
+      ..save()
+      // Clipped to the mouth so the tongue can never spill onto the chin.
+      ..clipPath(Path()..addOval(mouth))
+      ..drawOval(
+        Rect.fromCenter(center: Offset(50, spec.y + 2.4 * open), width: 6, height: tongue * 2),
+        Paint()..color = Color.lerp(color, const Color(0xFFE08B9B), 0.75) ?? color,
+      )
+      ..restore();
+  }
+
+  void _paintWhiskers(Canvas canvas, TalkPose pose) {
+    final paint = Paint()
+      ..color = (Color.lerp(color, ink, 0.35) ?? color).withValues(alpha: 0.75)
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round;
+
+    canvas
+      ..save()
+      // Whiskers lag behind the ears — a quarter of the twist, same sign, so
+      // the whole muzzle reads as one movement.
+      ..translate(50, 62)
+      ..rotate(pose.earTwistDegrees * 0.25 * math.pi / 180)
+      ..translate(-50, -62);
+
+    for (final side in const [-1.0, 1.0]) {
+      for (var i = 0; i < 2; i++) {
+        canvas.drawLine(
+          Offset(50 + side * 7, 62 + i * 4),
+          Offset(50 + side * 26, 58 + i * 8),
+          paint,
+        );
+      }
+    }
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(AnimalFacePainter oldDelegate) =>
+      oldDelegate.shape != shape ||
+      oldDelegate.color != color ||
+      oldDelegate.surface != surface ||
+      oldDelegate.ink != ink ||
+      oldDelegate._pose != _pose;
+
+  /// The animal is decorative: `CharacterAvatar` already announces the
+  /// seat's name and state, and a second node here would only repeat it.
+  @override
+  bool shouldRebuildSemantics(AnimalFacePainter oldDelegate) => false;
+}

@@ -4,7 +4,8 @@
 /// avatar (`contracts/character-config.md` §5). The roster is being drawn
 /// one animal at a time, and a half-drawn table must still render.
 enum FaceShape {
-  cat;
+  cat,
+  dog;
 
   /// Unknown or absent values degrade to `null` (the emoji avatar) instead
   /// of failing the catalog load — same leniency as `emoji` and `voice`.

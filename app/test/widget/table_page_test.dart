@@ -427,17 +427,25 @@ void main() {
     (tester) async {
       final widget = buildTestAppRoot();
       final synthesizer = getIt<SpeechSynthesizer>() as MockSpeechSynthesizer;
-      Completer<Result<void>>? pendingSpeak;
+      // Every `speak()` call gets its own never-resolving completer, kept
+      // here so `stop()` can find and resolve the *right* one — resetting
+      // a single shared variable between taps would leave the first
+      // utterance's `_processQueue` awaiting forever (it's only unblocked
+      // by `stop()` completing that specific completer), which starves the
+      // second character's request of ever reaching `speak()`.
+      final pendingSpeaks = <Completer<Result<void>>>[];
       when(() => synthesizer.speak(any())).thenAnswer((_) {
         final completer = Completer<Result<void>>();
-        pendingSpeak = completer;
+        pendingSpeaks.add(completer);
         return completer.future;
       });
       when(() => synthesizer.stop()).thenAnswer((_) async {
         // Mirrors the real plugin: a `stop()`-interrupted utterance
         // completes its `speak()` future just as successfully
         // (`contracts/speech-synthesizer.md` §1).
-        pendingSpeak?.complete(const Result.success(null));
+        for (final completer in pendingSpeaks) {
+          if (!completer.isCompleted) completer.complete(const Result.success(null));
+        }
         return const Result.success(null);
       });
 
@@ -450,8 +458,14 @@ void main() {
       await tester.enterText(find.byType(TextField), 'привет мир');
       await tester.pump();
 
+      // `pumpAndSettle` cannot be used here: once a character starts
+      // speaking, its `TalkPoseDriver` ticker reschedules frames
+      // continuously (idle-only seats settle, a speaking one never does —
+      // see CLAUDE.md), and this test's mocked `speak()` never resolves on
+      // its own. Pump in bounded steps instead, until `speak()` has fired
+      // for the reply the tap just requested.
       await tester.tap(_idleSeats(l10n).first);
-      await tester.pumpAndSettle();
+      await _pumpUntilSpeaking(tester, () => pendingSpeaks.isNotEmpty);
 
       // A second, different character is tapped while the first reply is
       // still (indefinitely) speaking — this must stop it (FR-010) rather
@@ -459,7 +473,7 @@ void main() {
       // an intermediate `verify(...).called(n)` would itself consume
       // that portion of mocktail's invocation log.
       await tester.tap(_idleSeats(l10n).first);
-      await tester.pumpAndSettle();
+      await _pumpUntilSpeaking(tester, () => pendingSpeaks.length >= 2);
 
       verify(() => synthesizer.stop()).called(greaterThan(0));
       verify(() => synthesizer.speak(any())).called(2);
@@ -467,6 +481,16 @@ void main() {
       await disposeTestAppRoot(tester);
     },
   );
+}
+
+/// Pumps in small, bounded steps until [isSpeaking] reports true (i.e.
+/// `SpeechSynthesizer.speak` has been called for the in-flight request),
+/// instead of `pumpAndSettle` — which would never return once the speaking
+/// character's `TalkPoseDriver` ticker starts.
+Future<void> _pumpUntilSpeaking(WidgetTester tester, bool Function() isSpeaking) async {
+  for (var i = 0; i < 50 && !isSpeaking(); i++) {
+    await tester.pump(const Duration(milliseconds: 50));
+  }
 }
 
 /// Character seats are addressed by their own `Semantics` label

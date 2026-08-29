@@ -12,6 +12,7 @@
   {
     "id": "dog",
     "emoji": "🐶",
+    "face": "dog",
     "name": "Пёс",
     "colorHex": "#D98C4A",
     "fallbackReply": "Гав! Я всё равно рад, что ты рассказал.",

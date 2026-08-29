@@ -6,7 +6,8 @@ import 'package:roundtablezoo/domain/entities/character.dart';
 import 'package:roundtablezoo/domain/value_objects/character_voice.dart';
 import 'package:roundtablezoo/domain/value_objects/face_shape.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
-import 'package:roundtablezoo/presentation/table/widgets/cat_face_painter.dart';
+import 'package:roundtablezoo/presentation/table/widgets/animal_face_painter.dart';
+import 'package:roundtablezoo/presentation/table/widgets/animal_shape.dart';
 import 'package:roundtablezoo/presentation/table/widgets/character_avatar.dart';
 import 'package:roundtablezoo/presentation/table/widgets/talk_pose.dart';
 import 'package:roundtablezoo/presentation/table/widgets/talk_pose_driver.dart';
@@ -24,17 +25,30 @@ const _cat = Character(
   voice: CharacterVoice.neutral,
 );
 
+/// The dog: same config shape, a different drawn animal.
+const _dog = Character(
+  id: 'dog',
+  emoji: '🐶',
+  face: FaceShape.dog,
+  name: 'Пёс',
+  colorHex: 0xFFD98C4A,
+  fallbackReply: 'Гав!',
+  maxReplyLength: 220,
+  voice: CharacterVoice.neutral,
+);
+
 Widget _avatar({
   required CharacterVisualState state,
   bool disableAnimations = false,
   double intensity = 1,
+  Character character = _cat,
 }) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
   home: MediaQuery(
     data: MediaQueryData(disableAnimations: disableAnimations),
     child: Scaffold(
-      body: CharacterAvatar(character: _cat, state: state, onTap: null, intensity: intensity),
+      body: CharacterAvatar(character: character, state: state, onTap: null, intensity: intensity),
     ),
   ),
 );
@@ -94,7 +108,7 @@ void main() {
           )
           .map((paint) => paint.painter);
 
-      expect(painters.whereType<CatFacePainter>(), isNotEmpty);
+      expect(painters.whereType<AnimalFacePainter>(), isNotEmpty);
       expect(find.text('🐱'), findsNothing);
     });
 
@@ -107,7 +121,7 @@ void main() {
           .widgetList<CustomPaint>(
             find.descendant(of: find.byType(CharacterAvatar), matching: find.byType(CustomPaint)),
           )
-          .firstWhere((widget) => widget.painter is CatFacePainter);
+          .firstWhere((widget) => widget.painter is AnimalFacePainter);
 
       // Regression: a childless `CustomPaint` falls back to its `size`
       // argument, and a non-positioned `Stack` child is laid out with
@@ -127,12 +141,36 @@ void main() {
           .widgetList<CustomPaint>(
             find.descendant(of: find.byType(CharacterAvatar), matching: find.byType(CustomPaint)),
           )
-          .firstWhere((widget) => widget.painter is CatFacePainter);
+          .firstWhere((widget) => widget.painter is AnimalFacePainter);
 
       expect(
         find.ancestor(of: find.byWidget(paint), matching: find.byType(ClipOval)),
         findsNothing,
       );
+    });
+
+    testWidgets('each character is drawn with its own shape, one painter for both', (
+      tester,
+    ) async {
+      Future<AnimalShape> shapeOf(Character character) async {
+        await tester.pumpWidget(_avatar(state: CharacterVisualState.idle, character: character));
+        final painter = tester
+            .widgetList<CustomPaint>(
+              find.descendant(of: find.byType(CharacterAvatar), matching: find.byType(CustomPaint)),
+            )
+            .map((widget) => widget.painter)
+            .whereType<AnimalFacePainter>()
+            .single;
+        return painter.shape;
+      }
+
+      expect(await shapeOf(_cat), AnimalShape.cat);
+      expect(await shapeOf(_dog), AnimalShape.dog);
+      // Species is geometry, not behaviour: the two differ in shape alone.
+      expect(AnimalShape.cat.ears, EarStyle.pointed);
+      expect(AnimalShape.dog.ears, EarStyle.floppy);
+      expect(AnimalShape.cat.whiskers, isTrue);
+      expect(AnimalShape.dog.whiskers, isFalse);
     });
 
     testWidgets('"reduce motion" freezes the face rather than slowing it (FR-033a)', (

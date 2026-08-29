@@ -5,15 +5,16 @@ import 'package:roundtablezoo/core/constants/app_dimens.dart';
 import 'package:roundtablezoo/domain/entities/character.dart';
 import 'package:roundtablezoo/domain/value_objects/face_shape.dart';
 import 'package:roundtablezoo/gen/app_localizations.dart';
-import 'package:roundtablezoo/presentation/table/widgets/cat_face_painter.dart';
+import 'package:roundtablezoo/presentation/table/widgets/animal_face_painter.dart';
+import 'package:roundtablezoo/presentation/table/widgets/animal_shape.dart';
 import 'package:roundtablezoo/presentation/table/widgets/character_visual_state.dart';
 import 'package:roundtablezoo/presentation/table/widgets/talk_pose_driver.dart';
 
 export 'package:roundtablezoo/presentation/table/widgets/character_visual_state.dart';
 
 /// One character's seat. Three renderers, in order: the character's Lottie
-/// animation when the asset exists; the vector face drawn by
-/// `CatFacePainter` when the character declares a [FaceShape]; otherwise a
+/// animation when the asset exists; the vector animal drawn by
+/// `AnimalFacePainter` when the character declares a [FaceShape]; otherwise a
 /// static colored circle showing the character's `emoji` — or, failing
 /// that, the first letter of its name. The static forms are standing
 /// branches, not placeholders for missing test fixtures
@@ -179,14 +180,15 @@ class CharacterAvatar extends StatelessWidget {
         // `Stack` child is laid out with *loose* constraints. Without it
         // the cat is built, ticks, and paints nothing at all.
         size: Size.square(size),
-        painter: switch (face) {
-          FaceShape.cat => CatFacePainter(
-            pose: pose,
-            color: Color(character.colorHex),
-            surface: scheme.surface,
-            ink: scheme.onSurface,
-          ),
-        },
+        // One painter for every animal: which one it is lives entirely in
+        // the geometry it is handed, never in the widget or the pose.
+        painter: AnimalFacePainter(
+          pose: pose,
+          shape: AnimalShape.of(face),
+          color: Color(character.colorHex),
+          surface: scheme.surface,
+          ink: scheme.onSurface,
+        ),
       ),
     );
   }
