@@ -108,49 +108,80 @@ class AnimalFacePainter extends CustomPainter {
     final k = pose.tailSway * _swayUnits;
     final x = tail.from.dx;
     final y = tail.from.dy;
+    final length = tail.length == 0 ? 32.0 : tail.length;
 
+    canvas.save();
+    if (tail.rotationDegrees != 0) {
+      canvas
+        ..translate(x, y)
+        ..rotate(tail.rotationDegrees * math.pi / 180)
+        ..translate(-x, -y);
+    }
+
+    // A tapering tail is a mass and gets filled; the other two are lines
+    // and get stroked.
+    var filled = false;
     final path = Path()..moveTo(x, y);
+
     switch (tail.style) {
       case TailStyle.taper:
-        // A crocodile's tail is a mass, not a line: a wedge that narrows to
-        // the tip, which a stroke of constant width cannot give.
-        final l = tail.length;
+        // A crocodile's tail is a wedge that narrows to the tip, which a
+        // stroke of constant width cannot give.
+        filled = true;
         path
           ..reset()
           ..moveTo(x, y - 10)
-          ..quadraticBezierTo(x + l / 2, y - 12 + k * 0.6, x + l, y - 4 + k * 1.4)
-          ..quadraticBezierTo(x + l / 2, y + 6 + k * 0.6, x, y + 10)
+          ..quadraticBezierTo(x + length / 2, y - 12 + k * 0.6, x + length, y - 4 + k * 1.4)
+          ..quadraticBezierTo(x + length / 2, y + 6 + k * 0.6, x, y + 10)
           ..close();
-        canvas
-          ..drawPath(path, Paint()..color = _fill(0.62))
-          ..drawPath(path, _outline());
-        return;
       case TailStyle.flat:
         // Sweeps sideways rather than upward; `rise` decides whether the
-        // tip lifts (a dog's) or hangs (a hippo's stub).
-        final l = tail.length == 0 ? 32.0 : tail.length;
+        // tip lifts (a cat's) or hangs (a hippo's stub).
         path.cubicTo(
-          x + l * 0.37,
+          x + length * 0.37,
           y + 3 + k * 0.3,
-          x + l * 0.75,
+          x + length * 0.75,
           y + 2 + k * 0.7,
-          x + l,
+          x + length,
           y + tail.rise + k * 1.1,
         );
       case TailStyle.curl:
+        final f = length / 32;
         path
-          ..cubicTo(x + 18, y + 2 + k * 0.3, x + 25, y - 12 + k, x + 15, y - 22 + k * 1.3)
-          ..cubicTo(x + 10, y - 27 + k * 1.5, x + 3, y - 25 + k * 1.6, x + 2, y - 20 + k * 1.6);
+          ..cubicTo(
+            x + 18 * f,
+            y + (2 + k * 0.3) * f,
+            x + 25 * f,
+            y + (-12 + k) * f,
+            x + 15 * f,
+            y + (-22 + k * 1.3) * f,
+          )
+          ..cubicTo(
+            x + 10 * f,
+            y + (-27 + k * 1.5) * f,
+            x + 3 * f,
+            y + (-25 + k * 1.6) * f,
+            x + 2 * f,
+            y + (-20 + k * 1.6) * f,
+          );
     }
 
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = tail.width
-        ..strokeCap = StrokeCap.round,
-    );
+    if (filled) {
+      canvas
+        ..drawPath(path, Paint()..color = _fill(0.62))
+        ..drawPath(path, _outline());
+    } else {
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = tail.width
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+
+    canvas.restore();
   }
 
   void _paintTrunk(Canvas canvas, TalkPose pose) {

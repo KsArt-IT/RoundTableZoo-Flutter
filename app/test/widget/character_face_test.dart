@@ -213,7 +213,10 @@ void main() {
       // are painted under the body rather than over it.
       expect(AnimalShape.hippo.haunch, isNull);
       expect(AnimalShape.hippo.legs.where((leg) => leg.behind).length, 2);
-      expect(AnimalShape.cat.legs.every((leg) => !leg.behind), isTrue);
+      // The cat hides one foreleg behind its torso; the crocodile lies too
+      // flat for a far side to read at all, so nothing of its is behind.
+      expect(AnimalShape.cat.legs.where((leg) => leg.behind).length, 1);
+      expect(AnimalShape.crocodile.legs.every((leg) => !leg.behind), isTrue);
     });
 
     testWidgets('the crocodile\'s jaw opens downward, not into its own skull', (tester) async {

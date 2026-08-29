@@ -54,6 +54,7 @@ class TailShape {
     this.gain = 1,
     this.length = 0,
     this.rise = -4,
+    this.rotationDegrees = 0,
   });
 
   final TailStyle style;
@@ -66,9 +67,15 @@ class TailShape {
   /// works harder than a cat's.
   final double gain;
 
-  /// How far the tail reaches from [from]. [TailStyle.flat] falls back to
-  /// 32 when this is 0.
+  /// How far the tail reaches from [from]. [TailStyle.flat] and
+  /// [TailStyle.curl] fall back to 32 when this is 0; the curl scales its
+  /// whole shape by `length / 32`, because at full size its tip hooks back
+  /// over the body and disappears behind the animal.
   final double length;
+
+  /// Tilts the whole tail about [from]. Cheaper and far more predictable
+  /// than re-authoring the curve, and the sway keeps working unchanged.
+  final double rotationDegrees;
 
   /// [TailStyle.flat] only: where the tip sits relative to the base.
   /// Negative curls the tail up (a dog's), positive lets it hang down (a
@@ -218,25 +225,40 @@ class AnimalShape {
     headAnchor: Offset(42, 40),
     headScale: 0.82,
     torso: AnimalPart(center: Offset(86, 70), size: Size(76, 32), rotationDegrees: -5, tone: 0.62),
-    haunch: AnimalPart(center: Offset(114, 65), size: Size(32, 30), tone: 0.62),
+    // Dropped until its underside meets the torso's: higher up, the hip
+    // floated above the body.
+    haunch: AnimalPart(center: Offset(114, 70), size: Size(32, 30), tone: 0.62),
     legs: [
+      // The far foreleg goes behind the torso, so only the paw comes out
+      // from under the body — depth, not a third leg.
       AnimalPart(
         center: Offset(58, 80),
         size: Size(34, 10),
-        rotationDegrees: 4,
+        rotationDegrees: -6,
         tone: 0.46,
         strokeWidth: 1.8,
+        behind: true,
       ),
       AnimalPart(
         center: Offset(52, 87),
         size: Size(36, 11),
-        rotationDegrees: 6,
+        rotationDegrees: -4,
         tone: 0.30,
         strokeWidth: 2,
       ),
-      AnimalPart(center: Offset(124, 79), size: Size(18, 10), tone: 0.30, strokeWidth: 2),
+      // Centred on the haunch and at its lower edge: the paw comes out from
+      // under the hip rather than from behind it.
+      AnimalPart(center: Offset(114, 84), size: Size(18, 10), tone: 0.30, strokeWidth: 2),
     ],
-    tail: TailShape(style: TailStyle.curl, from: Offset(126, 68), width: 8),
+    // Low and sweeping (the cat and the dog swapped tails): out of the
+    // middle of the haunch, not off the small of the back.
+    tail: TailShape(
+      style: TailStyle.flat,
+      from: Offset(122, 76),
+      width: 10,
+      gain: 1.6,
+      length: 28,
+    ),
     breathAnchorY: 78,
     ears: EarStyle.pointed,
     nose: NoseStyle.triangle,
@@ -251,7 +273,7 @@ class AnimalShape {
     // Reaches down to the paws' midline. Ending it just above them left the
     // outline hanging in the gap with nothing to sit on.
     torso: AnimalPart(center: Offset(84, 65), size: Size(38, 64), rotationDegrees: 8, tone: 0.62),
-    haunch: AnimalPart(center: Offset(104, 74), size: Size(42, 44), tone: 0.62),
+    haunch: AnimalPart(center: Offset(104, 79), size: Size(36, 38), tone: 0.62),
     legs: [
       // Outer foreleg and its paw, then the tucked hind paw, then the inner
       // foreleg — the dog is turned inward, so the inner leg is the near
@@ -264,7 +286,9 @@ class AnimalShape {
         strokeWidth: 1.8,
       ),
       AnimalPart(center: Offset(71, 97), size: Size(17, 9), tone: 0.46, strokeWidth: 1.8),
-      AnimalPart(center: Offset(93, 96), size: Size(20, 10), tone: 0.30, strokeWidth: 2),
+      // Right up against the forepaws — 79 + 16/2 = 87 = 97 − 20/2 — so the
+      // hind paw neither overlaps them nor leaves a hole.
+      AnimalPart(center: Offset(97, 96), size: Size(20, 10), tone: 0.30, strokeWidth: 2),
       AnimalPart(
         center: Offset(78, 80),
         size: Size(12, 34),
@@ -274,7 +298,15 @@ class AnimalShape {
       ),
       AnimalPart(center: Offset(79, 97), size: Size(16, 9), tone: 0.30, strokeWidth: 2),
     ],
-    tail: TailShape(style: TailStyle.flat, from: Offset(118, 92), width: 10, gain: 1.6),
+    // Raised and curled (swapped with the cat), shortened and tilted so the
+    // curl clears the haunch: at full length its tip hooked back into it.
+    tail: TailShape(
+      style: TailStyle.curl,
+      from: Offset(120, 86),
+      width: 8,
+      length: 26,
+      rotationDegrees: 20,
+    ),
     breathAnchorY: 96,
     ears: EarStyle.floppy,
     nose: NoseStyle.round,
