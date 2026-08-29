@@ -3,11 +3,11 @@ package life.studyway.roundtablezoo
 import android.content.Context
 import com.google.android.gms.tasks.Task
 import com.google.android.play.core.integrity.IntegrityManagerFactory
-import com.google.android.play.core.integrity.IntegrityTokenRequest
 import com.google.android.play.core.integrity.StandardIntegrityManager
 import com.google.android.play.core.integrity.StandardIntegrityManager.PrepareIntegrityTokenRequest
 import com.google.android.play.core.integrity.StandardIntegrityManager.StandardIntegrityToken
 import com.google.android.play.core.integrity.StandardIntegrityManager.StandardIntegrityTokenProvider
+import com.google.android.play.core.integrity.StandardIntegrityManager.StandardIntegrityTokenRequest
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
@@ -83,7 +83,7 @@ class IntegrityChannel(private val context: Context) : MethodChannel.MethodCallH
     }
 
     private fun fetchToken(provider: StandardIntegrityTokenProvider, result: MethodChannel.Result) {
-        val request = IntegrityTokenRequest.builder().build()
+        val request = StandardIntegrityTokenRequest.builder().build()
         provider
             .request(request)
             .addOnSuccessListener { token: StandardIntegrityToken ->
