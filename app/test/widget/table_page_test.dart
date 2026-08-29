@@ -177,7 +177,7 @@ void main() {
   });
 
   testWidgets(
-    'tapping two different characters shows two distinct bubbles, each over its own seat',
+    'tapping a second character replaces the visible reply instead of stacking a second one',
     (
       tester,
     ) async {
@@ -185,7 +185,9 @@ void main() {
       // `RoundTableLayout`: with two bubbles both full-width, `Stack`
       // reconciled them by list position instead of by character once the
       // "who currently has a bubble" sublist changed shape, so a second
-      // reply could surface over the wrong seat.
+      // reply could surface over the wrong seat. Only one bubble is shown
+      // at a time now (FR-017c), which makes that particular collision
+      // unreachable — the assertions below guard the rule that replaced it.
       await tester.pumpWidget(buildTestAppRoot());
       await tester.pumpAndSettle();
 
@@ -200,6 +202,11 @@ void main() {
       await tester.tap(_idleSeats(l10n).first);
       await tester.pumpAndSettle();
 
+      // FR-017c: two taps, two stored replies — but only the last one is on
+      // screen. Full-width bubbles stacked over each other buried the table
+      // and the animals under them.
+      expect(find.byType(SpeakingBubble), findsOneWidget);
+
       final bubbleTexts = tester
           .widgetList<Text>(
             find.byWidgetPredicate(
@@ -208,11 +215,11 @@ void main() {
           )
           .map((text) => text.data)
           .toSet();
+      expect(bubbleTexts, hasLength(1));
 
-      // Two taps on two different characters must produce exactly two
-      // bubbles, each with its own character-flavored reply — not the same
-      // reply duplicated, and not a bubble stranded over a third seat.
-      expect(bubbleTexts, hasLength(2));
+      // The hidden reply is hidden, not lost: both characters still read as
+      // having answered, and both rows are in storage for the Diary.
+      expect(_answeredSeats(l10n), findsNWidgets(2));
 
       await disposeTestAppRoot(tester);
     },
@@ -496,6 +503,13 @@ Future<void> _pumpUntilSpeaking(WidgetTester tester, bool Function() isSpeaking)
 /// Character seats are addressed by their own `Semantics` label
 /// (`"<name>, <state>"`, `character_avatar.dart`) rather than a fixed id —
 /// this matches any seat currently in the idle state.
+/// Seats that have already replied — the counterpart of [_idleSeats].
+Finder _answeredSeats(AppLocalizations l10n) => find.byWidgetPredicate(
+  (widget) =>
+      widget is Semantics &&
+      (widget.properties.label?.endsWith(l10n.tableCharacterStateAnswered) ?? false),
+);
+
 Finder _idleSeats(AppLocalizations l10n) => find.byWidgetPredicate(
   (widget) =>
       widget is Semantics &&

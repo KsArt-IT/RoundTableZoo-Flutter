@@ -326,6 +326,33 @@ class _RoundTableState extends State<_RoundTable> {
   /// under a neighboring seat's still-visible reply.
   String? _activeCharacterId;
 
+  /// Which seat may show its reply right now — at most one (FR-017c).
+  ///
+  /// Replies are full-width layers, and with four of them on screen the
+  /// table and the animals disappeared underneath. Showing only the seat
+  /// the user last tapped is what makes the screen readable; the others
+  /// keep their "already answered" badge, and every reply is still in the
+  /// Diary.
+  ///
+  /// Falls back to the latest reply of the day, so reopening the screen
+  /// shows the conversation's last line rather than nothing (FR-003a).
+  String? _visibleBubbleId() {
+    final active = _activeCharacterId;
+    if (active != null && widget.slots[active] is CharacterSlotSpoken) return active;
+
+    String? latest;
+    DateTime? latestAt;
+    for (final character in widget.characters) {
+      if (widget.slots[character.id] case CharacterSlotSpoken(:final reaction)) {
+        if (latestAt == null || reaction.createdAt.isAfter(latestAt)) {
+          latestAt = reaction.createdAt;
+          latest = character.id;
+        }
+      }
+    }
+    return latest;
+  }
+
   @override
   void didUpdateWidget(covariant _RoundTable oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -356,16 +383,22 @@ class _RoundTableState extends State<_RoundTable> {
     final speakingCharacterId = context.select<TableVoiceCubit, String?>(
       (cubit) => cubit.state.speakingCharacterId,
     );
+    final visibleBubbleId = _visibleBubbleId();
     return RoundTableLayout(
       activeCharacterId: _activeCharacterId,
       seats: [
         for (final (index, character) in widget.characters.indexed)
-          _seatFor(character, index, speakingCharacterId),
+          _seatFor(character, index, speakingCharacterId, visibleBubbleId),
       ],
     );
   }
 
-  RoundTableSeat _seatFor(Character character, int index, String? speakingCharacterId) {
+  RoundTableSeat _seatFor(
+    Character character,
+    int index,
+    String? speakingCharacterId,
+    String? visibleBubbleId,
+  ) {
     final slot = widget.slots[character.id] ?? const CharacterSlot.idle();
     final isRevealing = _revealing[character.id] ?? (slot is CharacterSlotSpoken && !slot.restored);
     final visualState = switch (slot) {
@@ -411,7 +444,9 @@ class _RoundTableState extends State<_RoundTable> {
           ),
         ),
       ),
-      bubble: switch (slot) {
+      // Everything below builds this seat's reply — but only the one
+      // visible seat gets one at all.
+      bubble: switch (character.id == visibleBubbleId ? slot : const CharacterSlot.idle()) {
         CharacterSlotSpoken(:final reaction, :final stale, :final restored) => Semantics(
           // FR-035: the active character's bubble always sorts last; any
           // other still-visible bubble slots in right after its own seat.
